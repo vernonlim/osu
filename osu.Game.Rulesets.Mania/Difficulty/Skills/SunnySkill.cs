@@ -370,7 +370,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
 
                 crossColumnPressure[ts] = total;
-                Console.WriteLine(total);
             }
 
             double[] crossColumnPressureBar = Smooth(crossColumnPressure);
@@ -387,8 +386,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 double delta = 0.001 * (after.startTime - current.startTime);
                 if (delta < Math.Pow(10, -9))
                 {
-                    Console.WriteLine($"THE QUANT: {Quantize(current.startTime)}");
-                    Console.WriteLine($"MAX: {timeSlots}");
                     pressingIntensity[Quantize(current.startTime)] += Math.Pow(0.02 * ((4 / hitLeniency) - lambda_3), 1.0 / 4.0);
                 }
                 else
