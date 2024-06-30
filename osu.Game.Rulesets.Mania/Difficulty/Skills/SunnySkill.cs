@@ -106,27 +106,27 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         private Note findNextNoteInColumn(Note note, SortedList<TimeColumn, Note>[] note_seq_by_column)
         {
-            // // The below is for if the note isn't present in the map
-            // for (int i = 0; i < note_seq_by_column[note.column].Count; i++)
-            // {
-            //     Note currentNote = note_seq_by_column[note.column].GetValueAtIndex(i);
-            //     if (currentNote.startTime > note.startTime)
-            //     {
-            //         return currentNote;
-            //     }
-            // }
-
-            var columnNotes = note_seq_by_column[note.column];
-            var key = (note.startTime, note.column);
-
-            if (columnNotes.ContainsKey(key))
+            // The below is for if the note isn't present in the map
+            for (int i = 0; i < note_seq_by_column[note.column].Count; i++)
             {
-                int nextNoteIndex = columnNotes.IndexOfKey(key) + 1;
-                if (!(nextNoteIndex == columnNotes.Count))
+                Note currentNote = note_seq_by_column[note.column].GetValueAtIndex(i);
+                if (currentNote.startTime > note.startTime)
                 {
-                    return columnNotes.GetValueAtIndex(nextNoteIndex);
+                    return currentNote;
                 }
             }
+
+            // var columnNotes = note_seq_by_column[note.column];
+            // var key = (note.startTime, note.column);
+
+            // if (columnNotes.ContainsKey(key))
+            // {
+            //     int nextNoteIndex = columnNotes.IndexOfKey(key) + 1;
+            //     if (!(nextNoteIndex == columnNotes.Count))
+            //     {
+            //         return columnNotes.GetValueAtIndex(nextNoteIndex);
+            //     }
+            // }
 
             return (0, Math.Pow(10, 9), Math.Pow(10, 9));
         }
@@ -390,12 +390,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
                 else
                 {
-                    double total = 0;
+                    double sum = 0;
                     for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
                     {
-                        total += ln_bodies[ts];
+                        sum += ln_bodies[ts];
                     }
-                    double v = 1 + lambda_2 * 0.001 * total;
+                    double v = 1 + lambda_2 * 0.001 * sum;
                     if (delta < (2 * hitLeniency / 3.0))
                     {
                         for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
@@ -478,9 +478,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 Note nextNote = findNextNoteInColumn(currentNote, note_seq_by_column);
 
                 double currentI = 0.001 * Math.Abs(currentNote.endTime - currentNote.startTime - 80.0) / hitLeniency;
-                double nextI = 0.001 * Math.Abs(nextNote.endTime - nextNote.startTime - 80.0) / hitLeniency;
+                double nextI = 0.001 * Math.Abs(nextNote.startTime - currentNote.endTime - 80.0) / hitLeniency;
 
-                headSpacingIndex[note] = 2 / (2 + Math.Exp(-5 * (currentI - 0.75))) + Math.Exp(-5 * (nextI - 0.75));
+                headSpacingIndex[note] = 2 / (2 + Math.Exp(-5 * (currentI - 0.75)) + Math.Exp(-5 * (nextI - 0.75)));
             }
 
             double[] headSpacingTimes = new double[timeSlots];
@@ -528,6 +528,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             var Pbar = pressingIntensityBar;
             var Abar = unevennessBar;
             var Rbar = releaseFactorBar;
+
 
             // clipping values <0 to 0
             for (int ts = 0; ts < timeSlots; ts++)
