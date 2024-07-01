@@ -561,7 +561,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             double milliseconds = (timeSlots * granularity) - note_seq.GetValueAtIndex(0).startTime;
 
-            starRating = starRating * (milliseconds) / (milliseconds + 2000);
+            starRating = starRating * (note_seq.Count) / (note_seq.Count + 50);
 
             return starRating * (0.88 + 0.03 * totalColumns);
         }
