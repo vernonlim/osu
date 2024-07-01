@@ -202,27 +202,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double[] sameColumnPressureBar = new double[timeSlots];
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                // honestly I don't know what this represents
-                double[] sameColumnPressure_ks_vals = new double[totalColumns];
-                double[] weights = new double[totalColumns];
-
-                // so this part of the code used an unassigned variable k, while the loop variable was i
-                // which was simply the last column of the map
-                // I fixed it
-                for (int col = 0; col < totalColumns; col++)
-                {
-                    sameColumnPressure_ks_vals[col] = sameColumnPressureBar_col_ts[col][ts];
-                    weights[col] = 1.0 / delta_col_ts[col][ts];
-                }
-
                 // sum(weight)
                 double sumWeights = 0;
                 // sum((val ** lambda_n) * weight)
                 double sumValLambdaWeight = 0;
                 for (int col = 0; col < totalColumns; col++)
                 {
-                    double val = sameColumnPressure_ks_vals[col];
-                    double weight = weights[col];
+                    double val = sameColumnPressureBar_col_ts[col][ts];
+                    double weight = 1.0 / delta_col_ts[col][ts];
 
                     sumWeights += weight;
                     sumValLambdaWeight += Math.Pow(val, pr.lambda_n) * weight;
