@@ -1,4 +1,8 @@
-/* Test skill as an attempt to port sunny's rework */
+/*
+    A port of sunny's rework
+    This is only meant for testing of values and experimentation with the formula
+    Not meant as an attempt to write usable pp calculation code
+ */
 
 using System;
 using osu.Framework.Utils;
