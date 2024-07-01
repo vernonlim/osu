@@ -85,11 +85,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         // Sorting is done in CreateDifficultyHitObjects, since the full list of hitobjects is required.
         protected override IEnumerable<DifficultyHitObject> SortObjects(IEnumerable<DifficultyHitObject> input) => input;
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) => new Skill[]
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
             // new Strain(mods, ((ManiaBeatmap)Beatmap).TotalColumns)
-            new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.HitObjects.Count, beatmap.GetLastObjectTime(), beatmap.Difficulty.OverallDifficulty)
-        };
+            // finds the endtime of the last object in the map, adjusted by clockrate
+            var lastObject = ((ManiaBeatmap)beatmap).HitObjects.MaxBy(a => a.GetEndTime());
+            double lastTime = Math.Max(lastObject?.StartTime ?? 0, lastObject?.GetEndTime() ?? 0) / clockRate;
+            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.HitObjects.Count, lastTime, beatmap.Difficulty.OverallDifficulty) };
+        }
 
         protected override Mod[] DifficultyAdjustmentMods
         {
