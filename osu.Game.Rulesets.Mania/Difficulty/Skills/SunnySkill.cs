@@ -35,7 +35,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
     public class SunnySkill : Skill
     {
         // grouping all parameters together
-        private readonly SunnyParams pr = new(4.0, 0.11, 5.0, 8, 0.1, 0.46, 2.5, 0.25, 1.2, 1.5);
+        private readonly SunnyParams pr = new(4.0, 0.11, 5.0, 8, 0.1, 0.37, 2.7, 0.27, 1.2, 1.5);
         // a value set based on map OD
         private double hitLeniency;
         private int totalColumns;
@@ -559,7 +559,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // (SR**(p_0)) / (8**p_0) * 8
             starRating = Math.Pow(starRating, pr.p_0) / Math.Pow(8, pr.p_0) * 8;
 
-            return starRating;
+            double milliseconds = (timeSlots * granularity) - note_seq.GetValueAtIndex(0).startTime;
+
+            starRating = starRating * (milliseconds) / (milliseconds + 2000);
+
+            return starRating * (0.88 + 0.03 * totalColumns);
         }
 
         // used to convert times in milliseconds into times in sizes of granularity
