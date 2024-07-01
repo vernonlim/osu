@@ -132,6 +132,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 // finding LN bodies within a certain window
                 double time = Math.Min(startTime + 80, endTime);
+
                 for (int i = Quantize(startTime); i < Quantize(time); i++)
                 {
                     ln_bodies[i] += 0.5;
@@ -146,6 +147,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         // where the actual difficulty calculation is performed (at the wrong time probably, again, abuse of lazer's code)
         public override double DifficultyValue()
         {
+            if (timeSlots == 1)
+            {
+                return 0;
+            }
+
             /*
                 Calculating sameColumnPressure (J)
             */
