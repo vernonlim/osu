@@ -484,11 +484,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             int end = 0;
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                while (start < note_seq.Count && note_seq.GetValueAtIndex(start).startTime < ts - 500)
+                while (start < note_seq.Count && Quantize(note_seq.GetValueAtIndex(start).startTime) < ts - Quantize(500))
                 {
                     start += 1;
                 }
-                while (end < note_seq.Count && note_seq.GetValueAtIndex(end).startTime < ts + 500)
+                while (end < note_seq.Count && Quantize(note_seq.GetValueAtIndex(end).startTime) < ts + Quantize(500))
                 {
                     end += 1;
                 }
@@ -556,6 +556,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 sum2 += C[ts];
             }
 
+            // Console.WriteLine($"JBAR: {Jbar.Average()}");
+            // Console.WriteLine($"XBAR: {Xbar.Average()}");
+            // Console.WriteLine($"PBAR: {Pbar.Average()}");
+            // Console.WriteLine($"ABAR: {Abar.Average()}");
+            // Console.WriteLine($"RBAR: {Rbar.Average()}");
+            // Console.WriteLine($"C: {C.Average()}");
+
             // (sum1 / sum2)**(1/lambda_n)
             double starRating = Math.Pow(sum1 / sum2, 1.0 / pr.lambda_n);
             // (SR**(p_0)) / (8**p_0) * 8
@@ -575,21 +582,21 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             double[] listBar = new double[timeSlots];
             double windowSum = 0;
-            for (int i = 0; i < Math.Min(500, timeSlots); i++)
+            for (int i = 0; i < Math.Min(Quantize(500), timeSlots); i++)
             {
                 windowSum += list[i];
             }
 
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                listBar[ts] = 0.001 * windowSum;
-                if (ts + 500 < timeSlots)
+                listBar[ts] = (0.001 * granularity) * windowSum;
+                if (ts + Quantize(500) < timeSlots)
                 {
-                    windowSum += list[ts + 500];
+                    windowSum += list[ts + Quantize(500)];
                 }
-                if (ts - 500 >= 0)
+                if (ts - Quantize(500) >= 0)
                 {
-                    windowSum -= list[ts - 500];
+                    windowSum -= list[ts - Quantize(500)];
                 }
             }
 
@@ -601,23 +608,23 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             double[] listBar = new double[timeSlots];
             double windowSum = 0;
-            for (int i = 0; i < Math.Min(500, timeSlots); i++)
+            for (int i = 0; i < Math.Min(Quantize(500), timeSlots); i++)
             {
                 windowSum += list[i];
             }
-            double windowLen = Math.Min(500, timeSlots);
+            double windowLen = Math.Min(Quantize(500), timeSlots);
 
             for (int ts = 0; ts < timeSlots; ts++)
             {
                 listBar[ts] = windowSum / windowLen;
-                if (ts + 500 < timeSlots)
+                if (ts + Quantize(500) < timeSlots)
                 {
-                    windowSum += list[ts + 500];
+                    windowSum += list[ts + Quantize(500)];
                     windowLen += 1;
                 }
-                if (ts - 500 >= 0)
+                if (ts - Quantize(500) >= 0)
                 {
-                    windowSum -= list[ts - 500];
+                    windowSum -= list[ts - Quantize(500)];
                     windowLen -= 1;
                 }
             }
