@@ -60,7 +60,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             : base(mods)
         {
             // setting hit leniency based on OD
-            hitLeniency = 0.3 * PowerA((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
+            hitLeniency = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
 
             this.totalColumns = totalColumns;
 
@@ -174,7 +174,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 delta_col_ts[col] = new double[timeSlots];
                 for (int ts = 0; ts < timeSlots; ts++)
                 {
-                    delta_col_ts[col][ts] = PowerA(10, 9);
+                    delta_col_ts[col][ts] = Math.Pow(10, 9);
                 }
             }
 
@@ -193,7 +193,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     Note current = note_seq_by_column[col].GetValueAtIndex(note);
 
                     double delta = 0.001 * (next.startTime - current.startTime);
-                    double val = PowerA(delta, -1) * PowerA(delta + pr.lambda_1 * PowerA(hitLeniency, 1.0 / 4.0), -1.0);
+                    double val = Math.Pow(delta, -1) * Math.Pow(delta + pr.lambda_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
 
                     // the variables created earlier are filled with delta/val
                     for (int ts = current.startTime; ts < next.startTime; ts++)
@@ -231,13 +231,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     double weight = 1.0 / delta_col_ts[col][ts];
 
                     sumWeights += weight;
-                    sumValLambdaWeight += PowerA(val, pr.lambda_n) * weight;
+                    sumValLambdaWeight += Math.Pow(val, pr.lambda_n) * weight;
                 }
 
                 // sumValLambdaWeight / max(10**(-9), sum(weights))
-                double firstPart = sumValLambdaWeight / Math.Max(PowerA(10, -9), sumWeights);
+                double firstPart = sumValLambdaWeight / Math.Max(Math.Pow(10, -9), sumWeights);
 
-                double weightedAverage = PowerA(
+                double weightedAverage = Math.Pow(
                     firstPart,
                     1.0 / pr.lambda_n
                 );
@@ -261,10 +261,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             //         double weight = 1.0 / delta_col_ts[col][ts];
 
             //         sumWeights += weight;
-            //         sumValLambdaWeight += PowerA(val, pr.lambda_n) * weight;
+            //         sumValLambdaWeight += Math.Pow(val, pr.lambda_n) * weight;
             //     }
-            //     double firstPart = sumValLambdaWeight / Math.Max(PowerA(10, -9), sumWeights);
-            //     double weightedAverage = PowerA(firstPart, 1.0 / pr.lambda_n);
+            //     double firstPart = sumValLambdaWeight / Math.Max(Math.Pow(10, -9), sumWeights);
+            //     double weightedAverage = Math.Pow(firstPart, 1.0 / pr.lambda_n);
             //     sameColumnPressure_alt[ts] = weightedAverage;
             // }
 
@@ -325,7 +325,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     Note before = notes_in_pair.GetValueAtIndex(note - 1);
 
                     double delta = 0.001 * (current.startTime - before.startTime);
-                    double val = 0.1 * PowerA(Math.Max(hitLeniency, delta), -2);
+                    double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
                     for (int ts = current.startTime; ts < after.startTime; ts++)
                     {
                         crossColumnPressure_col_ts[col][ts] = val;
@@ -388,10 +388,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 Note current = note_seq.GetValueAtIndex(note);
 
                 double delta = 0.001 * (after.startTime - current.startTime);
-                if (delta < PowerA(10, -9))
+                if (delta < Math.Pow(10, -9))
                 {
                     // (0.02 * ((4 / x) - lambda_3)**(1/4)
-                    pressingIntensity[current.startTime] += PowerA(0.02 * ((4 / hitLeniency) - pr.lambda_3), 1.0 / 4.0);
+                    pressingIntensity[current.startTime] += Math.Pow(0.02 * ((4 / hitLeniency) - pr.lambda_3), 1.0 / 4.0);
                 }
                 else
                 {
@@ -409,11 +409,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                             // these formulas were a pain to read
                             // delta**(-1) * (0.08*(delta)**(-1) * (1 - lambda_3 * x**(-1)*(delta - x/2)**2))**(1/4)*b(delta)*v
                             pressingIntensity[ts] =
-                                PowerA(delta, -1.0) *
-                                    PowerA(0.08 *
-                                        PowerA(delta, -1.0) * (1 - pr.lambda_3 *
-                                            PowerA(hitLeniency, -1.0) *
-                                            PowerA(delta - hitLeniency / 2.0, 2.0)
+                                Math.Pow(delta, -1.0) *
+                                    Math.Pow(0.08 *
+                                        Math.Pow(delta, -1.0) * (1 - pr.lambda_3 *
+                                            Math.Pow(hitLeniency, -1.0) *
+                                            Math.Pow(delta - hitLeniency / 2.0, 2.0)
                                         ), (1.0 / 4.0)
                                     ) * streamBooster(delta) * v;
                         }
@@ -424,11 +424,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                         {
                             // delta**(-1) * (0.08*(delta)**(-1) * (1 - lambda_3*x**(-1)*(x/6)**2))**(1/4)*b(delta)*v
                             pressingIntensity[ts] =
-                                PowerA(delta, -1.0) *
-                                    PowerA(0.08 *
-                                        PowerA(delta, -1.0) * (1 - pr.lambda_3 *
-                                            PowerA(hitLeniency, -1.0) *
-                                            PowerA(hitLeniency / 6.0, 2.0)
+                                Math.Pow(delta, -1.0) *
+                                    Math.Pow(0.08 *
+                                        Math.Pow(delta, -1.0) * (1 - pr.lambda_3 *
+                                            Math.Pow(hitLeniency, -1.0) *
+                                            Math.Pow(hitLeniency / 6.0, 2.0)
                                         ), (1.0 / 4.0)
                                     ) * streamBooster(delta) * v;
                         }
@@ -545,7 +545,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 for (int ts = currentNote.endTime; ts < nextNote.endTime; ts++)
                 {
                     // headSpacingTimes[ts] = 1 + headSpacingIndex[note];
-                    releaseFactor[ts] = 0.08 * PowerA(delta_r, -1.0 / 2.0) * PowerA(hitLeniency, -1.0) * (1 + pr.lambda_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
+                    releaseFactor[ts] = 0.08 * Math.Pow(delta_r, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + pr.lambda_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
                 }
             }
 
@@ -624,7 +624,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double[] S = new double[timeSlots];
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                S[ts] = PowerA(pr.w_0 * PowerA(PowerA(Abar[ts], 1.0 / 2.0) * Jbar[ts], 1.5) + (1 - pr.w_0) * PowerA(PowerA(Abar[ts], 2.0 / 3.0) * (Pbar[ts] + Rbar[ts]), 1.5), 2.0 / 3.0);
+                S[ts] = Math.Pow(pr.w_0 * Math.Pow(Math.Pow(Abar[ts], 1.0 / 2.0) * Jbar[ts], 1.5) + (1 - pr.w_0) * Math.Pow(Math.Pow(Abar[ts], 2.0 / 3.0) * (Pbar[ts] + Rbar[ts]), 1.5), 2.0 / 3.0);
             }
 
             watch.Stop();
@@ -646,7 +646,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double[] D = new double[timeSlots];
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                D[ts] = pr.w_1 * PowerA(S[ts], 1.0 / 2.0) * PowerA(T[ts], pr.p_1) + S[ts] * pr.w_2;
+                D[ts] = pr.w_1 * Math.Pow(S[ts], 1.0 / 2.0) * Math.Pow(T[ts], pr.p_1) + S[ts] * pr.w_2;
             }
 
             watch.Stop();
@@ -659,7 +659,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double sum2 = 0;
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                sum1 += PowerA(D[ts], pr.lambda_n) * C[ts];
+                sum1 += Math.Pow(D[ts], pr.lambda_n) * C[ts];
 
                 sum2 += C[ts];
             }
@@ -672,14 +672,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // Console.WriteLine($"C: {C.Average()}");
 
             // (sum1 / sum2)**(1/lambda_n)
-            double starRating = PowerA(sum1 / sum2, 1.0 / pr.lambda_n);
+            double starRating = Math.Pow(sum1 / sum2, 1.0 / pr.lambda_n);
 
             watch.Stop();
             Console.WriteLine($"Sum + initial SR calculation: {watch.ElapsedMilliseconds}");
             watch.Restart();
 
             // (SR**(p_0)) / (8**p_0) * 8
-            starRating = PowerA(starRating, pr.p_0) / PowerA(8, pr.p_0) * 8;
+            starRating = Math.Pow(starRating, pr.p_0) / Math.Pow(8, pr.p_0) * 8;
 
             double milliseconds = timeSlots - note_seq.GetValueAtIndex(0).startTime;
 
@@ -775,7 +775,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
             }
 
-            return (0, (int)PowerA(10, 9), (int)PowerA(10, 9));
+            return (0, (int)Math.Pow(10, 9), (int)Math.Pow(10, 9));
         }
 
         public double streamBooster(double delta)
@@ -783,7 +783,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double val = 15.0 / delta;
             if (val > 180 && val < 340)
             {
-                return 1 + 0.2 * PowerA(val - 180, 3) * PowerA(val - 340, 6) * PowerA(10, -18);
+                return 1 + 0.2 * Math.Pow(val - 180, 3) * Math.Pow(val - 340, 6) * Math.Pow(10, -18);
             }
 
             return 1;
