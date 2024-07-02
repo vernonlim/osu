@@ -6,6 +6,7 @@
 
 using System;
 using osu.Framework.Utils;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -152,6 +153,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 return 0;
             }
 
+            var watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
             /*
                 Calculating sameColumnPressure (J)
             */
@@ -226,7 +229,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 sameColumnPressureBar[ts] = weightedAverage;
             }
 
+            watch.Stop();
+            Console.WriteLine($"J: {watch.ElapsedMilliseconds}");
 
+
+            watch.Restart();
             /*
                 calculating crossColumnPressure (X)
             */
@@ -315,6 +322,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // smooths it out
             double[] crossColumnPressureBar = Smooth(crossColumnPressure);
 
+            watch.Stop();
+            Console.WriteLine($"X: {watch.ElapsedMilliseconds}");
+
+
+            watch.Restart();
+
 
             /*
                 calculates pressingIntensity (P)
@@ -377,6 +390,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             }
 
             double[] pressingIntensityBar = Smooth(pressingIntensity);
+            watch.Stop();
+            Console.WriteLine($"P: {watch.ElapsedMilliseconds}");
+
+
+            watch.Restart();
 
 
             /*
@@ -423,6 +441,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             }
 
             double[] unevennessBar = Smooth2(unevenness);
+            watch.Stop();
+            Console.WriteLine($"A: {watch.ElapsedMilliseconds}");
+
+
+            watch.Restart();
 
 
             /*
@@ -461,6 +484,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             double[] releaseFactorBar = Smooth(releaseFactor);
 
+            watch.Stop();
+            Console.WriteLine($"R: {watch.ElapsedMilliseconds}");
+
+
+            watch.Restart();
 
             /*
                 calculating C
@@ -481,6 +509,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
                 C[ts] = end - start;
             }
+
+            watch.Stop();
+            Console.WriteLine($"C: {watch.ElapsedMilliseconds}");
+
+
+            watch.Restart();
 
             /*
                 SR calculation
@@ -558,6 +592,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double milliseconds = timeSlots - note_seq.GetValueAtIndex(0).startTime;
 
             starRating = starRating * (note_seq.Count + 0.5 * tail_seq.Count) / (note_seq.Count + 0.5 * tail_seq.Count + 60);
+
+            watch.Stop();
+            Console.WriteLine($"SR: {watch.ElapsedMilliseconds}");
 
             return starRating * (0.88 + 0.03 * totalColumns);
         }
