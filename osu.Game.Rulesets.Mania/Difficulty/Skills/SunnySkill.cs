@@ -13,7 +13,7 @@ using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 
-using Note = (int column, double startTime, double endTime);
+using Note = (int column, int startTime, int endTime);
 
 // a tuple of Time, then Column, used for sorting
 using TimeColumn = (double time, int column);
@@ -50,12 +50,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private SortedList<TimeColumn, Note>[] ln_seq_by_column;
         // the number of LN bodies present at each point in time
         private double[] ln_bodies;
-        // the 'granularity' of the time precision.
-        // set to 1, this means that notes are processed in 1ms windows
-        // set to 20, that would mean that notes would be processed in 20ms windows
-        private readonly double granularity = 1;
         // the number of points in time that are being processed
-        // equal to total time divided by granularity
+        // equal to total time divided by
         private readonly int timeSlots;
 
         // instance of this class created at the beginning for each map processed
@@ -86,7 +82,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             // the number of points in time being processed
             // 1 is added due to 0ms being a valid point (perhaps? I just added this to avoid an out of bounds error)
-            timeSlots = (int)Math.Ceiling(lastObjectTime / granularity) + 1;
+            timeSlots = (int)lastObjectTime + 1;
 
             ln_bodies = new double[timeSlots];
         }
@@ -101,8 +97,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // the current hit object
             var maniaCurrent = (ManiaDifficultyHitObject)current;
 
-            double startTime = maniaCurrent.StartTime;
-            double endTime = maniaCurrent.EndTime;
+            int startTime = (int)maniaCurrent.StartTime;
+            int endTime = (int)maniaCurrent.EndTime;
 
             // regular notes have an endTime identical to their startTime
             if (startTime == endTime)
@@ -135,15 +131,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 ln_seq_by_column[column].Add(startTimeColumn, note);
 
                 // finding LN bodies within a certain window
-                double time = Math.Min(startTime + 80, endTime);
+                int time = Math.Min(startTime + 80, endTime);
 
-                for (int i = Quantize(startTime); i < Quantize(time); i++)
+                for (int i = startTime; i < time; i++)
                 {
                     ln_bodies[i] += 0.5;
                 }
-                for (int i = Quantize(time); i < Quantize(endTime); i++)
+                for (int i = time; i < endTime; i++)
                 {
-                    ln_bodies[i] += 1;
+                    ln_bodies[i] += 1.0;
                 }
             }
         }
@@ -188,7 +184,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     double val = Math.Pow(delta, -1) * Math.Pow(delta + pr.lambda_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
 
                     // the variables created earlier are filled with delta/val
-                    for (int ts = Quantize(current.startTime); ts < Quantize(next.startTime); ts++)
+                    for (int ts = current.startTime; ts < next.startTime; ts++)
                     {
                         delta_col_ts[col][ts] = delta;
                         sameColumnPressure_col_ts[col][ts] = val;
@@ -281,7 +277,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                     double delta = 0.001 * (current.startTime - before.startTime);
                     double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
-                    for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
+                    for (int ts = current.startTime; ts < after.startTime; ts++)
                     {
                         crossColumnPressure_col_ts[col][ts] = val;
                     }
@@ -335,12 +331,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 if (delta < Math.Pow(10, -9))
                 {
                     // (0.02 * ((4 / x) - lambda_3)**(1/4)
-                    pressingIntensity[Quantize(current.startTime)] += Math.Pow(0.02 * ((4 / hitLeniency) - pr.lambda_3), 1.0 / 4.0);
+                    pressingIntensity[current.startTime] += Math.Pow(0.02 * ((4 / hitLeniency) - pr.lambda_3), 1.0 / 4.0);
                 }
                 else
                 {
                     double lnCount = 0;
-                    for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
+                    for (int ts = (int)current.startTime; ts < (int)after.startTime; ts++)
                     {
                         lnCount += ln_bodies[ts];
                     }
@@ -348,7 +344,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     double v = 1 + pr.lambda_2 * 0.001 * lnCount;
                     if (delta < (2 * hitLeniency / 3.0))
                     {
-                        for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
+                        for (int ts = current.startTime; ts < after.startTime; ts++)
                         {
                             // these formulas were a pain to read
                             // delta**(-1) * (0.08*(delta)**(-1) * (1 - lambda_3 * x**(-1)*(delta - x/2)**2))**(1/4)*b(delta)*v
@@ -364,7 +360,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                     }
                     else
                     {
-                        for (int ts = Quantize(current.startTime); ts < Quantize(after.startTime); ts++)
+                        for (int ts = current.startTime; ts < after.startTime; ts++)
                         {
                             // delta**(-1) * (0.08*(delta)**(-1) * (1 - lambda_3*x**(-1)*(x/6)**2))**(1/4)*b(delta)*v
                             pressingIntensity[ts] =
@@ -456,7 +452,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 Note nextNote = tail_seq.GetValueAtIndex(note + 1);
 
                 double delta_r = 0.001 * (nextNote.endTime - currentNote.endTime);
-                for (int ts = Quantize(currentNote.endTime); ts < Quantize(nextNote.endTime); ts++)
+                for (int ts = currentNote.endTime; ts < nextNote.endTime; ts++)
                 {
                     // headSpacingTimes[ts] = 1 + headSpacingIndex[note];
                     releaseFactor[ts] = 0.08 * Math.Pow(delta_r, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + pr.lambda_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
@@ -475,11 +471,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             int end = 0;
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                while (start < note_seq.Count && Quantize(note_seq.GetValueAtIndex(start).startTime) < ts - Quantize(500))
+                while (start < note_seq.Count && note_seq.GetValueAtIndex(start).startTime < ts - 500)
                 {
                     start += 1;
                 }
-                while (end < note_seq.Count && Quantize(note_seq.GetValueAtIndex(end).startTime) < ts + Quantize(500))
+                while (end < note_seq.Count && note_seq.GetValueAtIndex(end).startTime < ts + 500)
                 {
                     end += 1;
                 }
@@ -559,17 +555,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // (SR**(p_0)) / (8**p_0) * 8
             starRating = Math.Pow(starRating, pr.p_0) / Math.Pow(8, pr.p_0) * 8;
 
-            double milliseconds = (timeSlots * granularity) - note_seq.GetValueAtIndex(0).startTime;
+            double milliseconds = timeSlots - note_seq.GetValueAtIndex(0).startTime;
 
-            starRating = starRating * (note_seq.Count) / (note_seq.Count + 50);
+            starRating = starRating * (note_seq.Count + 0.5 * tail_seq.Count) / (note_seq.Count + 0.5 * tail_seq.Count + 60);
 
             return starRating * (0.88 + 0.03 * totalColumns);
-        }
-
-        // used to convert times in milliseconds into times in sizes of granularity
-        private int Quantize(double time)
-        {
-            return (int) Math.Floor(time / granularity);
         }
 
         // smoothing function 1
@@ -577,21 +567,21 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             double[] listBar = new double[timeSlots];
             double windowSum = 0;
-            for (int i = 0; i < Math.Min(Quantize(500), timeSlots); i++)
+            for (int i = 0; i < Math.Min(500, timeSlots); i++)
             {
                 windowSum += list[i];
             }
 
             for (int ts = 0; ts < timeSlots; ts++)
             {
-                listBar[ts] = (0.001 * granularity) * windowSum;
-                if (ts + Quantize(500) < timeSlots)
+                listBar[ts] = 0.001 * windowSum;
+                if (ts + 500 < timeSlots)
                 {
-                    windowSum += list[ts + Quantize(500)];
+                    windowSum += list[ts + 500];
                 }
-                if (ts - Quantize(500) >= 0)
+                if (ts - 500 >= 0)
                 {
-                    windowSum -= list[ts - Quantize(500)];
+                    windowSum -= list[ts - 500];
                 }
             }
 
@@ -603,23 +593,23 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             double[] listBar = new double[timeSlots];
             double windowSum = 0;
-            for (int i = 0; i < Math.Min(Quantize(500), timeSlots); i++)
+            for (int i = 0; i < Math.Min(500, timeSlots); i++)
             {
                 windowSum += list[i];
             }
-            double windowLen = Math.Min(Quantize(500), timeSlots);
+            double windowLen = Math.Min(500, timeSlots);
 
             for (int ts = 0; ts < timeSlots; ts++)
             {
                 listBar[ts] = windowSum / windowLen;
-                if (ts + Quantize(500) < timeSlots)
+                if (ts + 500 < timeSlots)
                 {
-                    windowSum += list[ts + Quantize(500)];
+                    windowSum += list[ts + 500];
                     windowLen += 1;
                 }
-                if (ts - Quantize(500) >= 0)
+                if (ts - 500 >= 0)
                 {
-                    windowSum -= list[ts - Quantize(500)];
+                    windowSum -= list[ts - 500];
                     windowLen -= 1;
                 }
             }
@@ -651,7 +641,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
             }
 
-            return (0, Math.Pow(10, 9), Math.Pow(10, 9));
+            return (0, (int)Math.Pow(10, 9), (int)Math.Pow(10, 9));
         }
 
         public double streamBooster(double delta)
@@ -666,3 +656,4 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         }
     }
 }
+
