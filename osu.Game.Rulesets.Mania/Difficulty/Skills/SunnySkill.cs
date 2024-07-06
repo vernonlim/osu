@@ -172,9 +172,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 sameColumnPressure_col_ts[col] = new double[timeSlots];
                 sameColumnPressureBar_col_ts[col] = new double[timeSlots];
                 delta_col_ts[col] = new double[timeSlots];
+
                 for (int ts = 0; ts < timeSlots; ts++)
                 {
-                    delta_col_ts[col][ts] = Math.Pow(10, 9);
+                    delta_col_ts[col][ts] = 1e9;
                 }
             }
 
@@ -235,7 +236,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 }
 
                 // sumValLambdaWeight / max(10**(-9), sum(weights))
-                double firstPart = sumValLambdaWeight / Math.Max(Math.Pow(10, -9), sumWeights);
+                double firstPart = sumValLambdaWeight / Math.Max(1e-9, sumWeights);
 
                 double weightedAverage = Math.Pow(
                     firstPart,
@@ -388,7 +389,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 Note current = note_seq.GetValueAtIndex(note);
 
                 double delta = 0.001 * (after.startTime - current.startTime);
-                if (delta < Math.Pow(10, -9))
+                if (delta < 1e-9)
                 {
                     // (0.02 * ((4 / x) - lambda_3)**(1/4)
                     pressingIntensity[current.startTime] += Math.Pow(0.02 * ((4 / hitLeniency) - pr.lambda_3), 1.0 / 4.0);
