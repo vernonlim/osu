@@ -112,11 +112,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 return Math.Pow(0.02 * (4 / hitLeniency - lambda_3), 1 / 4.0);
 
             // TODO: wtf is this
-            double lnCount = 0;
-            for (int ms = currentObject.StartTime; ms < nextObj.StartTime; ms++)
-                lnCount += countLNBodiesAt(ms, currentObjects);
+            // double lnCount = 0;
+            // for (int ms = currentObject.StartTime; ms < nextObj.StartTime; ms++)
+            //     lnCount += countLNBodiesAt(ms, currentObjects);
 
-            double v = 1 + lambda_2 * 0.001 * lnCount;
+            // double v = 1 + lambda_2 * 0.001 * lnCount;
+
+            double lnAmountSeconds = calculateLNAmount(currentObject.StartTime, nextObj.StartTime, currentObjects);
+            double v = 1 + lambda_2 * lnAmountSeconds;
 
             // There has to be a better way to do this
             if (deltaTime < 2 * hitLeniency / 3.0)
@@ -216,6 +219,41 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             }
 
             return count;
+        }
+
+        private double calculateLNAmount(double startTime, double endTime, ManiaDifficultyHitObject[] currentObjects)
+        {
+            // The size of the range of time being considered
+            double timeOccupied = endTime - startTime;
+            double lnAmount = 0;
+
+            for (int column = 0; column < currentObjects.Length; column++)
+            {
+                int currentNoteStartTime = currentObjects[column].StartTime;
+                int currentNoteEndTime = currentObjects[column].EndTime ?? -1;
+
+                // If the current note's end time is within the time range
+                // i.e if the note is an LN and it's within the time range
+                if (currentNoteEndTime > startTime)
+                {
+                    // The proportion of time the "full LN" takes up
+                    double timeTakenFullLN = Math.Min(currentNoteEndTime, endTime) - Math.Max(currentNoteStartTime + 80, startTime);
+                    double proportionFullLN = timeTakenFullLN / timeOccupied;
+
+                    // The proportion of time the "partial LN" takes up
+                    double timeTakenPartialLN = Math.Max(currentNoteStartTime + 80, startTime) - Math.Max(currentNoteStartTime, startTime);
+                    double proportionPartialLN = timeTakenPartialLN / timeOccupied;
+
+                    double fullLNScalingFactor = 1;
+                    double partialLNScalingFactor = 0.5;
+
+                    // Converts the unit to *seconds
+                    lnAmount += fullLNScalingFactor * proportionFullLN * (timeOccupied / 1000);
+                    lnAmount += partialLNScalingFactor * proportionPartialLN * (timeOccupied / 1000);
+                }
+            }
+
+            return lnAmount;
         }
     }
 }
