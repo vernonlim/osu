@@ -236,13 +236,28 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 // i.e if the note is an LN and it's within the time range
                 if (currentNoteEndTime > startTime)
                 {
-                    // The proportion of time the "full LN" takes up
-                    double timeTakenFullLN = Math.Min(currentNoteEndTime, endTime) - Math.Max(currentNoteStartTime + 80, startTime);
-                    double proportionFullLN = timeTakenFullLN / timeOccupied;
+                    // All values cropped to within range
+                    // The LN end or time range end
+                    double lnEnd = Math.Min(currentNoteEndTime, endTime);
+                    // 80ms after LN start or time range start
+                    double fullLNStart = Math.Max(currentNoteStartTime + 80, startTime);
+                    // LN start or time range start
+                    double partialLNStart = Math.Max(currentNoteStartTime, startTime);
+                    // 80ms after LN start or LN end (if shorter than 80ms)
+                    double partialLNEnd = Math.Min(currentNoteStartTime + 80, lnEnd);
 
-                    // The proportion of time the "partial LN" takes up
-                    double timeTakenPartialLN = Math.Max(currentNoteStartTime + 80, startTime) - Math.Max(currentNoteStartTime, startTime);
-                    double proportionPartialLN = timeTakenPartialLN / timeOccupied;
+                    // Calculating the proportion of time the "full LN" takes up
+                    double timeTakenFullLN = lnEnd - fullLNStart;
+                    // If the above is negative, it means the 'full LN' starts after the LN already ends
+                    // Meaning the proportion is 0
+                    double proportionFullLN = Math.Max(timeTakenFullLN / timeOccupied, 0);
+
+                    // Calculating the proportion of time the "partial LN" takes up
+                    double timeTakenPartialLN = partialLNEnd - partialLNStart;
+                    // If the above is negative, it either means that the LN is entirely outside of the time range
+                    // or that all of the LN within the time range is 'full'
+                    // Hence a the proportion would be 0
+                    double proportionPartialLN = Math.Max(timeTakenPartialLN / timeOccupied, 0);
 
                     double fullLNScalingFactor = 1;
                     double partialLNScalingFactor = 0.5;
