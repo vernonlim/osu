@@ -22,7 +22,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
         private const double p_1 = 1.5;
 
         // Weights for each column (plus the extra one)
-        private double[][] crossMatrix =
+        private readonly double[][] crossMatrix =
         [
             [-1],
             [0.075, 0.075],
@@ -66,8 +66,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
         public double EvaluateCrossColumnIntensityAt(ManiaDifficultyHitObject[] currentObjects)
         {
-            ManiaDifficultyHitObject[] nextObjects = currentObjects.Select(x => (ManiaDifficultyHitObject)x.Next(0)).ToArray();
-
             int totalColumns = currentObjects.Length;
 
             double totalIntensity = 0;
@@ -102,23 +100,97 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             return totalIntensity;
         }
 
-        // Use the single list of hit objects for this one.
-        public double EvaluatePressingIntensityAt(ManiaDifficultyHitObject currentObject)
+        public double EvaluatePressingIntensityAt(ManiaDifficultyHitObject currentObject, ManiaDifficultyHitObject[] currentObjects)
         {
+            ManiaDifficultyHitObject nextObj = (ManiaDifficultyHitObject)currentObject.Next(0);
 
+            double hitLeniency = 0.3 * Math.Sqrt(currentObject.GreatHitWindow / 500);
+
+            double deltaTime = 0.001 * (nextObj.StartTime - currentObject.StartTime);
+
+            if (deltaTime < 1e-9)
+                return Math.Pow(0.02 * (4 / hitLeniency - lambda_3), 1 / 4.0);
+
+            // TODO: wtf is this
+            double lnCount = 0;
+            for (int ms = currentObject.StartTime; ms < nextObj.StartTime; ms++)
+                lnCount += countLNBodiesAt(ms, currentObjects);
+
+            double v = 1 + lambda_2 * 0.001 * lnCount;
+
+            // There has to be a better way to do this
+            if (deltaTime < 2 * hitLeniency / 3.0)
+            {
+                return (1 / deltaTime) * Math.Pow(0.08 * (1 / deltaTime) * (1 - lambda_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0) * streamBooster() * v;
+            }
+
+            return (1 / deltaTime) * Math.Pow(0.08 * (1 / deltaTime) * (1 - lambda_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 6, 2)), 1 / 4.0) * streamBooster() * v;
+
+            // TODO: clean up this local function
+            double streamBooster()
+            {
+                double val = 15.0 / deltaTime;
+
+                if (val > 180 && val < 340)
+                {
+                    return 1 + 0.2 * Math.Pow(val - 180, 3) * Math.Pow(val - 340, 6) * Math.Pow(10, -18);
+                }
+
+                return 1;
+            }
         }
 
         public double EvaluateUnevennessIntensityAt(ManiaDifficultyHitObject[] currentObjects)
         {
+            ManiaDifficultyHitObject[] nextObjects = currentObjects.Select(x => (ManiaDifficultyHitObject)x.Next(0)).ToArray();
 
+            int totalColumns = currentObjects.Length;
+
+            double unevenness = 1;
+
+            for (int column = 0; column < totalColumns - 1; column++)
+            {
+                double curColumnDeltaTime = 0.001 * (nextObjects[column].StartTime - currentObjects[column].StartTime);
+                double adjColumnDeltaTime = 0.001 * (nextObjects[column + 1].StartTime - currentObjects[column + 1].StartTime);
+                double dynamicKeyStroke = Math.Abs(curColumnDeltaTime - adjColumnDeltaTime) + Math.Max(0, Math.Max(adjColumnDeltaTime, curColumnDeltaTime - 0.3));
+
+                if (dynamicKeyStroke < 0.02)
+                    unevenness *= Math.Min(0.75 + 0.5 * Math.Max(curColumnDeltaTime, adjColumnDeltaTime), 1);
+                else if (dynamicKeyStroke < 0.07)
+                    unevenness *= Math.Min(0.65 + 5 * dynamicKeyStroke + 0.5 * Math.Max(curColumnDeltaTime, adjColumnDeltaTime), 1);
+            }
+
+            return unevenness;
         }
 
-        public double EvaluateReleaseFactorAt(int millisecond, ManiaDifficultyHitObject[] currentObjects)
+        public double EvaluateReleaseFactorAt(ManiaDifficultyHitObject currentObject, ManiaDifficultyHitObject[] currentObjects)
         {
+            ManiaDifficultyHitObject? currLn = currentObject.PrevLongNote;
+            ManiaDifficultyHitObject? nextObjInColumn = (ManiaDifficultyHitObject?)currLn?.Next(0);
 
+            ManiaDifficultyHitObject? nextLn = currLn?.NextLongNote;
+            ManiaDifficultyHitObject? nextNoteAfterLn = (ManiaDifficultyHitObject?)nextLn?.Next(0);
+
+            double hitLeniency = 0.3 * Math.Sqrt(currentObject.GreatHitWindow / 500);
+
+            if (currLn is null || nextObjInColumn is null || nextLn is null || nextNoteAfterLn is null)
+                return 0;
+
+            double currI = 0.001 * Math.Abs(currLn.EndTime!.Value - currLn.StartTime - 80.0) / hitLeniency;
+            double nextI = 0.001 * Math.Abs(nextObjInColumn.StartTime - currLn.EndTime.Value - 80.0) / hitLeniency;
+            double currHeadSpacingIndex = 2 / (2 + Math.Exp(-5 * (currI - 0.75)) + Math.Exp(-5 * (nextI - 0.75)));
+
+            double currJ = 0.001 * Math.Abs(nextLn.EndTime!.Value - nextLn.StartTime - 80.0) / hitLeniency;
+            double nextJ = 0.001 * Math.Abs(nextNoteAfterLn.StartTime - nextLn.EndTime.Value - 80.0) / hitLeniency;
+            double nextHeadSpacingIndex = 2 / (2 + Math.Exp(-5 * (currJ - 0.75)) + Math.Exp(-5 * (nextJ - 0.75)));
+
+            double deltaR = 0.001 * (nextLn.EndTime.Value - currLn.EndTime.Value);
+
+            return 0.08 * (1 / Math.Sqrt(deltaR)) * (1 / hitLeniency) * (1 + lambda_4 * (currHeadSpacingIndex + nextHeadSpacingIndex));
         }
 
-        private double countHeldBodiesAt(int millisecond, ManiaDifficultyHitObject[] currentObjects)
+        // ReSharper disable once InconsistentNaming
+        private double countLNBodiesAt(int millisecond, ManiaDifficultyHitObject[] currentObjects)
         {
             double count = 0;
 

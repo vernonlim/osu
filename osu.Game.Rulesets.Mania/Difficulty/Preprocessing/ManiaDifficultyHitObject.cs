@@ -22,10 +22,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
         public double GreatHitWindow;
 
-        // Closest in time next and previous objects in either the current or one-over left column.
+        // Closest in time previous object in either the current or one-over left column.
         // Used for the cross column intensity calculation.
-        public ManiaDifficultyHitObject? CrossColumnNextObject;
         public ManiaDifficultyHitObject? CrossColumnPreviousObject;
+
+        // Previous and next long notes relative to the current object.
+        // Prev can be the current note.
+        public ManiaDifficultyHitObject? PrevLongNote;
+        public ManiaDifficultyHitObject? NextLongNote;
 
         public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
@@ -39,10 +43,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
             List<DifficultyHitObject> crossColumnObjects = objects.Where(x => ((ManiaDifficultyHitObject)x).BaseObject.Column == Column || ((ManiaDifficultyHitObject)x).BaseObject.Column == Column - 1).ToList();
             int crossColumnIndex = crossColumnObjects.FindIndex(x => x == objects[index]);
 
-            if (crossColumnIndex + 1 < crossColumnObjects.Count)
-                CrossColumnNextObject = (ManiaDifficultyHitObject)crossColumnObjects[crossColumnIndex + 1];
             if (0 < crossColumnIndex)
                 CrossColumnPreviousObject = (ManiaDifficultyHitObject)crossColumnObjects[crossColumnIndex - 1];
+
+            PrevLongNote = (ManiaDifficultyHitObject?)objects[..index].LastOrDefault(x => x.BaseObject is HoldNote);
+            NextLongNote = (ManiaDifficultyHitObject?)objects[(index + 1)..].FirstOrDefault(x => x.BaseObject is HoldNote);
         }
     }
 }
