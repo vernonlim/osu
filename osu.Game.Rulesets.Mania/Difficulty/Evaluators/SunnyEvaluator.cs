@@ -263,12 +263,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     double partialLNScalingFactor = 0.5;
 
                     // Converts the unit to *seconds
-                    lnAmount += fullLNScalingFactor * proportionFullLN * (timeOccupied / 1000);
-                    lnAmount += partialLNScalingFactor * proportionPartialLN * (timeOccupied / 1000);
+                    lnAmount += fullLNScalingFactor * proportionFullLN * timeOccupied;
+                    lnAmount += partialLNScalingFactor * proportionPartialLN * timeOccupied;
                 }
             }
 
-            return lnAmount;
+            return lnAmount / 1000;
         }
     }
 }
