@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mania.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Utils;
@@ -13,10 +12,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class PressingIntensity
     {
-        public static double[] EvaluatePressingIntensity(List<ManiaDifficultyHitObject> noteList, int totalColumns)
+        public static double[] EvaluatePressingIntensity(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
         {
-            int mapLength = (int)noteList.Last().EndTime + 1;
-
             double[] pressingIntensity = new double[mapLength];
 
             ManiaDifficultyHitObject? prev = null;
@@ -74,6 +71,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
         private static double streamBooster(double delta)
         {
             double val = 15.0 / delta;
+
             if (val > 180 && val < 340)
             {
                 return 1 + 0.2 * Math.Pow(val - 180, 3) * Math.Pow(val - 340, 6) * Math.Pow(10, -18);
