@@ -13,10 +13,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class ReleaseFactor
     {
-        public static double[] EvaluateReleaseFactor(List<ManiaDifficultyHitObject> noteList, int totalColumns)
+        public static double[] EvaluateReleaseFactor(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
         {
-            int mapLength = (int)noteList.Last().EndTime + 1;
-
             List<ManiaDifficultyHitObject> longNoteList = noteList.Where(obj => obj.BaseObject is HoldNote).ToList();
 
             // some value calculated from LN spacing within the same column
