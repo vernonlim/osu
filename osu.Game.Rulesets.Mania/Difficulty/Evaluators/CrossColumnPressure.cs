@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Mania.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
@@ -58,9 +59,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 {
                     if (prev is not null && prevPrev is not null)
                     {
-                        double hitLeniency = 0.3 * Math.Pow(prev.GreatHitWindow / 500.0, 0.5);
                         double delta = 0.001 * (prev.StartTime - prevPrev.StartTime);
-                        double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
+                        double val = 0.1 * Math.Pow(Math.Max(SunnySkill.hitLeniency, delta), -2);
 
                         for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {

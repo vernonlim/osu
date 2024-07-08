@@ -22,12 +22,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             {
                 if (prev is not null)
                 {
-                    double hitLeniency = 0.3 * Math.Pow(note.GreatHitWindow / 500.0, 0.5);
                     double deltaTime = 0.001 * (note.StartTime - prev.StartTime);
 
                     if (deltaTime < 1e-9)
                     {
-                        pressingIntensity[(int)prev.QuantizedStartTime] += Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
+                        pressingIntensity[(int)prev.QuantizedStartTime] += Math.Pow(0.02 * (4 / SunnySkill.hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
                         continue;
                     }
 
@@ -35,12 +34,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                     double v = 1 + SunnySkill.LAMBDA_2 * lnAmount;
 
-                    if (deltaTime < 2 * hitLeniency / 3.0)
+                    if (deltaTime < 2 * SunnySkill.hitLeniency / 3.0)
                     {
                         for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {
                             pressingIntensity[t] = 1 / deltaTime
-                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
+                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / SunnySkill.hitLeniency) * Math.Pow(deltaTime - SunnySkill.hitLeniency / 2, 2)), 1 / 4.0)
                                                    * streamBooster(deltaTime) * v;
                         }
                     }
@@ -49,7 +48,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {
                             pressingIntensity[t] = 1 / deltaTime
-                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
+                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / SunnySkill.hitLeniency) * Math.Pow(SunnySkill.hitLeniency / 6, 2)), 1 / 4.0)
                                                    * streamBooster(deltaTime) * v;
                         }
                     }

@@ -31,9 +31,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 {
                     if (prev is not null)
                     {
-                        double hitLeniency = 0.3 * Math.Pow(note.GreatHitWindow / 500.0, 0.5);
                         double delta = 0.001 * (note.StartTime - prev.StartTime);
-                        double val = (1 / delta) * 1 / (delta + SunnySkill.LAMBDA_1 * Math.Pow(hitLeniency, 1.0 / 4.0));
+                        double val = Math.Pow(delta, -1) * Math.Pow(delta + SunnySkill.LAMBDA_1 * Math.Pow(SunnySkill.hitLeniency, 1.0 / 4.0), -1.0);
 
                         // the variables created earlier are filled with delta/val
                         for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
@@ -59,13 +58,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 for (int col = 0; col < totalColumns; col++)
                 {
                     double val = perColumnPressure[col][t];
-                    double weight = perColumnDeltaTimes[col][t] > 0 ? 1.0 / perColumnDeltaTimes[col][t] : 0;
+                    double weight = 1.0 / perColumnDeltaTimes[col][t];
 
                     sumWeights += weight;
                     sumValLambdaWeight += Math.Pow(val, SunnySkill.LAMBDA_N) * weight;
                 }
 
-                double firstPart = sumWeights > 0 ? sumValLambdaWeight / sumWeights : 0;
+                double firstPart = sumValLambdaWeight / Math.Max(1e-9, sumWeights);
 
                 double weightedAverage = Math.Pow(
                     firstPart,

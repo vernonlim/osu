@@ -26,15 +26,18 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private const double w_2 = 0.27;
         private const double p_0 = 1.2;
         private const double p_1 = 1.5;
+        // against the style guidelines but I don't care atm
+        public static double hitLeniency;
         private readonly double granularity;
 
         private readonly int totalColumns;
 
         private readonly List<ManiaDifficultyHitObject> noteList = new List<ManiaDifficultyHitObject>();
 
-        public SunnySkill(Mod[] mods, int totalColumns, double granularity)
+        public SunnySkill(Mod[] mods, int totalColumns, double granularity, double od)
             : base(mods)
         {
+            hitLeniency = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
             this.totalColumns = totalColumns;
             this.granularity = granularity;
         }

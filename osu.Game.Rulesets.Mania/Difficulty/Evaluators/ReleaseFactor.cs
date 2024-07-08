@@ -25,9 +25,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             {
                 ManiaDifficultyHitObject currentNote = longNoteList[note];
                 ManiaDifficultyHitObject? nextNote = (ManiaDifficultyHitObject?)currentNote.NextInColumn(0);
-                double hitLeniency = 0.3 * Math.Pow(currentNote.GreatHitWindow / 500.0, 0.5);
 
-                double currentI = 0.001 * Math.Abs(currentNote.EndTime - currentNote.StartTime - 80.0) / hitLeniency;
+                double currentI = 0.001 * Math.Abs(currentNote.EndTime - currentNote.StartTime - 80.0) / SunnySkill.hitLeniency;
 
                 if (nextNote is null)
                 {
@@ -35,7 +34,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     continue;
                 }
 
-                double nextI = 0.001 * Math.Abs(nextNote.StartTime - currentNote.EndTime - 80.0) / hitLeniency;
+                double nextI = 0.001 * Math.Abs(nextNote.StartTime - currentNote.EndTime - 80.0) / SunnySkill.hitLeniency;
 
                 headSpacingIndex[note] = 2 / (2 + Math.Exp(-5 * (currentI - 0.75)) + Math.Exp(-5 * (nextI - 0.75)));
             }
@@ -51,8 +50,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                 for (int t = (int)currentNote.QuantizedEndTime; t < nextNote.QuantizedEndTime; t++)
                 {
-                    double hitLeniency = 0.3 * Math.Pow(currentNote.GreatHitWindow / 500.0, 0.5);
-                    releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
+                    releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * Math.Pow(SunnySkill.hitLeniency, -1.0) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
                 }
             }
 
