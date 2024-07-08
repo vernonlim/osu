@@ -25,7 +25,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
         public readonly double GreatHitWindow;
 
-        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index)
+        public readonly double QuantizedStartTime;
+
+        public readonly double QuantizedEndTime;
+
+        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index, double granularity)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             int totalColumns = perColumnObjects.Length;
@@ -39,6 +43,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
                 CurrentHitObjects[i] = (ManiaDifficultyHitObject?)perColumnDifficultyHitObjects[i].LastOrDefault();
 
             GreatHitWindow = BaseObject is HoldNote ? BaseObject.NestedHitObjects[0].HitWindows.WindowFor(HitResult.Great) : BaseObject.HitWindows.WindowFor(HitResult.Great);
+
+            QuantizedStartTime = hitObject.StartTime / granularity;
+            QuantizedEndTime = hitObject.GetEndTime() / granularity;
         }
 
         public DifficultyHitObject? PrevInColumn(int backwardsIndex)

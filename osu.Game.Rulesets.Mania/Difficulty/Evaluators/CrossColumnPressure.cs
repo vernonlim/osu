@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             [0.325, 0.55, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.55, 0.325]
         ];
 
-        public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
         {
             double[] crossColumnPressure = new double[mapLength];
 
@@ -62,7 +62,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         double delta = 0.001 * (prev.StartTime - prevPrev.StartTime);
                         double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
 
-                        for (int t = (int)prev.StartTime; t < note.StartTime; t++)
+                        for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {
                             crossColumnPressure[t] += val * crossMatrix[totalColumns][col];
                         }
@@ -74,7 +74,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             }
 
             // smooths it out
-            crossColumnPressure = ListUtils.Smooth(crossColumnPressure);
+            crossColumnPressure = ListUtils.Smooth(crossColumnPressure, (int)(500 / granularity));
 
             return crossColumnPressure;
         }

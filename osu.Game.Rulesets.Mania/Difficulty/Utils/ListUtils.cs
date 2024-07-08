@@ -8,29 +8,29 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Utils
     public class ListUtils
     {
         // smoothing function 1
-        public static double[] Smooth(double[] list)
+        public static double[] Smooth(double[] list, int halfIntervalSize)
         {
             double[] smoothedList = new double[list.Length];
 
             double windowSum = 0;
 
-            for (int i = 0; i < Math.Min(500, list.Length); i++)
+            for (int i = 0; i < Math.Min(halfIntervalSize, list.Length); i++)
             {
                 windowSum += list[i];
             }
 
             for (int t = 0; t < list.Length; t++)
             {
-                smoothedList[t] = 0.001 * windowSum;
+                smoothedList[t] = (1.0 / halfIntervalSize) * windowSum;
 
-                if (t + 500 < list.Length)
+                if (t + halfIntervalSize < list.Length)
                 {
-                    windowSum += list[t + 500];
+                    windowSum += list[t + halfIntervalSize];
                 }
 
-                if (t - 500 >= 0)
+                if (t - halfIntervalSize >= 0)
                 {
-                    windowSum -= list[t - 500];
+                    windowSum -= list[t - halfIntervalSize];
                 }
             }
 
@@ -38,32 +38,32 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Utils
         }
 
         // smoothing function 2
-        public static double[] Smooth2(double[] list)
+        public static double[] Smooth2(double[] list, int halfIntervalSize)
         {
             double[] listBar = new double[list.Length];
 
             double windowSum = 0;
 
-            for (int i = 0; i < Math.Min(500, list.Length); i++)
+            for (int i = 0; i < Math.Min(halfIntervalSize, list.Length); i++)
             {
                 windowSum += list[i];
             }
 
-            double windowLen = Math.Min(500, list.Length);
+            double windowLen = Math.Min(halfIntervalSize, list.Length);
 
             for (int t = 0; t < list.Length; t++)
             {
                 listBar[t] = windowSum / windowLen;
 
-                if (t + 500 < list.Length)
+                if (t + halfIntervalSize < list.Length)
                 {
-                    windowSum += list[t + 500];
+                    windowSum += list[t + halfIntervalSize];
                     windowLen += 1;
                 }
 
-                if (t - 500 >= 0)
+                if (t - halfIntervalSize >= 0)
                 {
-                    windowSum -= list[t - 500];
+                    windowSum -= list[t - halfIntervalSize];
                     windowLen -= 1;
                 }
             }

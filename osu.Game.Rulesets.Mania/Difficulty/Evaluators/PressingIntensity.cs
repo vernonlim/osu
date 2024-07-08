@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class PressingIntensity
     {
-        public static double[] EvaluatePressingIntensity(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluatePressingIntensity(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
         {
             double[] pressingIntensity = new double[mapLength];
 
@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                     if (deltaTime < 1e-4)
                     {
-                        pressingIntensity[(int)prev.StartTime] += Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
+                        pressingIntensity[(int)prev.QuantizedStartTime] += Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
                         continue;
                     }
 
@@ -42,7 +42,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                     if (deltaTime < 2 * hitLeniency / 3.0)
                     {
-                        for (int t = (int)prev.StartTime; t < note.StartTime; t++)
+                        for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {
                             pressingIntensity[t] = 1 / deltaTime
                                                    * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     }
                     else
                     {
-                        for (int t = (int)prev.StartTime; t < note.StartTime; t++)
+                        for (int t = (int)prev.QuantizedStartTime; t < note.QuantizedStartTime; t++)
                         {
                             pressingIntensity[t] = 1 / deltaTime
                                                    * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 prev = note;
             }
 
-            pressingIntensity = ListUtils.Smooth(pressingIntensity);
+            pressingIntensity = ListUtils.Smooth(pressingIntensity, (int)(500 / granularity));
 
             return pressingIntensity;
         }
@@ -111,6 +111,61 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             }
 
             return count;
+        }
+
+        private double calculateLNAmount(double startTime, double endTime, ManiaDifficultyHitObject[] currentObjects)
+        {
+            // The size of the range of time being considered
+            double timeOccupied = endTime - startTime;
+            double lnAmount = 0;
+
+            for (int column = 0; column < currentObjects.Length; column++)
+            {
+                ManiaDifficultyHitObject? currObj = currentObjects[column];
+
+                if (currObj is null || currObj.BaseObject is Note)
+                    continue;
+
+                double currentNoteStartTime = currObj.StartTime;
+                double currentNoteEndTime = currObj.EndTime;
+
+                // If the current note's end time is within the time range
+                // i.e if the note is an LN and it's within the time range
+                if (currentNoteEndTime > startTime)
+                {
+                    // All values cropped to within range
+                    // The LN end or time range end
+                    double lnEnd = Math.Min(currentNoteEndTime, endTime);
+                    // 80ms after LN start or time range start
+                    double fullLNStart = Math.Max(currentNoteStartTime + 80, startTime);
+                    // LN start or time range start
+                    double partialLNStart = Math.Max(currentNoteStartTime, startTime);
+                    // 80ms after LN start or LN end (if shorter than 80ms)
+                    double partialLNEnd = Math.Min(currentNoteStartTime + 80, lnEnd);
+
+                    // Calculating the proportion of time the "full LN" takes up
+                    double timeTakenFullLN = lnEnd - fullLNStart;
+                    // If the above is negative, it means the 'full LN' starts after the LN already ends
+                    // Meaning the proportion is 0
+                    double proportionFullLN = Math.Max(timeTakenFullLN / timeOccupied, 0);
+
+                    // Calculating the proportion of time the "partial LN" takes up
+                    double timeTakenPartialLN = partialLNEnd - partialLNStart;
+                    // If the above is negative, it either means that the LN is entirely outside of the time range
+                    // or that all of the LN within the time range is 'full'
+                    // Hence a the proportion would be 0
+                    double proportionPartialLN = Math.Max(timeTakenPartialLN / timeOccupied, 0);
+
+                    double fullLNScalingFactor = 1;
+                    double partialLNScalingFactor = 0.5;
+
+                    // Converts the unit to *seconds
+                    lnAmount += fullLNScalingFactor * proportionFullLN * timeOccupied;
+                    lnAmount += partialLNScalingFactor * proportionPartialLN * timeOccupied;
+                }
+            }
+
+            return lnAmount / 1000;
         }
     }
 }
