@@ -46,6 +46,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         public override double DifficultyValue()
         {
+            if (noteList.Count <= 0)
+                return 0;
+
             int mapLength = (int)noteList.Max(obj => obj.EndTime) + 1;
 
             double[] j = SameColumnPressure.EvaluateSameColumnPressure(noteList, totalColumns, mapLength);

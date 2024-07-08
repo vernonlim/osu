@@ -11,15 +11,28 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class CrossColumnPressure
     {
+        // weights for each column (plus the extra one)
+        private static double[][] crossMatrix =
+        [
+            [-1],
+            [0.075, 0.075],
+            [0.125, 0.05, 0.125],
+            [0.125, 0.125, 0.125, 0.125],
+            [0.175, 0.25, 0.05, 0.25, 0.175],
+            [0.175, 0.25, 0.175, 0.175, 0.25, 0.175],
+            [0.225, 0.35, 0.25, 0.05, 0.25, 0.35, 0.225],
+            [0.225, 0.35, 0.25, 0.225, 0.225, 0.25, 0.35, 0.225],
+            [0.275, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.275],
+            [0.275, 0.45, 0.35, 0.25, 0.275, 0.275, 0.25, 0.35, 0.45, 0.275],
+            [0.325, 0.55, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.55, 0.325]
+        ];
+
         public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
         {
-            // we suppose that there is an extra column at the edges that is just empty
-            double[][] perColumnPressure = new double[totalColumns + 1][];
+            double[] crossColumnPressure = new double[mapLength];
 
             for (int col = 0; col < totalColumns + 1; col++)
             {
-                perColumnPressure[col] = new double[mapLength];
-
                 IEnumerable<ManiaDifficultyHitObject> pairedNotesList;
 
                 int currentColumn = col;
@@ -51,44 +64,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                         for (int t = (int)prev.StartTime; t < note.StartTime; t++)
                         {
-                            perColumnPressure[col][t] = val;
+                            crossColumnPressure[t] += val * crossMatrix[totalColumns][col];
                         }
                     }
 
                     prevPrev = prev;
                     prev = note;
                 }
-            }
-
-            // weights for each column (plus the extra one)
-            double[][] crossMatrix =
-            [
-                [-1],
-                [0.075, 0.075],
-                [0.125, 0.05, 0.125],
-                [0.125, 0.125, 0.125, 0.125],
-                [0.175, 0.25, 0.05, 0.25, 0.175],
-                [0.175, 0.25, 0.175, 0.175, 0.25, 0.175],
-                [0.225, 0.35, 0.25, 0.05, 0.25, 0.35, 0.225],
-                [0.225, 0.35, 0.25, 0.225, 0.225, 0.25, 0.35, 0.225],
-                [0.275, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.275],
-                [0.275, 0.45, 0.35, 0.25, 0.275, 0.275, 0.25, 0.35, 0.45, 0.275],
-                [0.325, 0.55, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.55, 0.325]
-            ];
-
-            // consolidates the values
-            double[] crossColumnPressure = new double[mapLength];
-
-            for (int t = 0; t < mapLength; t++)
-            {
-                double total = 0;
-
-                for (int col = 0; col < totalColumns + 1; col++)
-                {
-                    total += perColumnPressure[col][t] * crossMatrix[totalColumns][col];
-                }
-
-                crossColumnPressure[t] = total;
             }
 
             // smooths it out
