@@ -8,6 +8,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Evaluators;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Skills
@@ -48,6 +49,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             if (noteList.Count <= 0)
                 return 0;
+
+            int noteCount = noteList.Count;
+            int lnCount = noteList.Count(obj => obj.BaseObject is HoldNote);
 
             int mapLength = (int)noteList.Max(obj => obj.EndTime) + 1;
 
@@ -98,7 +102,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
 
             // Nerf short maps
-            starRating = starRating * noteList.Count / (noteList.Count + 50);
+            starRating = starRating * (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
             // Buff high column counts
             return starRating * (0.88 + 0.03 * totalColumns);
