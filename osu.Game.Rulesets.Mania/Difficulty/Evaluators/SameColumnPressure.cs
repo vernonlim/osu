@@ -12,10 +12,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class SameColumnPressure
     {
-        public static double[] EvaluateSameColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns)
+        public static double[] EvaluateSameColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
         {
-            int mapLength = (int)noteList.Last().EndTime + 1;
-
             double[][] perColumnPressure = new double[totalColumns][];
             double[][] perColumnDeltaTimes = new double[totalColumns][];
 
