@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -49,29 +48,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             int mapLength = (int)noteList.Last().EndTime + 1;
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Restart();
-
             double[] j = SameColumnPressure.EvaluateSameColumnPressure(noteList, totalColumns);
-            stopwatch.Stop();
-            Console.WriteLine($"j: {stopwatch.Elapsed.TotalMilliseconds}");
-            stopwatch.Restart();
             double[] x = CrossColumnPressure.EvaluateCrossColumnPressure(noteList, totalColumns);
-            stopwatch.Stop();
-            Console.WriteLine($"x: {stopwatch.Elapsed.TotalMilliseconds}");
-            stopwatch.Restart();
             double[] p = PressingIntensity.EvaluatePressingIntensity(noteList, totalColumns);
-            stopwatch.Stop();
-            Console.WriteLine($"p: {stopwatch.Elapsed.TotalMilliseconds}");
-            stopwatch.Restart();
             double[] a = Unevenness.EvaluateUnevenness(noteList, totalColumns);
-            stopwatch.Stop();
-            Console.WriteLine($"a: {stopwatch.Elapsed.TotalMilliseconds}");
-            stopwatch.Restart();
             double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns);
-            stopwatch.Stop();
-            Console.WriteLine($"r: {stopwatch.Elapsed.TotalMilliseconds}");
-            stopwatch.Restart();
 
             double sum1 = 0;
             double sum2 = 0;
@@ -115,9 +96,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             // Nerf short maps
             starRating = starRating * noteList.Count / (noteList.Count + 50);
-
-            stopwatch.Stop();
-            Console.WriteLine($"sr: {stopwatch.Elapsed.TotalMilliseconds}");
 
             // Buff high column counts
             return starRating * (0.88 + 0.03 * totalColumns);
