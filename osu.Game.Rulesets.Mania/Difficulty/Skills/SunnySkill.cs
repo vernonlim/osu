@@ -46,13 +46,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         public override double DifficultyValue()
         {
-            int mapLength = (int)noteList.Last().EndTime + 1;
+            int mapLength = (int)noteList.Max(obj => obj.EndTime) + 1;
 
-            double[] j = SameColumnPressure.EvaluateSameColumnPressure(noteList, totalColumns);
-            double[] x = CrossColumnPressure.EvaluateCrossColumnPressure(noteList, totalColumns);
-            double[] p = PressingIntensity.EvaluatePressingIntensity(noteList, totalColumns);
-            double[] a = Unevenness.EvaluateUnevenness(noteList, totalColumns);
-            double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns);
+            double[] j = SameColumnPressure.EvaluateSameColumnPressure(noteList, totalColumns, mapLength);
+            double[] x = CrossColumnPressure.EvaluateCrossColumnPressure(noteList, totalColumns, mapLength);
+            double[] p = PressingIntensity.EvaluatePressingIntensity(noteList, totalColumns, mapLength);
+            double[] a = Unevenness.EvaluateUnevenness(noteList, totalColumns, mapLength);
+            double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns, mapLength);
 
             double sum1 = 0;
             double sum2 = 0;
