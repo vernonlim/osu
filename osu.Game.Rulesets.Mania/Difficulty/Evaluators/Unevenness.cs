@@ -49,7 +49,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 }
             }
 
-            double[] unevenness = new double[mapLength];
+            double[] unevenness = new double[mapLength].Select(t => 1.0).ToArray();
 
             for (int t = 0; t < mapLength; t++)
             {
@@ -57,15 +57,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 {
                     if (perColumnUnevenness[col][t] < 0.02)
                     {
-                        unevenness[t] = Math.Min(0.75 + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
+                        unevenness[t] *= Math.Min(0.75 + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
-                    else if (perColumnUnevenness[col][t] < 0.07)
+                    if (perColumnUnevenness[col][t] < 0.07)
                     {
-                        unevenness[t] = Math.Min(0.65 + 5 * perColumnUnevenness[col][t] + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
-                    }
-                    else
-                    {
-                        unevenness[t] = 1;
+                        unevenness[t] *= Math.Min(0.65 + 5 * perColumnUnevenness[col][t] + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
                 }
             }

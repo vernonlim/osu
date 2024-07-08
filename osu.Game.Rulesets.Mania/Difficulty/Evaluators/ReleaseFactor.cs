@@ -16,6 +16,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
         public static double[] EvaluateReleaseFactor(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
         {
             List<ManiaDifficultyHitObject> longNoteList = noteList.Where(obj => obj.BaseObject is HoldNote).ToList();
+            longNoteList.Sort((ln1, ln2) => ln1.EndTime.CompareTo(ln2.EndTime));
 
             // some value calculated from LN spacing within the same column
             double[] headSpacingIndex = new double[longNoteList.Count];

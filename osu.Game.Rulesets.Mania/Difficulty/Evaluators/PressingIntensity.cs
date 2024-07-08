@@ -25,20 +25,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     double hitLeniency = 0.3 * Math.Pow(note.GreatHitWindow / 500.0, 0.5);
                     double deltaTime = 0.001 * (note.StartTime - prev.StartTime);
 
-                    if (deltaTime < 1e-4)
+                    if (deltaTime < 1e-9)
                     {
                         pressingIntensity[(int)prev.QuantizedStartTime] += Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
                         continue;
                     }
 
-                    double lnCount = 0;
+                    double lnAmount = calculateLNAmount(prev.StartTime, note.StartTime, prev.CurrentHitObjects, note.CurrentHitObjects);
 
-                    for (int t = (int)prev.StartTime; t < note.StartTime; t++)
-                    {
-                        lnCount += countLnBodiesAt(t, prev.CurrentHitObjects);
-                    }
-
-                    double v = 1 + SunnySkill.LAMBDA_2 * 0.001 * lnCount;
+                    double v = 1 + SunnySkill.LAMBDA_2 * lnAmount;
 
                     if (deltaTime < 2 * hitLeniency / 3.0)
                     {
@@ -80,40 +75,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             return 1;
         }
 
-        private static double countLnBodiesAt(int millisecond, ManiaDifficultyHitObject?[] currentObjects)
-        {
-            double count = 0;
-
-            for (int column = 0; column < currentObjects.Length; column++)
-            {
-                ManiaDifficultyHitObject? currObj = currentObjects[column];
-
-                if (currObj is null || currObj.BaseObject is Note)
-                    continue;
-
-                double currentNoteStartTime = currObj.StartTime;
-                double currentNoteEndTime = currObj.EndTime;
-
-                // If the current millisecond is before the end time of the previous hit note
-                if (currentNoteEndTime > millisecond)
-                {
-                    // The first 80 milliseconds of a hold note are considered half a press, as they're easier.
-                    // TODO: replace with a sigmoid
-                    if (millisecond - currentNoteStartTime < 80)
-                    {
-                        count += 0.5;
-                    }
-                    else
-                    {
-                        count += 1;
-                    }
-                }
-            }
-
-            return count;
-        }
-
-        private double calculateLNAmount(double startTime, double endTime, ManiaDifficultyHitObject[] currentObjects)
+        private static double calculateLNAmount(double startTime, double endTime, ManiaDifficultyHitObject?[] currentObjects, ManiaDifficultyHitObject?[] nextObjects)
         {
             // The size of the range of time being considered
             double timeOccupied = endTime - startTime;
@@ -122,9 +84,23 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             for (int column = 0; column < currentObjects.Length; column++)
             {
                 ManiaDifficultyHitObject? currObj = currentObjects[column];
+                ManiaDifficultyHitObject? nextObj = nextObjects[column];
 
+                lnAmount += processObject(currObj);
+
+                if (nextObj is not null && currObj is not null && nextObj.StartTime != currObj.StartTime)
+                {
+                    lnAmount += processObject(nextObj);
+                }
+            }
+
+            return lnAmount / 1000;
+
+            // local function to find the lnAmount surrounding an object
+            double processObject(ManiaDifficultyHitObject? currObj)
+            {
                 if (currObj is null || currObj.BaseObject is Note)
-                    continue;
+                    return 0;
 
                 double currentNoteStartTime = currObj.StartTime;
                 double currentNoteEndTime = currObj.EndTime;
@@ -160,12 +136,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     double partialLNScalingFactor = 0.5;
 
                     // Converts the unit to *seconds
-                    lnAmount += fullLNScalingFactor * proportionFullLN * timeOccupied;
-                    lnAmount += partialLNScalingFactor * proportionPartialLN * timeOccupied;
-                }
-            }
+                    double fullLNs = fullLNScalingFactor * proportionFullLN * timeOccupied;
+                    double partialLNs = partialLNScalingFactor * proportionPartialLN * timeOccupied;
 
-            return lnAmount / 1000;
+                    return fullLNs + partialLNs;
+                }
+
+                // the LN is not within the time range
+                return 0;
+            }
         }
     }
 }
