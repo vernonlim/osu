@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 IEnumerable<ManiaDifficultyHitObject> columnNotes = noteList.Where(obj => obj.Column == currentColumn);
 
                 perColumnPressure[col] = new double[mapLength];
-                perColumnDeltaTimes[col] = new double[mapLength];
+                perColumnDeltaTimes[col] = (new double[mapLength]).Select(t => 1e9).ToArray();
 
                 ManiaDifficultyHitObject? prev = null;
 

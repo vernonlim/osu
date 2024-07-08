@@ -22,7 +22,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 int currentColumn = col;
                 List<ManiaDifficultyHitObject> columnNotes = noteList.Where(obj => obj.Column == currentColumn).ToList();
 
-                perColumnDeltaTimes[col] = new double[mapLength];
+                perColumnDeltaTimes[col] = (new double[mapLength]).Select(d => 1e9).ToArray();
 
                 for (int i = 1; i < columnNotes.Count; i++)
                 {
@@ -49,7 +49,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                 }
             }
 
-            double[] unevenness = new double[mapLength].Select(t => 1.0).ToArray();
+            double[] unevenness = (new double[mapLength]).Select(t => 1.0).ToArray();
 
             for (int t = 0; t < mapLength; t++)
             {
@@ -59,7 +59,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     {
                         unevenness[t] *= Math.Min(0.75 + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
-                    if (perColumnUnevenness[col][t] < 0.07)
+                    else if (perColumnUnevenness[col][t] < 0.07)
                     {
                         unevenness[t] *= Math.Min(0.65 + 5 * perColumnUnevenness[col][t] + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
