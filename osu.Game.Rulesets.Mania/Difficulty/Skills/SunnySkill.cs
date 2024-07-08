@@ -84,13 +84,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 a[t] = Math.Max(0, a[t]);
                 r[t] = Math.Max(0, r[t]);
 
-                while (start < noteList.Count && noteList[start].StartTime < t - 500 / granularity)
+                while (start < noteList.Count && noteList[start].QuantizedStartTime < t - 500 / granularity)
                 {
                     start += 1;
                     end += 1;
                 }
 
-                while (end < noteList.Count && noteList[end].StartTime < t + 500 / granularity)
+                while (end < noteList.Count && noteList[end].QuantizedStartTime < t + 500 / granularity)
                 {
                     end += 1;
                 }

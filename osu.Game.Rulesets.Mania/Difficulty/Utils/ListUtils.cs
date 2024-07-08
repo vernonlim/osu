@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Utils
 
             for (int t = 0; t < list.Length; t++)
             {
-                smoothedList[t] = (1.0 / halfIntervalSize) * windowSum;
+                smoothedList[t] = (1.0 / (halfIntervalSize * 2)) * windowSum;
 
                 if (t + halfIntervalSize < list.Length)
                 {
