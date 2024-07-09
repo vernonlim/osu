@@ -44,8 +44,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
             GreatHitWindow = BaseObject is HoldNote ? BaseObject.NestedHitObjects[0].HitWindows.WindowFor(HitResult.Great) : BaseObject.HitWindows.WindowFor(HitResult.Great);
 
-            AdjustedStartTime = (int)Math.Round(StartTime / granularity);
-            AdjustedEndTime = (int)Math.Round(EndTime / granularity);
+            AdjustedStartTime = Math.Round(StartTime / granularity);
+            AdjustedEndTime = Math.Round(EndTime / granularity);
         }
 
         public DifficultyHitObject? PrevInColumn(int backwardsIndex)
