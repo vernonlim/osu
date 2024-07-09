@@ -37,11 +37,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity)
             : base(mods)
         {
+            // To align with sunny's implementation
             hitLeniency = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
+
             this.totalColumns = totalColumns;
             this.granularity = granularity;
-            perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
 
+            perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
             for (int i = 0; i < totalColumns; i++)
                 perColumnNoteList[i] = new List<ManiaDifficultyHitObject>();
         }
