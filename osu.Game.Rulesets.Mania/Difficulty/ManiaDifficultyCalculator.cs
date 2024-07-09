@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         private const double star_scaling_factor = 0.018;
 
         // The size of the chunks, in ms, the map should be split into for difficulty processing.
-        private const double granularity = 1;
+        private const double granularity = 125;
 
         private readonly bool isForCurrentRuleset;
         private readonly double originalOverallDifficulty;
