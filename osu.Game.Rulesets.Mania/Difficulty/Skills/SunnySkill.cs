@@ -90,7 +90,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 while (start < noteList.Count && noteList[start].QuantizedStartTime < t - 500 / granularity)
                 {
                     start += 1;
-                    end += 1;
                 }
 
                 while (end < noteList.Count && noteList[end].QuantizedStartTime < t + 500 / granularity)
