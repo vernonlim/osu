@@ -25,6 +25,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty
     {
         private const double difficulty_multiplier = 0.018;
 
+        // The size of the chunks, in ms, the map should be split into for difficulty processing.
+        private const double granularity = 1;
+
         private readonly bool isForCurrentRuleset;
         private readonly double originalOverallDifficulty;
 
@@ -82,7 +85,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
             for (int i = 1; i < sortedObjects.Length; i++)
             {
-                var currentObject = new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, perColumnObjects, objects.Count);
+                var currentObject = new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, perColumnObjects, objects.Count, granularity);
                 objects.Add(currentObject);
                 perColumnObjects[currentObject.Column].Add(currentObject);
             }
@@ -95,7 +98,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
-            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns) };
+            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity) };
         }
 
         protected override Mod[] DifficultyAdjustmentMods
