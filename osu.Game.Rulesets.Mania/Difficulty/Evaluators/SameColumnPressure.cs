@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mania.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Utils;
@@ -12,15 +11,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class SameColumnPressure
     {
-        public static double[] EvaluateSameColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluateSameColumnPressure(List<ManiaDifficultyHitObject>[] perColumnNoteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
         {
             double[][] perColumnPressure = new double[totalColumns][];
             double[][] perColumnDeltaTimes = new double[totalColumns][];
 
             for (int col = 0; col < totalColumns; col++)
             {
-                int currentColumn = col;
-                IEnumerable<ManiaDifficultyHitObject> columnNotes = noteList.Where(obj => obj.Column == currentColumn);
+                IEnumerable<ManiaDifficultyHitObject> columnNotes = perColumnNoteList[col];
 
                 perColumnPressure[col] = new double[mapLength];
                 perColumnDeltaTimes[col] = new double[mapLength];
@@ -29,14 +27,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                 foreach (ManiaDifficultyHitObject note in columnNotes)
                 {
-                    if (prev is not null)
+                    if (prev is not null && prev.StartTime < note.StartTime)
                     {
-                        double hitLeniency = 0.3 * Math.Pow(note.GreatHitWindow / 500.0, 0.5);
                         double delta = 0.001 * (note.StartTime - prev.StartTime);
                         double val = Math.Pow(delta, -1) * Math.Pow(delta + SunnySkill.LAMBDA_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
 
                         // the variables created earlier are filled with delta/val
-                        for (int t = (int)prev.StartTime; t < note.StartTime; t++)
+                        for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
                             perColumnDeltaTimes[col][t] = delta;
                             perColumnPressure[col][t] = val;
@@ -46,7 +43,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     prev = note;
                 }
 
-                perColumnPressure[col] = ListUtils.Smooth(perColumnPressure[col]);
+                perColumnPressure[col] = ListUtils.Smooth(perColumnPressure[col], (int)(500 / granularity));
             }
 
             double[] sameColumnPressure = new double[mapLength];

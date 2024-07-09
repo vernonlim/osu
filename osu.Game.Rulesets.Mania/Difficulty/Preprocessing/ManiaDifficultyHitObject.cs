@@ -1,6 +1,7 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -25,7 +26,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
         public readonly double GreatHitWindow;
 
-        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index)
+        public readonly double AdjustedStartTime;
+        public readonly double AdjustedEndTime;
+
+        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index, double granularity)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             int totalColumns = perColumnObjects.Length;
@@ -39,6 +43,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
                 CurrentHitObjects[i] = (ManiaDifficultyHitObject?)perColumnDifficultyHitObjects[i].LastOrDefault();
 
             GreatHitWindow = BaseObject is HoldNote ? BaseObject.NestedHitObjects[0].HitWindows.WindowFor(HitResult.Great) : BaseObject.HitWindows.WindowFor(HitResult.Great);
+
+            AdjustedStartTime = Math.Round(StartTime / granularity);
+            AdjustedEndTime = Math.Round(EndTime / granularity);
         }
 
         public DifficultyHitObject? PrevInColumn(int backwardsIndex)

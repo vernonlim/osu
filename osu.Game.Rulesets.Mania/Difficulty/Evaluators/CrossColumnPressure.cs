@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
     public class CrossColumnPressure
     {
         // weights for each column (plus the extra one)
-        private static double[][] crossMatrix =
+        private static readonly double[][] cross_matrix =
         [
             [-1],
             [0.075, 0.075],
@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             [0.325, 0.55, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.55, 0.325]
         ];
 
-        public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject>[] perColumnNoteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
         {
             double[] crossColumnPressure = new double[mapLength];
 
@@ -35,20 +35,19 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             {
                 IEnumerable<ManiaDifficultyHitObject> pairedNotesList;
 
-                int currentColumn = col;
-
                 if (col == 0)
                 {
-                    pairedNotesList = noteList.Where(obj => obj.Column == 0);
+                    pairedNotesList = perColumnNoteList[col];
                 }
                 else if (col == totalColumns)
                 {
-                    pairedNotesList = noteList.Where(obj => obj.Column == currentColumn - 1);
+                    pairedNotesList = perColumnNoteList[col - 1];
                 }
                 else
                 {
                     // merges two columns together, forming pairs of notes adjacent in time
-                    pairedNotesList = noteList.Where(obj => obj.Column == currentColumn || obj.Column == currentColumn - 1);
+                    pairedNotesList = perColumnNoteList[col].Concat(perColumnNoteList[col - 1]);
+                    pairedNotesList = pairedNotesList.OrderBy(obj => obj.StartTime);
                 }
 
                 ManiaDifficultyHitObject? prevPrev = null;
@@ -56,15 +55,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                 foreach (ManiaDifficultyHitObject note in pairedNotesList)
                 {
-                    if (prev is not null && prevPrev is not null)
+                    if (prev is not null && prevPrev is not null && prev.StartTime < note.StartTime)
                     {
-                        double hitLeniency = 0.3 * Math.Pow(prev.GreatHitWindow / 500.0, 0.5);
                         double delta = 0.001 * (prev.StartTime - prevPrev.StartTime);
                         double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
 
-                        for (int t = (int)prev.StartTime; t < note.StartTime; t++)
+                        for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
-                            crossColumnPressure[t] += val * crossMatrix[totalColumns][col];
+                            crossColumnPressure[t] += val * cross_matrix[totalColumns][col];
                         }
                     }
 
@@ -74,7 +72,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             }
 
             // smooths it out
-            crossColumnPressure = ListUtils.Smooth(crossColumnPressure);
+            crossColumnPressure = ListUtils.Smooth(crossColumnPressure, (int)(500 / granularity));
 
             return crossColumnPressure;
         }

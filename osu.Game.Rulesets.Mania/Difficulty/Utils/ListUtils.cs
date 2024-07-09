@@ -8,67 +8,83 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Utils
     public class ListUtils
     {
         // smoothing function 1
-        public static double[] Smooth(double[] list)
+        public static double[] Smooth(double[] list, int intervalSize)
         {
-            double[] smoothedList = new double[list.Length];
-
+            int length = list.Length;
+            double[] smoothedList = new double[length];
             double windowSum = 0;
+            int windowSize = 2 * intervalSize + 1;
+            int halfWindowSize = intervalSize;
 
-            for (int i = 0; i < Math.Min(500, list.Length); i++)
+            // Initial window sum
+            for (int i = 0; i < Math.Min(windowSize, length); i++)
             {
                 windowSum += list[i];
             }
 
-            for (int t = 0; t < list.Length; t++)
+            // Calculate the smoothed values for the initial part of the list
+            for (int i = 0; i <= halfWindowSize && i < length; i++)
             {
-                smoothedList[t] = 0.001 * windowSum;
+                smoothedList[i] = windowSum / windowSize;
+            }
 
-                if (t + 500 < list.Length)
-                {
-                    windowSum += list[t + 500];
-                }
+            // Main loop for the rest of the list
+            for (int t = halfWindowSize + 1; t < length - halfWindowSize; t++)
+            {
+                // Slide the window to the right
+                windowSum += list[t + halfWindowSize] - list[t - halfWindowSize - 1];
+                smoothedList[t] = windowSum / windowSize;
+            }
 
-                if (t - 500 >= 0)
+            // Handle the tail part of the list
+            for (int i = length - halfWindowSize; i < length; i++)
+            {
+                smoothedList[i] = windowSum / windowSize;
+
+                if (i + halfWindowSize < length)
                 {
-                    windowSum -= list[t - 500];
+                    windowSum -= list[i - halfWindowSize];
                 }
             }
 
             return smoothedList;
         }
 
-        // smoothing function 2
-        public static double[] Smooth2(double[] list)
+        public static double[] Smooth2(double[] list, int intervalSize)
         {
-            double[] listBar = new double[list.Length];
-
+            int length = list.Length;
+            double[] smoothedList = new double[length];
             double windowSum = 0;
+            int windowSize = intervalSize;
 
-            for (int i = 0; i < Math.Min(500, list.Length); i++)
+            // Calculate initial window sum and length
+            for (int i = 0; i < Math.Min(windowSize, length); i++)
             {
                 windowSum += list[i];
             }
 
-            double windowLen = Math.Min(500, list.Length);
+            double windowLen = Math.Min(windowSize, length);
 
-            for (int t = 0; t < list.Length; t++)
+            // Calculate smoothed values
+            for (int t = 0; t < length; t++)
             {
-                listBar[t] = windowSum / windowLen;
+                smoothedList[t] = windowSum / windowLen;
 
-                if (t + 500 < list.Length)
+                // Slide the window to the right
+                if (t + windowSize < length)
                 {
-                    windowSum += list[t + 500];
+                    windowSum += list[t + windowSize];
                     windowLen += 1;
                 }
 
-                if (t - 500 >= 0)
+                if (t - windowSize >= 0)
                 {
-                    windowSum -= list[t - 500];
+                    windowSum -= list[t - windowSize];
                     windowLen -= 1;
                 }
             }
 
-            return listBar;
+            return smoothedList;
         }
     }
 }
