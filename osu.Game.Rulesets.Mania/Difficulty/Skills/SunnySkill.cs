@@ -113,12 +113,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
 
             // Nerf short maps
-            starRating = starRating * (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
+            starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
             // Buff high column counts
-            starRating = starRating * (0.88 + 0.03 * totalColumns);
-
-            Console.WriteLine($"Star Rating: {starRating}");
+            starRating *= 0.88 + 0.03 * totalColumns;
 
             return starRating;
         }
