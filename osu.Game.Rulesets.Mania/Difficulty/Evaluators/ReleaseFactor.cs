@@ -13,9 +13,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class ReleaseFactor
     {
-        public static double[] EvaluateReleaseFactor(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluateReleaseFactor(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
         {
-            List<ManiaDifficultyHitObject> longNoteList = noteList.Where(obj => obj.BaseObject is HoldNote).ToList();
+            List<ManiaDifficultyHitObject> longNoteList = noteList.Where(obj => obj.BaseObject is HoldNote).OrderBy(obj => obj.EndTime).ToList();
 
             // some value calculated from LN spacing within the same column
             double[] headSpacingIndex = new double[longNoteList.Count];
@@ -24,7 +24,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             {
                 ManiaDifficultyHitObject currentNote = longNoteList[note];
                 ManiaDifficultyHitObject? nextNote = (ManiaDifficultyHitObject?)currentNote.NextInColumn(0);
-                double hitLeniency = 0.3 * Math.Pow(currentNote.GreatHitWindow / 500.0, 0.5);
 
                 double currentI = 0.001 * Math.Abs(currentNote.EndTime - currentNote.StartTime - 80.0) / hitLeniency;
 
@@ -41,21 +40,26 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
             double[] releaseFactor = new double[mapLength];
 
-            for (int note = 0; note < longNoteList.Count - 1; note++)
+            ManiaDifficultyHitObject? prev = null;
+            int index = 0;
+
+            foreach (ManiaDifficultyHitObject note in longNoteList)
             {
-                ManiaDifficultyHitObject currentNote = longNoteList[note];
-                ManiaDifficultyHitObject nextNote = longNoteList[note + 1];
-
-                double deltaR = 0.001 * (nextNote.EndTime - currentNote.EndTime);
-
-                for (int t = (int)currentNote.EndTime; t < nextNote.EndTime; t++)
+                if (prev is not null && prev.EndTime < note.EndTime)
                 {
-                    double hitLeniency = 0.3 * Math.Pow(currentNote.GreatHitWindow / 500.0, 0.5);
-                    releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[note] + headSpacingIndex[note + 1]));
+                    double deltaR = 0.001 * (note.EndTime - prev.EndTime);
+
+                    for (int t = (int)prev.AdjustedEndTime; t < note.AdjustedEndTime; t++)
+                    {
+                        releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[index - 1] + headSpacingIndex[index]));
+                    }
                 }
+
+                index++;
+                prev = note;
             }
 
-            releaseFactor = ListUtils.Smooth(releaseFactor);
+            releaseFactor = ListUtils.Smooth(releaseFactor, (int)(500 / granularity));
 
             return releaseFactor;
         }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mania.Difficulty.Utils;
 
@@ -11,7 +10,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class Unevenness
     {
-        public static double[] EvaluateUnevenness(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength)
+        public static double[] EvaluateUnevenness(List<ManiaDifficultyHitObject>[] perColumnNoteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
         {
             // some sort of value representing distance between notes in different columns
             double[][] perColumnUnevenness = new double[totalColumns - 1][];
@@ -19,8 +18,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
             for (int col = totalColumns - 1; col >= 0; col--)
             {
-                int currentColumn = col;
-                List<ManiaDifficultyHitObject> columnNotes = noteList.Where(obj => obj.Column == currentColumn).ToList();
+                List<ManiaDifficultyHitObject> columnNotes = perColumnNoteList[col];
 
                 perColumnDeltaTimes[col] = new double[mapLength];
 
@@ -32,7 +30,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     double delta = 0.001 * (curr.StartTime - prev.StartTime);
 
                     // the variables created earlier are filled with delta/val
-                    for (int t = (int)prev.StartTime; t < curr.StartTime; t++)
+                    for (int t = (int)prev.AdjustedStartTime; t < curr.AdjustedStartTime; t++)
                     {
                         perColumnDeltaTimes[col][t] = delta;
                     }
@@ -53,24 +51,22 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
             for (int t = 0; t < mapLength; t++)
             {
+                unevenness[t] = 1;
+
                 for (int col = 0; col < totalColumns - 1; col++)
                 {
                     if (perColumnUnevenness[col][t] < 0.02)
                     {
-                        unevenness[t] = Math.Min(0.75 + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
+                        unevenness[t] *= Math.Min(0.75 + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
                     else if (perColumnUnevenness[col][t] < 0.07)
                     {
-                        unevenness[t] = Math.Min(0.65 + 5 * perColumnUnevenness[col][t] + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
-                    }
-                    else
-                    {
-                        unevenness[t] = 1;
+                        unevenness[t] *= Math.Min(0.65 + 5 * perColumnUnevenness[col][t] + 0.5 * Math.Max(perColumnDeltaTimes[col + 1][t], perColumnDeltaTimes[col][t]), 1);
                     }
                 }
             }
 
-            unevenness = ListUtils.Smooth2(unevenness);
+            unevenness = ListUtils.Smooth2(unevenness, (int)(500 / granularity));
 
             return unevenness;
         }
