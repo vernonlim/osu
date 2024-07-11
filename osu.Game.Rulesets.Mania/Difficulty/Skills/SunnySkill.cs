@@ -31,10 +31,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private readonly double granularity;
         private readonly double hitLeniency;
 
-        private readonly List<ManiaDifficultyHitObject> noteList = new List<ManiaDifficultyHitObject>();
+        private readonly List<ManiaDifficultyHitObject> noteList;
         private readonly List<ManiaDifficultyHitObject>[] perColumnNoteList;
 
-        public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity)
+        public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount)
             : base(mods)
         {
             // To align with sunny's implementation
@@ -43,9 +43,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             this.totalColumns = totalColumns;
             this.granularity = granularity;
 
+            noteList = new List<ManiaDifficultyHitObject>(objectCount);
+
             perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
             for (int i = 0; i < totalColumns; i++)
-                perColumnNoteList[i] = new List<ManiaDifficultyHitObject>();
+                perColumnNoteList[i] = new List<ManiaDifficultyHitObject>(objectCount / totalColumns);
         }
 
         // Mania difficulty hit objects are already sorted in the difficulty calculator, we just need to populate the lists.
