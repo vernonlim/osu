@@ -78,11 +78,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
             int columns = ((ManiaBeatmap)beatmap).TotalColumns;
 
-            List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
-            List<DifficultyHitObject>[] perColumnObjects = new List<DifficultyHitObject>[columns];
+            var objects = new List<DifficultyHitObject>(sortedObjects.Length);
+            var perColumnObjects = new List<DifficultyHitObject>[columns];
 
             for (int column = 0; column < columns; column++)
-                perColumnObjects[column] = new List<DifficultyHitObject>();
+                perColumnObjects[column] = new List<DifficultyHitObject>(sortedObjects.Length / columns);
 
             for (int i = 1; i < sortedObjects.Length; i++)
             {
@@ -99,7 +99,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
-            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity) };
+            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity, ((ManiaBeatmap)beatmap).HitObjects.Count)  };
         }
 
         protected override Mod[] DifficultyAdjustmentMods
