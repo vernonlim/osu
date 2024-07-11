@@ -120,6 +120,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // Buff high column counts
             starRating *= 0.88 + 0.03 * totalColumns;
 
+            // rescale lower SRs
+            if (starRating <= 2.00)
+            {
+                starRating = Math.Sqrt(starRating * 2);
+            }
+
             return starRating;
         }
     }
