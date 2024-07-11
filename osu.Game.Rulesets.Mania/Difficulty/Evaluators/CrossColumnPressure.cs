@@ -62,7 +62,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
-                            crossColumnPressure[t] += val * cross_matrix[totalColumns][col];
+                            double weight = totalColumns <= 10 ? cross_matrix[totalColumns][col] : 0.4;
+                            crossColumnPressure[t] += val * weight;
                         }
                     }
 
