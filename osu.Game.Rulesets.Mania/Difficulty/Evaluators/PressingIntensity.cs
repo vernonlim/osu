@@ -35,16 +35,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                     double v = 1 + SunnySkill.LAMBDA_2 * lnCount;
 
-                    double quadAt0 = 1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(0 - hitLeniency / 2, 2);
-                    double quadAt2x3 = 1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow((2 * hitLeniency / 3) - hitLeniency / 2, 2);
-
                     if (deltaTime < 2 * hitLeniency / 3.0)
                     {
-                        double scalingFactor = deltaTime / (2 * hitLeniency / 3);
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
                             pressingIntensity[t] = 1 / deltaTime
-                                                   * Math.Pow(0.08 * (1 / deltaTime) * (scalingFactor * (quadAt2x3 - quadAt0) + quadAt0), 1 / 4.0)
+                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * hitLeniency / 4 + SunnySkill.LAMBDA_3 * deltaTime / 3), 1 / 4.0)
                                                    * streamBooster(deltaTime) * v;
                         }
                     }
