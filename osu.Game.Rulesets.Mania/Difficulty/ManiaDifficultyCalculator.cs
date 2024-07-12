@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         private const double star_scaling_factor = 0.018;
 
         // The size of the chunks, in ms, the map should be split into for difficulty processing.
-        private const double granularity = 1;
+        private const double granularity = 125;
 
         private readonly bool isForCurrentRuleset;
         private readonly double originalOverallDifficulty;
@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             ManiaDifficultyAttributes attributes = new ManiaDifficultyAttributes
             {
                 // StarRating = skills[0].DifficultyValue() * star_scaling_factor,
-                StarRating = skills[0].DifficultyValue(),
+                StarRating = 0.8 * skills[0].DifficultyValue() + 0.2 * skills[1].DifficultyValue() * star_scaling_factor,
                 Mods = mods,
                 // In osu-stable mania, rate-adjustment mods don't affect the hit window.
                 // This is done the way it is to introduce fractional differences in order to match osu-stable for the time being.
@@ -99,7 +99,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
-            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity, ((ManiaBeatmap)beatmap).HitObjects.Count)  };
+            return new Skill[]
+            {
+                new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity, ((ManiaBeatmap)beatmap).HitObjects.Count),
+                new Strain(mods, ((ManiaBeatmap)beatmap).TotalColumns)
+            };
         }
 
         protected override Mod[] DifficultyAdjustmentMods
