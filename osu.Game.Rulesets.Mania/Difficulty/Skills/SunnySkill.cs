@@ -19,7 +19,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         public const double LAMBDA_N = 4.0;
         public const double LAMBDA_1 = 0.11;
         public const double LAMBDA_2 = 5.0;
-        public const double LAMBDA_3 = 5.0;
+        public const double LAMBDA_3 = 8.0;
         public const double LAMBDA_4 = 0.1;
         private const double w_0 = 0.37;
         private const double w_1 = 2.7;
