@@ -30,7 +30,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     if (prev is not null && prev.StartTime < note.StartTime)
                     {
                         double delta = 0.001 * (note.StartTime - prev.StartTime);
-                        double val = Math.Pow(delta, -1) * Math.Pow(delta + SunnySkill.LAMBDA_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
+                        double val = 1 / delta * Math.Pow(delta + SunnySkill.LAMBDA_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
 
                         // the variables created earlier are filled with delta/val
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)

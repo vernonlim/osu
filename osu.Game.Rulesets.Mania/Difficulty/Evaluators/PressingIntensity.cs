@@ -25,9 +25,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     double deltaTime = 0.001 * (note.StartTime - prev.StartTime);
 
                     // if notes are less than 1ms apart
-                    if (deltaTime < 1e-4)
+                    if (deltaTime <= 1e-3)
                     {
-                        pressingIntensity[(int)prev.AdjustedStartTime] += Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
+                        double value = 1000 / granularity * Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
+                        pressingIntensity[(int)prev.AdjustedStartTime] += value;
+                        // prev = note is skipped
+                        // but that is fine because the only value that matters is the StartTime
+                        // which is identical
                         continue;
                     }
 
@@ -39,16 +43,21 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     {
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
-                            pressingIntensity[t] = 1 / deltaTime
-                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * hitLeniency / 4 + SunnySkill.LAMBDA_3 * deltaTime / 3), 1 / 4.0)
-                                                   * streamBooster(deltaTime) * v;
+                            // pressingIntensity[t] += 1 / deltaTime
+                            //                        * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * hitLeniency / 4 + SunnySkill.LAMBDA_3 * deltaTime / 3), 1 / 4.0)
+                            //                        * streamBooster(deltaTime) * v;
+                            double value = 1 / deltaTime
+                                        * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
+                                        * streamBooster(deltaTime) * v;
+                            Console.WriteLine($"Value: {value}");
+                            pressingIntensity[t] += value;
                         }
                     }
                     else
                     {
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
-                            pressingIntensity[t] = 1 / deltaTime
+                            pressingIntensity[t] += 1 / deltaTime
                                                    * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
                                                    * streamBooster(deltaTime) * v;
                         }
