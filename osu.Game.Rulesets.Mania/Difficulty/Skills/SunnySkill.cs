@@ -18,10 +18,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         // Balancing constants
         public const double LAMBDA_N = 4.0;
         public const double LAMBDA_1 = 0.11;
-        public const double LAMBDA_2 = 5.0;
-        public const double LAMBDA_3 = 5.0;
+        public const double LAMBDA_2 = 7.0;
+        public const double LAMBDA_3 = 24.0;
         public const double LAMBDA_4 = 0.1;
-        private const double w_0 = 0.37;
+        private const double w_0 = 0.4;
         private const double w_1 = 2.7;
         private const double w_2 = 0.27;
         private const double p_0 = 1.2;
@@ -102,7 +102,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 int c = end - start;
 
-                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 1.0 / 2.0) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (p[t] + r[t]), 1.5), 2.0 / 3.0);
+                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 1.0 / 2.0) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
                 double twist = x[t] / (x[t] + strain + 1);
 
                 double deez = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
@@ -117,16 +117,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // Nerf short maps
             starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
-            // Buff high column counts
-            starRating *= 0.88 + 0.03 * totalColumns;
+            // // Buff high column counts
+            // starRating *= 0.88 + 0.03 * totalColumns;
 
             // rescale lower SRs
             if (starRating <= 2.00)
             {
                 starRating = Math.Sqrt(starRating * 2);
             }
-
-            Console.WriteLine($"P Average: {p.Average()}");
 
             return starRating;
         }

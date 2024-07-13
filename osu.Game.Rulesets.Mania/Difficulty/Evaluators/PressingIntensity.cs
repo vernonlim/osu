@@ -47,9 +47,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                             //                        * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * hitLeniency / 4 + SunnySkill.LAMBDA_3 * deltaTime / 3), 1 / 4.0)
                             //                        * streamBooster(deltaTime) * v;
                             double value = 1 / deltaTime
-                                        * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
+                                        * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
                                         * streamBooster(deltaTime) * v;
-                            Console.WriteLine($"Value: {value}");
                             pressingIntensity[t] += value;
                         }
                     }
@@ -58,7 +57,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
                             pressingIntensity[t] += 1 / deltaTime
-                                                   * Math.Pow(0.08 * (1 / deltaTime) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
+                                                   * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
                                                    * streamBooster(deltaTime) * v;
                         }
                     }
