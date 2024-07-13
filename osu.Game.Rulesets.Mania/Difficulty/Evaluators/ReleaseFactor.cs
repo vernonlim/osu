@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                     for (int t = (int)prev.AdjustedEndTime; t < note.AdjustedEndTime; t++)
                     {
-                        releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * Math.Pow(hitLeniency, -1.0) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[index - 1] + headSpacingIndex[index]));
+                        releaseFactor[t] = 0.08 * Math.Pow(deltaR, -1.0 / 2.0) * (1 / hitLeniency) * (1 + SunnySkill.LAMBDA_4 * (headSpacingIndex[index - 1] + headSpacingIndex[index]));
                     }
                 }
 
