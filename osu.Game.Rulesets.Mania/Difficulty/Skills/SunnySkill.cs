@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Evaluators;
@@ -34,7 +35,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private readonly List<ManiaDifficultyHitObject> noteList;
         private readonly List<ManiaDifficultyHitObject>[] perColumnNoteList;
 
-        public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount)
+        // for debugging purposes
+        private readonly BeatmapInfo beatmapInfo;
+        private bool graph = true;
+
+        public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount, BeatmapInfo beatmapInfo)
             : base(mods)
         {
             // To align with sunny's implementation
@@ -48,6 +53,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
             for (int i = 0; i < totalColumns; i++)
                 perColumnNoteList[i] = new List<ManiaDifficultyHitObject>(objectCount / totalColumns);
+
+            // for debug
+            this.beatmapInfo = beatmapInfo;
         }
 
         // Mania difficulty hit objects are already sorted in the difficulty calculator, we just need to populate the lists.
@@ -81,6 +89,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             int start = 0;
             int end = 0;
 
+            // debug
+            double[] d = new double[mapLength];
+
             for (int t = 0; t < mapLength; t++)
             {
                 // Clamp each pressure value to [0-inf]
@@ -107,6 +118,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 double deez = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
 
+                if (graph)
+                {
+                    d[t] = deez;
+                }
+
                 sum1 += Math.Pow(deez, LAMBDA_N) * c;
                 sum2 += c;
             }
@@ -124,6 +140,37 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             if (starRating <= 2.00)
             {
                 starRating = Math.Sqrt(starRating * 2);
+            }
+
+            if (graph)
+            {
+                string beatmapName = $"{beatmapInfo.Metadata.Artist} - {beatmapInfo.Metadata.Title} [{beatmapInfo.DifficultyName}]";
+
+                double[] xs = Enumerable.Range(0, mapLength).Select(x => (double)x).ToArray();
+                ScottPlot.Plot plt = new();
+                plt.Legend.FontName = ScottPlot.Fonts.Serif;
+                plt.Title(beatmapName);
+                plt.Axes.Title.Label.FontName = ScottPlot.Fonts.Serif;
+                plt.Axes.Left.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
+                plt.Axes.Right.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
+                plt.Axes.Bottom.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
+                plt.Axes.SetLimitsY(0, 32, plt.Axes.Left);
+                plt.Axes.SetLimitsY(0, 1.0, plt.Axes.Right);
+                var jScat = plt.Add.Scatter(xs, j);
+                jScat.LegendText = "J";
+                var xScat = plt.Add.Scatter(xs, x);
+                xScat.LegendText = "X";
+                var pScat = plt.Add.Scatter(xs, p);
+                pScat.LegendText = "P";
+                var aScat = plt.Add.Scatter(xs, a);
+                aScat.LegendText = "A";
+                aScat.Axes.YAxis = plt.Axes.Right;
+                var rScat = plt.Add.Scatter(xs, r);
+                rScat.LegendText = "R";
+                rScat.Axes.YAxis = plt.Axes.Right;
+                var dScat = plt.Add.Scatter(xs, d);
+                dScat.LegendText = "D";
+                plt.SavePng($"./Results/{beatmapName}.png", 1280, 720);
             }
 
             return starRating;
