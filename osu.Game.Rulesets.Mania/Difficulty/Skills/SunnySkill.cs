@@ -37,7 +37,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         // for debugging purposes
         private readonly BeatmapInfo beatmapInfo;
-        private bool graph = true;
+        private bool graph = false;
 
         public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount, BeatmapInfo beatmapInfo)
             : base(mods)
@@ -79,6 +79,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             double[] j = SameColumnPressure.EvaluateSameColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] x = CrossColumnPressure.EvaluateCrossColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
+            double[] x2 = CrossCrossColumnPressure.EvaluateCrossColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] p = PressingIntensity.EvaluatePressingIntensity(noteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] a = Unevenness.EvaluateUnevenness(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns, mapLength, hitLeniency, granularity);
@@ -96,7 +97,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             {
                 // Clamp each pressure value to [0-inf]
                 j[t] = Math.Max(0, j[t]);
-                x[t] = Math.Max(0, x[t]);
+                x[t] = Math.Max(Math.Max(0, x[t]), 1.8 * Math.Max(0, x2[t]));
                 p[t] = Math.Max(0, p[t]);
                 a[t] = Math.Max(0, a[t]);
                 r[t] = Math.Max(0, r[t]);
