@@ -9,46 +9,35 @@ using osu.Game.Rulesets.Mania.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
-    public class CrossColumnPressure
+    public class CrossCrossColumnPressure
     {
         // weights for each column (plus the extra one)
         private static readonly double[][] cross_matrix =
         [
             [-1],
-            [0.075, 0.075],
-            [0.125, 0.05, 0.125],
-            [0.125, 0.125, 0.125, 0.125],
-            [0.175, 0.25, 0.05, 0.25, 0.175],
-            [0.175, 0.25, 0.175, 0.175, 0.25, 0.175],
-            [0.225, 0.35, 0.25, 0.05, 0.25, 0.35, 0.225],
-            [0.225, 0.35, 0.25, 0.225, 0.225, 0.25, 0.35, 0.225],
-            [0.275, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.275],
-            [0.275, 0.45, 0.35, 0.25, 0.275, 0.275, 0.25, 0.35, 0.45, 0.275],
-            [0.325, 0.55, 0.45, 0.35, 0.25, 0.05, 0.25, 0.35, 0.45, 0.55, 0.325]
+            [0.075, 0.75, 0.75],
+            [0.075, 0.075, 0.075, 0.075],
+            [0.075, 0.075, 0.125, 0.075, 0.075],
+            [0.175, 0.175, 0.05, 0.05, 0.175, 0.175],
+            [0.175, 0.175, 0.05, 0.05, 0.05, 0.175, 0.175],
+            [0.225, 0.225, 0.35, 0.05, 0.05, 0.35, 0.225, 0.225],
+            [0.225, 0.225, 0.35, 0.05, 0.05, 0.05, 0.35, 0.225, 0.225],
+            [0.275, 0.225, 0.45, 0.35, 0.05, 0.05, 0.35, 0.45, 0.225, 0.275],
+            [0.275, 0.225, 0.45, 0.35, 0.05, 0.05, 0.05, 0.35, 0.45, 0.225, 0.275],
+            [0.275, 0.225, 0.45, 0.35, 0.25, 0.05, 0.05, 0.25, 0.35, 0.45, 0.225, 0.275]
         ];
 
         public static double[] EvaluateCrossColumnPressure(List<ManiaDifficultyHitObject>[] perColumnNoteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
         {
             double[] crossColumnPressure = new double[mapLength];
 
-            for (int col = 0; col < totalColumns + 1; col++)
+            for (int col = 2; col < totalColumns; col++)
             {
                 IEnumerable<ManiaDifficultyHitObject> pairedNotesList;
 
-                if (col == 0)
-                {
-                    pairedNotesList = perColumnNoteList[col];
-                }
-                else if (col == totalColumns)
-                {
-                    pairedNotesList = perColumnNoteList[col - 1];
-                }
-                else
-                {
-                    // merges two columns together, forming pairs of notes adjacent in time
-                    pairedNotesList = perColumnNoteList[col].Concat(perColumnNoteList[col - 1]);
-                    pairedNotesList = pairedNotesList.OrderBy(obj => obj.StartTime);
-                }
+                // merges two columns together, forming pairs of notes adjacent in time
+                pairedNotesList = perColumnNoteList[col].Concat(perColumnNoteList[col - 2]);
+                pairedNotesList = pairedNotesList.OrderBy(obj => obj.StartTime);
 
                 ManiaDifficultyHitObject? prevPrev = null;
                 ManiaDifficultyHitObject? prev = null;
