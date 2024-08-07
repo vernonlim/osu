@@ -58,9 +58,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     if (prev is not null && prevPrev is not null && prev.StartTime < note.StartTime)
                     {
                         double delta = 0.001 * (prev.StartTime - prevPrev.StartTime);
-                        double val = 0.1 * Math.Pow(Math.Max(hitLeniency, delta), -2);
+                        double val = 0.16 * Math.Pow(Math.Max(hitLeniency, delta), -2);
 
-                        for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
+                        for (int t = (int)prevPrev.AdjustedStartTime; t < prev.AdjustedStartTime; t++)
                         {
                             double weight = totalColumns < cross_matrix.Length ? cross_matrix[totalColumns][col] : 0.4;
                             crossColumnPressure[t] += val * weight;

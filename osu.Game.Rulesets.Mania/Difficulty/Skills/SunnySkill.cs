@@ -79,7 +79,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             double[] j = SameColumnPressure.EvaluateSameColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] x = CrossColumnPressure.EvaluateCrossColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
-            double[] x2 = CrossCrossColumnPressure.EvaluateCrossColumnPressure(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] p = PressingIntensity.EvaluatePressingIntensity(noteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] a = Unevenness.EvaluateUnevenness(perColumnNoteList, totalColumns, mapLength, hitLeniency, granularity);
             double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns, mapLength, hitLeniency, granularity);
@@ -97,7 +96,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             {
                 // Clamp each pressure value to [0-inf]
                 j[t] = Math.Max(0, j[t]);
-                x[t] = Math.Max(Math.Max(0, x[t]), 1.8 * Math.Max(0, x2[t]));
+                x[t] = Math.Max(0, x[t]);
                 p[t] = Math.Max(0, p[t]);
                 a[t] = Math.Max(0, a[t]);
                 r[t] = Math.Max(0, r[t]);
@@ -114,8 +113,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 int c = end - start;
 
-                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 1.0 / 2.0) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
-                double twist = x[t] / (x[t] + strain + 1);
+                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 3 / totalColumns) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
+                double twist = Math.Pow(a[t], 3 / totalColumns) * x[t] / (x[t] + strain + 1);
 
                 double deez = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
 
@@ -134,8 +133,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             // Nerf short maps
             starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
-            // // Buff high column counts
-            // starRating *= 0.88 + 0.03 * totalColumns;
+            // Buff high column counts
+            starRating *= 0.92 + 0.02 * totalColumns;
 
             // rescale lower SRs
             if (starRating <= 2.00)
