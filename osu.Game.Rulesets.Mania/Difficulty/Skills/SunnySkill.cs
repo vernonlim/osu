@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private const double w_0 = 0.4;
         private const double w_1 = 2.7;
         private const double w_2 = 0.27;
-        private const double p_0 = 1.1;
+        private const double p_0 = 1.0;
         private const double p_1 = 1.5;
 
         private readonly int totalColumns;
