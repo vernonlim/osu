@@ -50,24 +50,22 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     pairedNotesList = pairedNotesList.OrderBy(obj => obj.StartTime);
                 }
 
-                ManiaDifficultyHitObject? prevPrev = null;
                 ManiaDifficultyHitObject? prev = null;
 
                 foreach (ManiaDifficultyHitObject note in pairedNotesList)
                 {
-                    if (prev is not null && prevPrev is not null && prev.StartTime < note.StartTime)
+                    if (prev is not null)
                     {
-                        double delta = 0.001 * (prev.StartTime - prevPrev.StartTime);
+                        double delta = 0.001 * (note.StartTime - prev.StartTime);
                         double val = 0.16 * Math.Pow(Math.Max(hitLeniency, delta), -2);
 
-                        for (int t = (int)prevPrev.AdjustedStartTime; t < prev.AdjustedStartTime; t++)
+                        for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
                             double weight = totalColumns < cross_matrix.Length ? cross_matrix[totalColumns][col] : 0.4;
                             crossColumnPressure[t] += val * weight;
                         }
                     }
 
-                    prevPrev = prev;
                     prev = note;
                 }
             }
