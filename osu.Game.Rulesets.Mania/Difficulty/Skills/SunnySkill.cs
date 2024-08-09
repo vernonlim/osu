@@ -90,7 +90,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             int end = 0;
 
             // debug
-            double[] d = new double[mapLength];
+            // double[] s = new double[mapLength];
+            // double[] tw = new double[mapLength];
+            // double[] d = new double[mapLength];
 
             for (int t = 0; t < mapLength; t++)
             {
@@ -113,13 +115,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 int c = end - start;
 
-                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 3 / totalColumns) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
-                double twist = Math.Pow(a[t], 3 / totalColumns) * x[t] / (x[t] + strain + 1);
+                double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 3.0 / totalColumns) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
+                double twist = Math.Pow(a[t], 3.0 / totalColumns) * x[t] / (x[t] + strain + 1);
 
                 double deez = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
 
                 if (graph)
                 {
+                    s[t] = strain;
+                    tw[t] = twist;
                     d[t] = deez;
                 }
 
@@ -154,22 +158,26 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 plt.Axes.Left.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Right.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Bottom.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
-                plt.Axes.SetLimitsY(0, 32, plt.Axes.Left);
+                plt.Axes.SetLimitsY(0, 45, plt.Axes.Left);
                 plt.Axes.SetLimitsY(0, 1.0, plt.Axes.Right);
-                var jScat = plt.Add.Scatter(xs, j);
-                jScat.LegendText = "J";
-                var xScat = plt.Add.Scatter(xs, x);
-                xScat.LegendText = "X";
-                var pScat = plt.Add.Scatter(xs, p);
-                pScat.LegendText = "P";
-                var aScat = plt.Add.Scatter(xs, a);
-                aScat.LegendText = "A";
-                aScat.Axes.YAxis = plt.Axes.Right;
-                var rScat = plt.Add.Scatter(xs, r);
-                rScat.LegendText = "R";
-                rScat.Axes.YAxis = plt.Axes.Right;
+                // var jScat = plt.Add.Scatter(xs, j);
+                // jScat.LegendText = "J";
+                // var xScat = plt.Add.Scatter(xs, x);
+                // xScat.LegendText = "X";
+                // var pScat = plt.Add.Scatter(xs, p);
+                // pScat.LegendText = "P";
+                // var aScat = plt.Add.Scatter(xs, a);
+                // aScat.LegendText = "A";
+                // aScat.Axes.YAxis = plt.Axes.Right;
+                // var rScat = plt.Add.Scatter(xs, r);
+                // rScat.LegendText = "R";
+                // rScat.Axes.YAxis = plt.Axes.Right;
                 var dScat = plt.Add.Scatter(xs, d);
                 dScat.LegendText = "D";
+                var sScat = plt.Add.Scatter(xs, s);
+                sScat.LegendText = "S";
+                var twScat = plt.Add.Scatter(xs, tw);
+                twScat.LegendText = "T";
                 plt.SavePng($"./Results/{beatmapName}.png", 1280, 720);
             }
 
