@@ -122,9 +122,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 if (graph)
                 {
-                    s[t] = strain;
-                    tw[t] = twist;
-                    d[t] = deez;
+                    // s[t] = strain;
+                    // tw[t] = twist;
+                    // d[t] = deez;
                 }
 
                 sum1 += Math.Pow(deez, LAMBDA_N) * c;
@@ -172,12 +172,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 // var rScat = plt.Add.Scatter(xs, r);
                 // rScat.LegendText = "R";
                 // rScat.Axes.YAxis = plt.Axes.Right;
-                var dScat = plt.Add.Scatter(xs, d);
-                dScat.LegendText = "D";
-                var sScat = plt.Add.Scatter(xs, s);
-                sScat.LegendText = "S";
-                var twScat = plt.Add.Scatter(xs, tw);
-                twScat.LegendText = "T";
+                // var dScat = plt.Add.Scatter(xs, d);
+                // dScat.LegendText = "D";
+                // var sScat = plt.Add.Scatter(xs, s);
+                // sScat.LegendText = "S";
+                // var twScat = plt.Add.Scatter(xs, tw);
+                // twScat.LegendText = "T";
                 plt.SavePng($"./Results/{beatmapName}.png", 1280, 720);
             }
 
