@@ -138,7 +138,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
             // Buff high column counts
-            starRating *= 0.92 + 0.02 * totalColumns;
+            starRating *= 0.92 + 0.02 * Math.Min(totalColumns, 7);
 
             // rescale lower SRs
             if (starRating <= 2.00)
