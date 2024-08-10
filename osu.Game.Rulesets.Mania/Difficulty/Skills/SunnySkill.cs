@@ -90,9 +90,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             int end = 0;
 
             // debug
-            // double[] s = new double[mapLength];
-            // double[] tw = new double[mapLength];
-            // double[] d = new double[mapLength];
+            double[] s = new double[mapLength];
+            double[] tw = new double[mapLength];
+            double[] d = new double[mapLength];
 
             for (int t = 0; t < mapLength; t++)
             {
@@ -122,9 +122,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 if (graph)
                 {
-                    // s[t] = strain;
-                    // tw[t] = twist;
-                    // d[t] = deez;
+                    s[t] = strain;
+                    tw[t] = twist;
+                    d[t] = deez;
                 }
 
                 sum1 += Math.Pow(deez, LAMBDA_N) * c;
@@ -138,7 +138,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
 
             // Buff high column counts
-            starRating *= 0.92 + 0.02 * Math.Min(totalColumns, 7);
+            starRating *= 0.92 + 0.02 * totalColumns;
+            // starRating *= 0.875 + 0.13 * Math.Log(totalColumns) / Math.Log(4);
 
             // rescale lower SRs
             if (starRating <= 2.00)
@@ -158,22 +159,21 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 plt.Axes.Left.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Right.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Bottom.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
-                plt.Axes.SetLimitsY(0, 45, plt.Axes.Left);
                 plt.Axes.SetLimitsY(0, 1.0, plt.Axes.Right);
-                // var jScat = plt.Add.Scatter(xs, j);
-                // jScat.LegendText = "J";
-                // var xScat = plt.Add.Scatter(xs, x);
-                // xScat.LegendText = "X";
-                // var pScat = plt.Add.Scatter(xs, p);
-                // pScat.LegendText = "P";
-                // var aScat = plt.Add.Scatter(xs, a);
-                // aScat.LegendText = "A";
-                // aScat.Axes.YAxis = plt.Axes.Right;
+                var jScat = plt.Add.Scatter(xs, j);
+                jScat.LegendText = "J";
+                var xScat = plt.Add.Scatter(xs, x);
+                xScat.LegendText = "X";
+                var pScat = plt.Add.Scatter(xs, p);
+                pScat.LegendText = "P";
+                var aScat = plt.Add.Scatter(xs, a);
+                aScat.LegendText = "A";
+                aScat.Axes.YAxis = plt.Axes.Right;
                 // var rScat = plt.Add.Scatter(xs, r);
                 // rScat.LegendText = "R";
                 // rScat.Axes.YAxis = plt.Axes.Right;
-                // var dScat = plt.Add.Scatter(xs, d);
-                // dScat.LegendText = "D";
+                var dScat = plt.Add.Scatter(xs, d);
+                dScat.LegendText = "D";
                 // var sScat = plt.Add.Scatter(xs, s);
                 // sScat.LegendText = "S";
                 // var twScat = plt.Add.Scatter(xs, tw);
