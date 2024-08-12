@@ -74,7 +74,18 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             if (totalHits == 0)
                 return 0;
 
-            return (countPerfect * 320 + countGreat * 300 + countGood * 200 + countOk * 100 + countMeh * 50) / (totalHits * 320);
+            return (countPerfect * 305 + countGreat * 300 + countGood * 200 + countOk * 100 + countMeh * 50) / (totalHits * 305);
+        }
+
+        private double calculatePerformanceProportion(double acc)
+        {
+            if (scoreAccuracy > 0.99)
+                return 16 * acc - 15;
+
+            if (scoreAccuracy > 0.80)
+                return 84.0 / 19.0 * (acc - 0.80);
+
+            return 0;
         }
     }
 }
