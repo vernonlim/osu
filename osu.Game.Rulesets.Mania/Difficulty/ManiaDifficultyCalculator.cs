@@ -23,10 +23,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 {
     public class ManiaDifficultyCalculator : DifficultyCalculator
     {
-        private const double star_scaling_factor = 0.018;
-
         // The size of the chunks, in ms, the map should be split into for difficulty processing.
-        private const double granularity = 20;
+        private const double granularity = 5;
 
         private readonly bool isForCurrentRuleset;
         private readonly double originalOverallDifficulty;
@@ -99,7 +97,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
-            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity, ((ManiaBeatmap)beatmap).HitObjects.Count, beatmap.BeatmapInfo)  };
+            return new Skill[] { new SunnySkill(mods, ((ManiaBeatmap)beatmap).TotalColumns, beatmap.Difficulty.OverallDifficulty, granularity, ((ManiaBeatmap)beatmap).HitObjects.Count)  };
         }
 
         protected override Mod[] DifficultyAdjustmentMods
