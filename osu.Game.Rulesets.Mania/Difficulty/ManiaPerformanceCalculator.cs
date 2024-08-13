@@ -85,10 +85,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         private double calculatePerformanceProportion(double acc)
         {
-            if (acc > 99)
+            if (acc > 0.99)
                 return (1.00 - 0.85) * (acc - 0.99) / 0.01 + 0.85;
 
-            if (acc > 96)
+            if (acc > 0.96)
                 return (0.85 - 0.64) * (acc - 0.96) / 0.03 + 0.64;
 
             if (acc > 0.8)
