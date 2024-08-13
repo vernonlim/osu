@@ -62,10 +62,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             // The "proportion" of pp given after the SR to pp curve and length bonus
             double proportion = calculatePerformanceProportion(scoreAccuracy);
 
+            Console.WriteLine($"Acc: {scoreAccuracy}");
+            Console.WriteLine($"Proportion of pp: {proportion}");
+
             double difficultyValue = Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
                                      * (1 + 0.1 * Math.Min(1, totalHits / 1500)) // Length bonus, capped at 1500 notes
                                      * proportion // scaled by the proportion
-                                     * 1.18; // arbitrary scaling factor
+                                     * 1.10; // arbitrary scaling factor
 
             return difficultyValue;
         }
@@ -91,8 +94,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             if (acc > 0.96)
                 return (0.85 - 0.64) * (acc - 0.96) / 0.03 + 0.64;
 
-            if (acc > 0.8)
-                return 0.64 / 0.16 * (acc - 0.8);
+            if (acc > 0.80)
+                return (0.64 - 0.00) * (acc - 0.8) / 0.16;
 
             return 0;
         }
