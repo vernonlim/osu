@@ -85,8 +85,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             if (acc > 0.96)
                 return (0.85 - 0.64) * (acc - 0.96) / 0.03 + 0.64;
 
-            if (acc > 0.8)
-                return 0.64 / 0.16 * (acc - 0.8);
+            if (acc > 0.80)
+                return (0.64 - 0.00) * (acc - 0.8) / 0.16;
 
             return 0;
         }
