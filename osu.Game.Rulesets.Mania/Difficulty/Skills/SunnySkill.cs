@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
     public class SunnySkill : Skill
     {
         // Balancing constants
-        public const double LAMBDA_N = 4.0;
+        public const double LAMBDA_N = 5.0;
         public const double LAMBDA_1 = 0.11;
         public const double LAMBDA_2 = 7.0;
         public const double LAMBDA_3 = 24.0;
@@ -113,6 +113,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             }
 
             double starRating = Math.Pow(sum1 / sum2, 1.0 / LAMBDA_N);
+
+            // arbitrary scaling
             starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
 
             // Nerf short maps
@@ -126,6 +128,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             {
                 starRating = Math.Sqrt(starRating * 2);
             }
+
+            starRating *= 0.99;
 
             return starRating;
         }
