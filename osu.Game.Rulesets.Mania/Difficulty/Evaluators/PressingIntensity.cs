@@ -77,7 +77,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
         {
             // 1 - 0.00001*(0.15+abs(delta-0.08))^(-4)
 
-            return 1 - 0.00002 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
+            return 1 - 0.00005 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
+            // return 1;
         }
 
         // private static double streamBooster(double delta)
