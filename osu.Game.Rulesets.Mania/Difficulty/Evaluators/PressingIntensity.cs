@@ -27,8 +27,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                     // if notes are less than 1ms apart
                     if (deltaTime <= 1e-3)
                     {
-                        double value = 1000 / granularity * Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0)
-                                       * jackNerfer(deltaTime);
+                        double value = 1000 / granularity * Math.Pow(0.02 * (4 / hitLeniency - SunnySkill.LAMBDA_3), 1.0 / 4.0);
                         pressingIntensity[(int)prev.AdjustedStartTime] += value;
                         // prev = note is skipped
                         // but that is fine because the only value that matters is the StartTime
@@ -50,7 +49,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                             //                        * streamBooster(deltaTime) * v;
                             double value = 1 / deltaTime
                                         * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
-                                        * jackNerfer(deltaTime) * v;
+                                        * v;
                             pressingIntensity[t] += value;
                         }
                     }
@@ -60,7 +59,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         {
                             pressingIntensity[t] += 1 / deltaTime
                                                    * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
-                                                   * jackNerfer(deltaTime) * v;
+                                                   * v;
                         }
                     }
                 }
@@ -71,14 +70,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             pressingIntensity = ListUtils.Smooth(pressingIntensity, (int)(500 / granularity));
 
             return pressingIntensity;
-        }
-
-        private static double jackNerfer(double delta)
-        {
-            // 1 - 0.00001*(0.15+abs(delta-0.08))^(-4)
-
-            return 1 - 0.00005 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
-            // return 1;
         }
 
         // private static double streamBooster(double delta)
