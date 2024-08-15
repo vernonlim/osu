@@ -48,7 +48,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                             //                        * streamBooster(deltaTime) * v;
                             double value = 1 / deltaTime
                                         * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(deltaTime - hitLeniency / 2, 2)), 1 / 4.0)
-                                        * streamBooster(deltaTime) * v;
+                                        * v;
                             pressingIntensity[t] += value;
                         }
                     }
@@ -58,7 +58,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         {
                             pressingIntensity[t] += 1 / deltaTime
                                                    * Math.Pow(0.08 * (1 / hitLeniency) * (1 - SunnySkill.LAMBDA_3 * (1 / hitLeniency) * Math.Pow(hitLeniency / 6, 2)), 1 / 4.0)
-                                                   * streamBooster(deltaTime) * v;
+                                                   * v;
                         }
                     }
                 }
@@ -71,17 +71,17 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             return pressingIntensity;
         }
 
-        private static double streamBooster(double delta)
-        {
-            double val = 15.0 / delta;
+        // private static double streamBooster(double delta)
+        // {
+        //     double val = 15.0 / delta;
 
-            if (val > 180 && val < 340)
-            {
-                return 1 + 0.2 * Math.Pow(val - 180, 3) * Math.Pow(val - 340, 6) * Math.Pow(10, -18);
-            }
+        //     if (val > 180 && val < 340)
+        //     {
+        //         return 1 + 0.2 * Math.Pow(val - 180, 3) * Math.Pow(val - 340, 6) * Math.Pow(10, -18);
+        //     }
 
-            return 1;
-        }
+        //     return 1;
+        // }
 
         private static double calculateLnAmount(double startTime, double endTime, ManiaDifficultyHitObject?[] currentObjects, ManiaDifficultyHitObject?[] nextObjects)
         {
