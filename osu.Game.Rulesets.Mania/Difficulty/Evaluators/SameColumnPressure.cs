@@ -36,7 +36,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
                         for (int t = (int)prev.AdjustedStartTime; t < note.AdjustedStartTime; t++)
                         {
                             perColumnDeltaTimes[col][t] = delta;
-                            perColumnPressure[col][t] = val;
+                            perColumnPressure[col][t] = val * jackNerfer(delta);
                         }
                     }
 
@@ -73,6 +73,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
             }
 
             return sameColumnPressure;
+        }
+
+        private static double jackNerfer(double delta)
+        {
+            return 1 - 0.00005 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
         }
     }
 }
