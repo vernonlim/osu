@@ -129,8 +129,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 starRating = Math.Sqrt(starRating * 2);
             }
 
-            starRating *= 0.99;
-
             return starRating;
         }
     }
