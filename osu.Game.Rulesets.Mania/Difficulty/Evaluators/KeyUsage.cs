@@ -10,7 +10,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class KeyUsage
     {
-        public static uint[] EvaluateKeyUsage(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
+        public static bool[][] PerColumnKeyUsage(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
         {
             bool[][] keyUsageByColumn = new bool[totalColumns][];
 
@@ -26,9 +26,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
                 for (int t = startTime; t < endTime; t++)
                 {
-                    keyUsageByColumn[note.Column][t] = keyUsageByColumn[note.Column][t] || true;
+                    keyUsageByColumn[note.Column][t] = true;
                 }
             }
+
+            return keyUsageByColumn;
+        }
+        public static uint[] EvaluateKeyUsage(List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
+        {
+            bool[][] keyUsageByColumn = PerColumnKeyUsage(noteList, totalColumns, mapLength, granularity);
 
             uint[] keyUsage = new uint[mapLength];
 
