@@ -119,16 +119,16 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 double strain = Math.Pow(w_0 * Math.Pow(Math.Pow(a[t], 3.0 / k[t]) * j[t], 1.5) + (1 - w_0) * Math.Pow(Math.Pow(a[t], 2.0 / 3.0) * (0.8 * p[t] + r[t]), 1.5), 2.0 / 3.0);
                 double twist = Math.Pow(a[t], 3.0 / k[t]) * x[t] / (x[t] + strain + 1);
 
-                double deez = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
+                double difficulty = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
 
                 if (graph)
                 {
                     s[t] = strain;
                     tw[t] = twist;
-                    d[t] = deez;
+                    d[t] = difficulty;
                 }
 
-                sum1 += Math.Pow(deez, LAMBDA_N) * c;
+                sum1 += Math.Pow(difficulty, LAMBDA_N) * c;
                 sum2 += c;
             }
 
@@ -162,15 +162,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 plt.Axes.SetLimitsY(0, 1.0, plt.Axes.Right);
                 var jScat = plt.Add.Scatter(xs, j);
                 jScat.LegendText = "J";
-                // var xScat = plt.Add.Scatter(xs, x);
-                // xScat.LegendText = "X";
-                // var pScat = plt.Add.Scatter(xs, p);
-                // pScat.LegendText = "P";
-                // var aScat = plt.Add.Scatter(xs, a);
-                // aScat.LegendText = "A";
-                // aScat.Axes.YAxis = plt.Axes.Right;
-                // var rScat = plt.Add.Scatter(xs, r);
-                // rScat.LegendText = "R";
+                var xScat = plt.Add.Scatter(xs, x);
+                xScat.LegendText = "X";
+                var pScat = plt.Add.Scatter(xs, p);
+                pScat.LegendText = "P";
+                var aScat = plt.Add.Scatter(xs, a);
+                aScat.LegendText = "A";
+                aScat.Axes.YAxis = plt.Axes.Right;
+                var rScat = plt.Add.Scatter(xs, r);
+                rScat.LegendText = "R";
                 // rScat.Axes.YAxis = plt.Axes.Right;
                 var dScat = plt.Add.Scatter(xs, d);
                 dScat.LegendText = "D";
