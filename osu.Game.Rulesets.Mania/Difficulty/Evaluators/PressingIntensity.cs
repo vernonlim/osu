@@ -78,7 +78,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
             if (val > 160 && val < 360)
             {
-                return 1 + 7 * (val - 160) * Math.Pow(val - 360, 2) * 1.2e-7;
+                return 1 + 1.2e-7 * (val - 160) * Math.Pow(val - 360, 2);
             }
 
             return 1;
