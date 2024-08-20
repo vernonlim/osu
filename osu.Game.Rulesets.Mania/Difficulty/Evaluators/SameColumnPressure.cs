@@ -77,7 +77,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
         private static double jackNerfer(double delta)
         {
-            return 1 - 0.00005 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
+            return 1 - 0.00008 * Math.Pow(0.15 + Math.Abs(delta - 0.08), -4.0);
         }
     }
 }
