@@ -10,7 +10,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class Unevenness
     {
-        public static double[] EvaluateUnevenness(List<ManiaDifficultyHitObject>[] perColumnNoteList, List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double hitLeniency, double granularity)
+        public static double[] EvaluateUnevenness(List<ManiaDifficultyHitObject>[] perColumnNoteList, List<ManiaDifficultyHitObject> noteList, int totalColumns, int mapLength, double granularity)
         {
             // could be shared by passing in or with another structure
             bool[][] keyUsageByColumn = KeyUsage.PerColumnKeyUsage(noteList, totalColumns, mapLength, granularity);
