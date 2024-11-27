@@ -37,7 +37,17 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         // for debugging purposes
         private readonly BeatmapInfo beatmapInfo;
-        private bool graph = false;
+        private bool graph = true;
+
+        private bool firstRun = true;
+
+        private double[] difficulty;
+        private double[] localCountArray;
+
+        private int currentNoteCount;
+        private int currentLnCount;
+
+        private double currentTime;
 
         public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount, BeatmapInfo beatmapInfo)
             : base(mods)
@@ -49,6 +59,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             this.granularity = granularity;
 
             noteList = new List<ManiaDifficultyHitObject>(objectCount);
+
+            currentNoteCount = 0;
+            currentLnCount = 0;
 
             perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
             for (int i = 0; i < totalColumns; i++)
@@ -62,15 +75,32 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         public override void Process(DifficultyHitObject current)
         {
             ManiaDifficultyHitObject currObj = (ManiaDifficultyHitObject)current;
+            if (firstRun)
+            {
+                foreach (var obj in currObj.Objects)
+                {
+                    ManiaDifficultyHitObject mdho = (ManiaDifficultyHitObject)obj;
+                    noteList.Add(mdho);
+                    perColumnNoteList[mdho.Column].Add(mdho);
+                }
 
-            noteList.Add(currObj);
-            perColumnNoteList[currObj.Column].Add(currObj);
+                initializeDifficultyCache();
+
+                firstRun = false;
+            }
+
+            currentTime = Math.Max(currentTime, currObj.AdjustedEndTime);
+            currentNoteCount += 1;
+            if (currObj.BaseObject is HoldNote)
+            {
+                currentLnCount += 1;
+            }
         }
 
-        public override double DifficultyValue()
+        private void initializeDifficultyCache()
         {
             if (noteList.Count <= 0)
-                return 0;
+                return;
 
             int noteCount = noteList.Count;
             int lnCount = noteList.Count(obj => obj.BaseObject is HoldNote);
@@ -84,16 +114,16 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double[] r = ReleaseFactor.EvaluateReleaseFactor(noteList, totalColumns, mapLength, hitLeniency, granularity);
             uint[] k = KeyUsage.EvaluateKeyUsage(noteList, totalColumns, mapLength, granularity);
 
-            double sum1 = 0;
-            double sum2 = 0;
-
             int start = 0;
             int end = 0;
 
-            // debug
+            // debug and caching
             double[] s = new double[mapLength];
             double[] tw = new double[mapLength];
             double[] d = new double[mapLength];
+            double[] ca = new double[mapLength];
+            localCountArray = ca;
+            difficulty = d;
 
             for (int t = 0; t < mapLength; t++)
             {
@@ -121,30 +151,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 double difficulty = w_1 * Math.Pow(strain, 1.0 / 2.0) * Math.Pow(twist, p_1) + strain * w_2;
 
+                d[t] = difficulty;
+                ca[t] = c;
+
                 if (graph)
                 {
                     s[t] = strain;
                     tw[t] = twist;
-                    d[t] = difficulty;
                 }
-
-                sum1 += Math.Pow(difficulty, LAMBDA_N) * c;
-                sum2 += c;
-            }
-
-            double starRating = Math.Pow(sum1 / sum2, 1.0 / LAMBDA_N);
-            starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
-
-            // Nerf short maps
-            starRating *= (noteCount + 0.5 * lnCount) / (noteCount + 0.5 * lnCount + 60);
-
-            // Buff high column counts
-            starRating *= 0.96 + 0.01 * totalColumns;
-
-            // rescale lower SRs
-            if (starRating <= 2.00)
-            {
-                starRating = Math.Sqrt(starRating * 2);
             }
 
             if (graph)
@@ -159,6 +173,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 plt.Axes.Left.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Right.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
                 plt.Axes.Bottom.TickLabelStyle.FontName = ScottPlot.Fonts.Serif;
+                plt.Axes.SetLimitsY(0, 30, plt.Axes.Left);
                 plt.Axes.SetLimitsY(0, 1.0, plt.Axes.Right);
                 var jScat = plt.Add.Scatter(xs, j);
                 jScat.LegendText = "J";
@@ -179,6 +194,38 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 // var twScat = plt.Add.Scatter(xs, tw);
                 // twScat.LegendText = "T";
                 plt.SavePng($"./Results/{beatmapName}.png", 1280, 720);
+            }
+        }
+
+        public override double DifficultyValue()
+        {
+            if (currentNoteCount == 0)
+                return 0;
+
+            double sum1 = 0;
+            double sum2 = 0;
+
+            int currentMapLength = (int)currentTime + 1;
+
+            for (int t = 0; t < currentMapLength; t++)
+            {
+                sum1 += Math.Pow(difficulty[t], LAMBDA_N) * localCountArray[t];
+                sum2 += localCountArray[t];
+            }
+
+            double starRating = Math.Pow(sum1 / sum2, 1.0 / LAMBDA_N);
+            starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
+
+            // Nerf short maps
+            starRating *= (currentNoteCount + 0.5 * currentLnCount) / (currentNoteCount + 0.5 * currentLnCount + 60);
+
+            // Buff high column counts
+            starRating *= 0.96 + 0.01 * totalColumns;
+
+            // rescale lower SRs
+            if (starRating <= 2.00)
+            {
+                starRating = Math.Sqrt(starRating * 2);
             }
 
             return starRating;

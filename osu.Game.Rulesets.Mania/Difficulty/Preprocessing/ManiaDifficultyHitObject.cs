@@ -14,6 +14,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
     public class ManiaDifficultyHitObject : DifficultyHitObject
     {
         private readonly List<DifficultyHitObject>[] perColumnDifficultyHitObjects;
+        public readonly List<DifficultyHitObject> Objects;
 
         private readonly int columnIndex;
 
@@ -33,6 +34,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             int totalColumns = perColumnObjects.Length;
+            Objects = objects;
 
             perColumnDifficultyHitObjects = perColumnObjects;
             Column = BaseObject.Column;

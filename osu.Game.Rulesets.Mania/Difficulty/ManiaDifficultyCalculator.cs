@@ -87,6 +87,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             {
                 var currentObject = new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, perColumnObjects, objects.Count, granularity);
                 objects.Add(currentObject);
+
                 perColumnObjects[currentObject.Column].Add(currentObject);
             }
 
