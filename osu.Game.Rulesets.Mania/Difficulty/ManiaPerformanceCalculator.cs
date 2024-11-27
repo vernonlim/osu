@@ -38,7 +38,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             countMiss = score.Statistics.GetValueOrDefault(HitResult.Miss);
             scoreAccuracy = calculateCustomAccuracy();
 
-            double multiplier = 1.0;
+            // Arbitrary initial value for scaling pp in order to standardize distributions across game modes.
+            // The specific number has no intrinsic meaning and can be adjusted as needed.
+            double multiplier = 8.0;
 
             if (score.Mods.Any(m => m is ModNoFail))
                 multiplier *= 0.75;
@@ -57,9 +59,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         private double computeDifficultyValue(ManiaDifficultyAttributes attributes)
         {
-            double difficultyValue = 8.0 * Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
-                                         * Math.Max(0, 5 * scoreAccuracy - 4) // From 80% accuracy, 1/20th of total pp is awarded per additional 1% accuracy
-                                         * (1 + 0.1 * Math.Min(1, totalHits / 1500)); // Length bonus, capped at 1500 notes
+            // The "proportion" of pp given after the SR to pp curve and length bonus
+            double proportion = calculatePerformanceProportion(scoreAccuracy);
+
+            double difficultyValue = Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
+                                     * 1.1 / (1.0 + (1.5 / Math.Sqrt(totalHits))) // length bonus
+                                     * proportion // scaled by the proportion
+                                     * 1.18; // arbitrary scaling factor
 
             return difficultyValue;
         }
