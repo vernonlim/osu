@@ -47,7 +47,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private int currentNoteCount;
         private int currentLnCount;
 
+        private double previousTime;
         private double currentTime;
+
+        private double sum1;
+        private double sum2;
 
         public SunnySkill(Mod[] mods, int totalColumns, double od, double granularity, int objectCount, BeatmapInfo beatmapInfo)
             : base(mods)
@@ -62,6 +66,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             currentNoteCount = 0;
             currentLnCount = 0;
+            previousTime = 0;
+
+            sum1 = 0;
+            sum2 = 0;
 
             perColumnNoteList = new List<ManiaDifficultyHitObject>[totalColumns];
             for (int i = 0; i < totalColumns; i++)
@@ -86,14 +94,25 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
                 initializeDifficultyCache();
 
+                currentTime = 0;
+
                 firstRun = false;
             }
 
+            previousTime = currentTime;
             currentTime = Math.Max(currentTime, currObj.AdjustedEndTime);
             currentNoteCount += 1;
             if (currObj.BaseObject is HoldNote)
             {
                 currentLnCount += 1;
+            }
+
+            int currentMapLength = (int)currentTime;
+
+            for (int t = (int)previousTime; t < currentMapLength; t++)
+            {
+                sum1 += Math.Pow(difficulty[t], LAMBDA_N) * localCountArray[t];
+                sum2 += localCountArray[t];
             }
         }
 
@@ -201,17 +220,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             if (currentNoteCount == 0)
                 return 0;
-
-            double sum1 = 0;
-            double sum2 = 0;
-
-            int currentMapLength = (int)currentTime + 1;
-
-            for (int t = 0; t < currentMapLength; t++)
-            {
-                sum1 += Math.Pow(difficulty[t], LAMBDA_N) * localCountArray[t];
-                sum2 += localCountArray[t];
-            }
 
             double starRating = Math.Pow(sum1 / sum2, 1.0 / LAMBDA_N);
             starRating = Math.Pow(starRating, p_0) / Math.Pow(8, p_0) * 8;
