@@ -37,7 +37,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         // for debugging purposes
         private readonly BeatmapInfo beatmapInfo;
-        private bool graph = true;
+        private bool graph = false;
 
         private bool firstRun = true;
 
