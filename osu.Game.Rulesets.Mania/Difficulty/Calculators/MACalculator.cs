@@ -4,17 +4,19 @@ using System.Linq;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 {
-    public struct Note
+    public class Note
     {
         public int Column;  // key/column index
         public int Head;    // head (hit) time
         public int Tail;    // tail time (or -1 if not LN)
+        public int ColumnIndex;
 
         public Note(int column, int head, int tail)
         {
             Column = column;
             Head = head;
             Tail = tail;
+            ColumnIndex = 0;
         }
     }
 
@@ -93,6 +95,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => kvp.Value)
                 .ToList();
+
+            foreach (var list in LNDict.Values)
+            {
+                for (int i = 0; i < list.Count; i++) 
+                {
+                    var note = list[i];
+                    note.ColumnIndex = i;
+                }
+            }
 
             int maxHead = noteSeq.Max(n => n.Head);
             int maxTail = noteSeq.Max(n => n.Tail);
@@ -553,9 +564,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             {
                 Note currentNote = tailSeq[note];
 
-                int currentNoteIndex = LNDict[currentNote.Column].IndexOf(currentNote);
-
-                int nextNoteIndex = currentNoteIndex + 1;
+                int nextNoteIndex = currentNote.ColumnIndex + 1;
 
                 bool nextNoteExists = !(nextNoteIndex >= LNDict[currentNote.Column].Count);
 
@@ -574,6 +583,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 I_list[note] = 2 / (2 + Math.Exp(-5 * (currentI - 0.75)) + Math.Exp(-5 * (nextI - 0.75)));
             }
 
+            int previous_idx_start = 0;
+
             for (int i = 0; i < tailSeq.Count - 1; i++)
             {
                 Note note = tailSeq[i];
@@ -583,11 +594,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 int endTime = nextNote.Tail;
 
                 int idx_start = -1;
-                for (int j = 0; j < baseCorners.Length; j++)
-                {
-                    if (baseCorners[j] >= startTime)
+
+                for (int j = previous_idx_start; j < baseCorners.Length; j++) {
+                    if (baseCorners[j] >= startTime) 
                     {
                         idx_start = j;
+                        previous_idx_start = j;
                         break;
                     }
                 }
@@ -613,6 +625,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             // Smooth and interpolate as in the rest of the algorithm.
             double[] Rbar_base = SmoothOnCorners(baseCorners, R_base, 500, 0.001, "sum");
             double[] Rbar = InterpValues(allCorners, baseCorners, Rbar_base);
+
 
             // --- Section 3: Compute C and Ks ---
             // Console.WriteLine("3");
