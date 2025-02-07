@@ -52,7 +52,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             const double lambda_n = 5;
             const double lambda_1 = 0.11;
             const double lambda_3 = 24.0;
-            const double lambda2 = 6; // For Malody
+            const double lambda2 = 6.0;
             const double lambda_4 = 0.8;
             const double w0 = 0.4;
             const double w1 = 2.7;
@@ -69,12 +69,16 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 
             // --- Group notes by column ---
             Dictionary<int, List<Note>> noteDict = new Dictionary<int, List<Note>>();
+            for (int i = 0; i < keyCount; i++)
+            {
+                noteDict[i] = new List<Note>();
+            }
+
             foreach (var note in noteSeq)
             {
-                if (!noteDict.ContainsKey(note.Column))
-                    noteDict[note.Column] = new List<Note>();
                 noteDict[note.Column].Add(note);
             }
+
             List<List<Note>> noteSeqByColumn = noteDict
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => kvp.Value)
@@ -153,18 +157,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             double[] allCorners = allCornersList.Select(val => (double)val).ToArray();
             double[] baseCorners = cornersBaseList.Select(val => (double)val).ToArray();
             double[] ACorners = cornersAList.Select(val => (double)val).ToArray();
-
-            Func<double, int> StarToLevel = (x) => {
-                if (x < 5.78) {
-                    return (int)Math.Floor(x / 0.17);
-                }
-
-                if (x < 6) {
-                    return 34;
-                }
-
-                return 35 + (int)Math.Floor((x - 6) / 0.25);
-            };
 
             // --- Section 2.3: Compute Jbar ---
             // Console.WriteLine("2.3");
@@ -765,10 +757,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 
             double SR = (0.88 * percentile93) * 0.25 + (0.94 * percentile83) * 0.2 + weightedMean * 0.55;
             SR = Math.Pow(SR, p0) / Math.Pow(8, p0) * 8;
+
+            // length weighting
             double totalNotes = noteSeq.Count + 0.5 * LNSeq.Count;
             SR *= totalNotes / (totalNotes + 60);
-            if (SR <= 2)
-                SR = Math.Sqrt(SR * 2);
 
             SR *= 0.97;
 

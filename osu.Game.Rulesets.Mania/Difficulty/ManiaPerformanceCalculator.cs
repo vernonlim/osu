@@ -63,9 +63,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             double proportion = calculatePerformanceProportion(scoreAccuracy);
 
             double difficultyValue = Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
-                                     * 1.1 / (1.0 + (1.5 / Math.Sqrt(totalHits))) // length bonus
+                                     * 1.1 / (1.0 + Math.Sqrt(attributes.StarRating / (2 * totalHits))) // length bonus
                                      * proportion // scaled by the proportion
-                                     * 1.18; // arbitrary scaling factor
+                                     * 1.20; // arbitrary scaling factor
 
             return difficultyValue;
         }
