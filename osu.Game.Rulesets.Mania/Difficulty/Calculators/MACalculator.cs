@@ -79,6 +79,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => kvp.Value)
                 .ToList();
+ 
+            foreach (var list in noteDict.Values)
+            {
+                for (int i = 0; i < list.Count; i++) 
+                {
+                    var note = list[i];
+                    note.ColumnIndex = i;
+                }
+            }
 
             // --- Long notes ---
             List<Note> LNSeq = noteSeq.Where(n => n.Tail >= 0).ToList();
@@ -95,15 +104,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => kvp.Value)
                 .ToList();
-
-            foreach (var list in LNDict.Values)
-            {
-                for (int i = 0; i < list.Count; i++) 
-                {
-                    var note = list[i];
-                    note.ColumnIndex = i;
-                }
-            }
 
             int maxHead = noteSeq.Max(n => n.Head);
             int maxTail = noteSeq.Max(n => n.Tail);
@@ -341,16 +341,17 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             for (int i = 0; i < T; i++)
                 LN_bodies[i] = 0.0;
 
-            // For each long note, add contributions in two segments:
-            //   from h to t1, add 0.5;
-            //   from t1 to t, add 1.0.
+            // For each long note, add contributions in three segments:
+            //   from h to t0, add nothing;
+            //   from t0 to t1, add 1.3;
             foreach (var note in LNSeq)
             {
                 int h = note.Head;
                 int t = note.Tail;
-                int t1 = Math.Min(h + 80, t);
-                for (int i = h; i < t1; i++)
-                    LN_bodies[i] += 0.5;
+                int t0 = Math.Min(h + 60, t);
+                int t1 = Math.Min(h + 120, t);
+                for (int i = t0; i < t1; i++)
+                    LN_bodies[i] += 1.3;
                 for (int i = t1; i < t; i++)
                     LN_bodies[i] += 1.0;
             }
@@ -566,9 +567,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 
                 int nextNoteIndex = currentNote.ColumnIndex + 1;
 
-                bool nextNoteExists = !(nextNoteIndex >= LNDict[currentNote.Column].Count);
+                bool nextNoteExists = !(nextNoteIndex >= noteSeqByColumn[currentNote.Column].Count);
 
-                Note? nextNote = nextNoteExists ? LNDict[currentNote.Column][nextNoteIndex] : null;
+                Note? nextNote = nextNoteExists ? noteSeqByColumn[currentNote.Column][nextNoteIndex] : null;
 
                 double currentI = 0.001 * Math.Abs(currentNote.Tail - currentNote.Head - 80.0) / x;
 
@@ -671,10 +672,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 double X_val = Xbar[i];
                 double P_val = Pbar[i];
                 double R_val = Rbar[i];
+                double C_val = C_arr[i];
                 double Ks_val = Ks_arr[i];
 
                 double term1 = Math.Pow(Math.Pow(A_val, 3.0 / Ks_val) * J_val, 1.5);
-                double term2 = Math.Pow(Math.Pow(A_val, 2.0 / 3.0) * (0.8 * P_val + R_val), 1.5);
+                double term2 = Math.Pow(Math.Pow(A_val, 2.0 / 3.0) * (0.8 * P_val + R_val * 35.0 / (C_val + 8)), 1.5);
                 double S_val = Math.Pow(w0 * term1 + (1 - w0) * term2, 2.0 / 3.0);
                 S_all[i] = S_val;
                 double T_val = (Math.Pow(A_val, 3.0 / Ks_val) * X_val) / (X_val + S_val + 1);
