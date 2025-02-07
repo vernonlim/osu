@@ -44,6 +44,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
                 return 0;
 
             double x = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
+            x = Math.Min(x, 0.6 * (x - 0.09) + 0.09);
 
             List<Calculators.Note> noteSeq = new List<Calculators.Note>();
 
