@@ -57,9 +57,13 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         private double computeDifficultyValue(ManiaDifficultyAttributes attributes)
         {
-            double difficultyValue = 8.0 * Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
-                                         * Math.Max(0, 5 * scoreAccuracy - 4) // From 80% accuracy, 1/20th of total pp is awarded per additional 1% accuracy
-                                         * (1 + 0.1 * Math.Min(1, totalHits / 1500)); // Length bonus, capped at 1500 notes
+            // The proportion of pp rewarded for a given accuracy.
+            double proportion = calculatePerformanceProportion(scoreAccuracy);
+
+            double difficultyValue = Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
+                                     * 1.1 / (1.0 + (1.5 / Math.Sqrt(totalHits))) // length bonus
+                                     * 1.18 // arbitrary scaling factor
+                                     * proportion; // multiply by the proportion
 
             return difficultyValue;
         }
@@ -75,6 +79,25 @@ namespace osu.Game.Rulesets.Mania.Difficulty
                 return 0;
 
             return (countPerfect * 320 + countGreat * 300 + countGood * 200 + countOk * 100 + countMeh * 50) / (totalHits * 320);
+        }
+
+        /// <summary>
+        /// Converts an accuracy value to the portion of max pp rewarded.
+        /// </summary>
+        /// <param name="accuracy"></param>
+        /// <returns></returns>
+        private double calculatePerformanceProportion(double accuracy)
+        {
+            if (accuracy > 0.99)
+                return (1.00 - 0.85) * (accuracy - 0.99) / 0.01 + 0.85;
+
+            if (accuracy > 0.96)
+                return (0.85 - 0.64) * (accuracy - 0.96) / 0.03 + 0.64;
+
+            if (accuracy > 0.80)
+                return (0.64 - 0.00) * (accuracy - 0.8) / 0.16;
+
+            return 0;
         }
     }
 }
