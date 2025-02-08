@@ -47,11 +47,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             this.totalColumns = totalColumns;
         }
 
-        // Mania difficulty hit objects are already sorted in the difficulty calculator, we just need to populate the lists.
         public override void Process(DifficultyHitObject current)
         {
             ManiaDifficultyHitObject note = (ManiaDifficultyHitObject)current;
 
+            // Calculate each difficulty component
             double j = SameColumnPressure.EvaluateSameColumnPressure(note, hitLeniency);
             double x = CrossColumnPressure.EvaluateCrossColumnPressure(note, hitLeniency);
             double p = PressingIntensity.EvaluatePressingIntensity(note, hitLeniency);
