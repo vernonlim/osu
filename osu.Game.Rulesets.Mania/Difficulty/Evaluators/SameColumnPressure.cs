@@ -14,7 +14,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 
         public static double EvaluateSameColumnPressure(ManiaDifficultyHitObject note, double hitLeniency)
         {
-            return 0;
+            double delta = note.NormalizedColumnDeltaTime;
+
+            double pressure = 1.0 / delta * Math.Pow(delta + LAMBDA_1 * Math.Pow(hitLeniency, 1.0 / 4.0), -1.0);
+
+            return pressure * jackNerfer(delta);
         }
+
+        private static double jackNerfer(double deltaTime) =>
+            1 - 7e-5 * Math.Pow(0.15 + Math.Abs(deltaTime - 0.08), -4);
     }
 }

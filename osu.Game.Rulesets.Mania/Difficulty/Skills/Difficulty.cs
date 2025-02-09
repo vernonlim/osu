@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         public DifficultySkill(Mod[] mods, int totalColumns, double od)
             : base(mods)
         {
-            // A value shared between skills representing how "lenient" the map is. 
+            // A value shared between skills representing how "lenient" the map is.
             // Scales inversely with OD.
             // Uses a custom value instead of `getHitWindow300` to match stable (and Sunny's work).
             hitLeniency = 0.3 * Math.Pow(
@@ -50,6 +50,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         public override void Process(DifficultyHitObject current)
         {
             ManiaDifficultyHitObject note = (ManiaDifficultyHitObject)current;
+
+            note.PrintInformation();
 
             // Calculate each difficulty component
             double j = SameColumnPressure.EvaluateSameColumnPressure(note, hitLeniency);

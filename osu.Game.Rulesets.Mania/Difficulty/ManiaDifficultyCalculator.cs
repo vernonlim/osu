@@ -19,6 +19,7 @@ using osu.Game.Rulesets.Mania.Scoring;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Scoring;
+using osu.Game.Screens.Play.Break;
 
 namespace osu.Game.Rulesets.Mania.Difficulty
 {
@@ -67,7 +68,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
-            // TODO: construct the required values for SR calculation and add them to MDHO
             var sortedObjects = beatmap.HitObjects.ToArray();
 
             sortedObjects = sortedObjects.OrderBy(obj => obj.StartTime).ThenBy(obj => ((ManiaHitObject)obj).Column).ToArray();
@@ -80,11 +80,18 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             for (int column = 0; column < columns; column++)
                 perColumnObjects[column] = new List<DifficultyHitObject>(sortedObjects.Length / columns);
 
+            // constructs the objects except for FutureHitObjects
             for (int i = 1; i < sortedObjects.Length; i++)
             {
-                var currentObject = new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, objects.Count);
+                var currentObject = new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, perColumnObjects, objects.Count);
                 objects.Add(currentObject);
                 perColumnObjects[currentObject.Column].Add(currentObject);
+            }
+
+            // Constructs FutureHitObjects with info from the fully constructed perColumnObjects
+            foreach (ManiaDifficultyHitObject note in objects)
+            {
+                note.InitializeFutureHitObjects(perColumnObjects);
             }
 
             return objects;
