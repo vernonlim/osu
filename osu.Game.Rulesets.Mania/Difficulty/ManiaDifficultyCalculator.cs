@@ -91,7 +91,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             // Constructs FutureHitObjects with info from the fully constructed perColumnObjects
             foreach (ManiaDifficultyHitObject note in objects)
             {
-                note.InitializeFutureHitObjects(perColumnObjects);
+                note.InitializeNextHitObjects();
             }
 
             return objects;

@@ -13,6 +13,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 {
     public class ManiaDifficultyHitObject : DifficultyHitObject
     {
+        private readonly List<DifficultyHitObject>[] perColumnDifficultyHitObjects;
+
         public new ManiaHitObject BaseObject => (ManiaHitObject)base.BaseObject;
 
         private readonly int columnIndex;
@@ -22,7 +24,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
         // The local context needed to assess the difficulty of the note
         // The lists are in order of how close each note is to the current - i.e index 0 is the closest note
         public readonly List<ManiaDifficultyHitObject>[] PreviousHitObjects;
-        public readonly List<ManiaDifficultyHitObject>[] FutureHitObjects;
+        public readonly List<ManiaDifficultyHitObject>[] NextHitObjects;
 
         // The deltaTime from the previous note in Time normalized to seconds
         public readonly double NormalizedDeltaTime;
@@ -33,10 +35,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
         public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            int totalColumns = perColumnObjects.Length;
+            perColumnDifficultyHitObjects = perColumnObjects;
+
+            int totalColumns = perColumnDifficultyHitObjects.Length;
 
             Column = BaseObject.Column;
-            columnIndex = perColumnObjects[Column].Count;
+            columnIndex = perColumnDifficultyHitObjects[Column].Count;
 
             PreviousHitObjects = new List<ManiaDifficultyHitObject>[totalColumns];
 
@@ -44,17 +48,17 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
             {
                 // Adds the previous hit object in each column
                 PreviousHitObjects[i] = new List<ManiaDifficultyHitObject>();
-                if (perColumnObjects[i].Count > 0)
+                if (perColumnDifficultyHitObjects[i].Count > 0)
                 {
-                    PreviousHitObjects[i].Add((ManiaDifficultyHitObject)perColumnObjects[i].Last());
+                    PreviousHitObjects[i].Add((ManiaDifficultyHitObject)perColumnDifficultyHitObjects[i].Last());
                 }
 
                 // If another object is within 499ms of the region, add it as part of the local context as well
-                for (int j = perColumnObjects[i].Count - 2; j >= 0; j--)
+                for (int j = perColumnDifficultyHitObjects[i].Count - 2; j >= 0; j--)
                 {
-                    if (StartTime - perColumnObjects[i][j].EndTime < 500)
+                    if (StartTime - perColumnDifficultyHitObjects[i][j].EndTime < 500)
                     {
-                        PreviousHitObjects[i].Add((ManiaDifficultyHitObject)perColumnObjects[i][j]);
+                        PreviousHitObjects[i].Add((ManiaDifficultyHitObject)perColumnDifficultyHitObjects[i][j]);
                     }
                     else
                     {
@@ -64,22 +68,22 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
             }
 
             // This cannot be filled yet, because it requires perColumnDifficultyHitObjects to be fully constructed
-            FutureHitObjects = new List<ManiaDifficultyHitObject>[totalColumns];
-            for (int i = 0; i < FutureHitObjects.Length; i++)
+            NextHitObjects = new List<ManiaDifficultyHitObject>[totalColumns];
+            for (int i = 0; i < NextHitObjects.Length; i++)
             {
-                FutureHitObjects[i] = new List<ManiaDifficultyHitObject>();
+                NextHitObjects[i] = new List<ManiaDifficultyHitObject>();
             }
 
             NormalizedDeltaTime = 0.001 * DeltaTime;
 
-            ManiaDifficultyHitObject? prev = PrevInColumn();
+            ManiaDifficultyHitObject? prev = PrevInColumn(0);
             NormalizedColumnDeltaTime = prev is not null ? 0.001 * (StartTime - prev.StartTime) : 10e9;
         }
 
         // Should only run after perColumnObjects is fully constructed with all details
-        public void InitializeFutureHitObjects(List<DifficultyHitObject>[] perColumnObjects)
+        public void InitializeNextHitObjects()
         {
-            for (int i = 0; i < FutureHitObjects.Length; i++)
+            for (int i = 0; i < NextHitObjects.Length; i++)
             {
                 ManiaDifficultyHitObject? prevObject = PreviousHitObjects[i].FirstOrDefault();
 
@@ -103,35 +107,43 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
                     futureIndex = prevObject.columnIndex + 1;
                 }
 
-                nextObject = futureIndex < perColumnObjects[i].Count
-                    ? (ManiaDifficultyHitObject?)perColumnObjects[i][futureIndex]
+                nextObject = futureIndex < perColumnDifficultyHitObjects[i].Count
+                    ? (ManiaDifficultyHitObject?)perColumnDifficultyHitObjects[i][futureIndex]
                     : default;
 
                 if (nextObject is not null)
                 {
-                    FutureHitObjects[i].Add(nextObject);
+                    NextHitObjects[i].Add(nextObject);
 
                     // If another object is within 500ms of the region, add it as part of the local context as well
-                    for (int j = nextObject.columnIndex + 1; j < perColumnObjects[i].Count; j++)
+                    for (int j = nextObject.columnIndex + 1; j < perColumnDifficultyHitObjects[i].Count; j++)
                     {
                         // Notably, this includes notes within an LN's time range
-                        if (perColumnObjects[i][j].StartTime - EndTime <= 500)
+                        if (perColumnDifficultyHitObjects[i][j].StartTime - EndTime <= 500)
                         {
-                            FutureHitObjects[i].Add((ManiaDifficultyHitObject)perColumnObjects[i][j]);
+                            NextHitObjects[i].Add((ManiaDifficultyHitObject)perColumnDifficultyHitObjects[i][j]);
                         }
                     }
                 }
             }
         }
 
-        public ManiaDifficultyHitObject? PrevInColumn()
+        public ManiaDifficultyHitObject? PrevInColumn(int backwardsIndex)
         {
-            return PreviousHitObjects[Column].FirstOrDefault();
+            int index = columnIndex - (backwardsIndex + 1);
+            return (ManiaDifficultyHitObject?)(
+                index >= 0 && index < perColumnDifficultyHitObjects[Column].Count
+                ? perColumnDifficultyHitObjects[Column][index]
+                : default);
         }
 
-        public ManiaDifficultyHitObject? NextInColumn()
+        public ManiaDifficultyHitObject? NextInColumn(int forwardsIndex)
         {
-            return FutureHitObjects[Column].FirstOrDefault();
+            int index = columnIndex + (forwardsIndex + 1);
+            return (ManiaDifficultyHitObject?)(
+                index >= 0 && index < perColumnDifficultyHitObjects[Column].Count
+                ? perColumnDifficultyHitObjects[Column][index]
+                : default);
         }
 
         // For testing purposes
@@ -151,10 +163,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
             }
             Console.WriteLine();
             Console.WriteLine($"Future:");
-            for (int i = 0; i < FutureHitObjects.Length; i++)
+            for (int i = 0; i < NextHitObjects.Length; i++)
             {
                 Console.WriteLine($"Column {i + 1}:");
-                foreach (var note in FutureHitObjects[i])
+                foreach (var note in NextHitObjects[i])
                 {
                     string noteTypeShort = note.StartTime == note.EndTime ? "RN" : "LN";
                     Console.WriteLine($"{noteTypeShort} {note.Index} of distance {note.StartTime - EndTime}");
