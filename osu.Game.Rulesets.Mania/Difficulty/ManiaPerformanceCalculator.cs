@@ -65,6 +65,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             double difficultyValue = Math.Pow(Math.Max(attributes.StarRating - 0.15, 0.05), 2.2) // Star rating to pp curve
                                      * 1.1 / (1.0 + Math.Sqrt(attributes.StarRating / (2 * totalHits))) // length bonus
                                      * proportion // scaled by the proportion
+                                     * varietyMultiplier(scoreAccuracy, attributes.Variety)
                                      * 1.25; // arbitrary scaling factor
 
             return difficultyValue;
@@ -95,6 +96,27 @@ namespace osu.Game.Rulesets.Mania.Difficulty
                 return (0.64 - 0.00) * (acc - 0.8) / 0.16;
 
             return 0;
+        }
+
+        private double varietyMultiplier(double acc, double variety)
+        {
+            // floor = 0.95
+            // cap = 1.05
+            // L = cap - floor
+            // v0 = 3.25
+            // k = 3
+
+            // sigmoid_variety = floor + L / (1 + np.exp(-k * (v - v0)))
+            // return 1 + 0.1 * (sigmoid_variety - 1) * (5 + np.maximum(0, acc - 95))
+
+            double floor = 0.94;
+            double cap = 1.06;
+            double L = cap - floor;
+            double v0 = 3.25;
+            double k = 3;
+
+            double sigmoidVariety = floor + L / (1 + Math.Exp(-k * (variety - v0)));
+            return 1 + 0.1 * (sigmoidVariety - 1) * (5 + Math.Max(0, acc - 95));
         }
     }
 }

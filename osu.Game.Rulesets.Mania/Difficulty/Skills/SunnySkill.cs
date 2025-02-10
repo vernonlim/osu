@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 {
     public class SunnySkill : Skill
     {
-        private readonly List<ManiaDifficultyHitObject> noteList;
+        private List<Calculators.Note> noteSeq;
         private double od;
         private int totalColumns;
 
@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
             this.totalColumns = totalColumns;
 
-            noteList = new List<ManiaDifficultyHitObject>(objectCount);
+            noteSeq = new List<Calculators.Note>(objectCount);
         }
 
         // Mania difficulty hit objects are already sorted in the difficulty calculator, we just need to populate the lists.
@@ -35,28 +35,29 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         {
             ManiaDifficultyHitObject currObj = (ManiaDifficultyHitObject)current;
 
-            noteList.Add(currObj);
+            int endTime = currObj.EndTime == currObj.StartTime ? -1 : (int)currObj.EndTime;
+
+            Calculators.Note note = new Calculators.Note(currObj.BaseObject.Column, (int)currObj.StartTime, endTime);
+
+            noteSeq.Add(note);
         }
 
         public override double DifficultyValue()
         {
-            if (noteList.Count <= 0)
+            if (noteSeq.Count <= 0)
                 return 0;
 
             double x = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
             x = Math.Min(x, 0.6 * (x - 0.09) + 0.09);
 
-            List<Calculators.Note> noteSeq = new List<Calculators.Note>();
-
-            foreach (ManiaDifficultyHitObject obj in noteList)
-            {
-                int endTime = obj.EndTime == obj.StartTime ? -1 : (int)obj.EndTime;
-                noteSeq.Add(new Calculators.Note(obj.BaseObject.Column, (int)obj.StartTime, endTime));
-            }
-
             double starRating = MACalculator.Calculate(noteSeq, totalColumns, x);
 
             return starRating;
+        }
+
+        public double VarietyValue()
+        {
+            return MACalculator.Variety(noteSeq);
         }
     }
 }

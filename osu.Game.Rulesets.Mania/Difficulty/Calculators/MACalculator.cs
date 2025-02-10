@@ -589,7 +589,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 
                 int idx_start = -1;
 
-                for (int j = previous_idx_start; j < baseCorners.Length; j++) {
+                for (int j = previous_idx_start; j < baseCorners.Length; j++)
+                {
                     if (baseCorners[j] >= startTime)
                     {
                         idx_start = j;
@@ -924,6 +925,93 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                     high = mid;
             }
             return low;
+        }
+
+        /// <param name="values">A collection of integer values (treated as categories).</param>
+        /// <param name="logConstant">A constant added inside the logarithm (default is 1.0).</param>
+        /// <returns>The Rao Quadratic Entropy Q.</returns>
+        public static double RaoQuadraticEntropyLog(IEnumerable<int> values, double logConstant = 1.0)
+        {
+            // Convert the input values to a list.
+            List<int> valList = new List<int>(values);
+
+            // Determine the unique categories and their counts.
+            // Using a dictionary to map each unique value to its count.
+            Dictionary<int, int> counts = new Dictionary<int, int>();
+            foreach (int v in valList)
+            {
+                if (counts.ContainsKey(v))
+                    counts[v]++;
+                else
+                    counts[v] = 1;
+            }
+
+            // Create arrays for the unique values and their corresponding relative frequencies.
+            int nUnique = counts.Count;
+            int[] unique = new int[nUnique];
+            double[] p = new double[nUnique];
+            int index = 0;
+            int totalCount = valList.Count;
+            foreach (KeyValuePair<int, int> kvp in counts)
+            {
+                unique[index] = kvp.Key;
+                p[index] = (double)kvp.Value / totalCount;
+                index++;
+            }
+
+            // Compute the distance (dissimilarity) matrix for the unique values.
+            // The distance between two categories is: log(logConstant + |x - y|).
+            double[,] distMatrix = new double[nUnique, nUnique];
+            for (int i = 0; i < nUnique; i++)
+            {
+                for (int j = 0; j < nUnique; j++)
+                {
+                    distMatrix[i, j] = Math.Log(logConstant + Math.Abs(unique[i] - unique[j]));
+                }
+            }
+
+            // Compute Rao's Quadratic Entropy:
+            // Q = sum_{i,j} p[i] * p[j] * distMatrix[i, j]
+            double Q = 0.0;
+            for (int i = 0; i < nUnique; i++)
+            {
+                for (int j = 0; j < nUnique; j++)
+                {
+                    Q += p[i] * p[j] * distMatrix[i, j];
+                }
+            }
+
+            return Q;
+        }
+
+        /// <param name="noteSeq">A list of notes (each note is an array of integers).</param>
+        /// <returns>The variety measure computed from the head gaps and tail gaps.</returns>
+        public static double Variety(List<Note> noteSeq)
+        {
+            // Extract heads and tails.
+            List<Note> tailSeq = new List<Note>();
+            tailSeq = noteSeq.OrderBy(n => n.Tail).ToList();
+
+            // Compute the gaps between consecutive head values.
+            List<int> headGaps = new List<int>();
+            for (int i = 0; i < noteSeq.Count - 1; i++)
+            {
+                headGaps.Add(noteSeq[i + 1].Head - noteSeq[i].Head);
+            }
+
+            // Compute the gaps between consecutive tail values.
+            List<int> tailGaps = new List<int>();
+            for (int i = 0; i < tailSeq.Count - 1; i++)
+            {
+                tailGaps.Add(tailSeq[i + 1].Tail - tailSeq[i].Tail);
+            }
+
+            // Compute the variety measures using Rao's Quadratic Entropy function.
+            double headVariety = RaoQuadraticEntropyLog(headGaps);
+            double tailVariety = RaoQuadraticEntropyLog(tailGaps);
+
+            // Combine the two measures (note the tail variety is scaled by 0.13).
+            return headVariety + 0.13 * tailVariety;
         }
 
         #endregion
