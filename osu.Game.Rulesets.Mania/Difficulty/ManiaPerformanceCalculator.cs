@@ -66,7 +66,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
                                      * 1.1 / (1.0 + Math.Sqrt(attributes.StarRating / (2 * totalHits))) // length bonus
                                      * proportion // scaled by the proportion
                                      * varietyMultiplier(scoreAccuracy, attributes.Variety)
-                                     * 1.30; // arbitrary scaling factor
+                                     * 1.25; // arbitrary scaling factor
 
             return difficultyValue;
         }
