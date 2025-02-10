@@ -66,7 +66,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
                                      * 1.1 / (1.0 + Math.Sqrt(attributes.StarRating / (2 * totalHits))) // length bonus
                                      * proportion // scaled by the proportion
                                      * varietyMultiplier(scoreAccuracy, attributes.Variety)
-                                     * 1.25; // arbitrary scaling factor
+                                     * 1.30; // arbitrary scaling factor
 
             return difficultyValue;
         }
@@ -100,15 +100,6 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         private double varietyMultiplier(double acc, double variety)
         {
-            // floor = 0.95
-            // cap = 1.05
-            // L = cap - floor
-            // v0 = 3.25
-            // k = 3
-
-            // sigmoid_variety = floor + L / (1 + np.exp(-k * (v - v0)))
-            // return 1 + 0.1 * (sigmoid_variety - 1) * (5 + np.maximum(0, acc - 95))
-
             double floor = 0.94;
             double cap = 1.06;
             double L = cap - floor;
