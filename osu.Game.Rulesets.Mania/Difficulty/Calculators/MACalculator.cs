@@ -309,14 +309,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
 
             // Combine the X_ks values across k using the cross–matrix coefficients.
             // (The cross–matrix for keyCount returns a list of keyCount+1 coefficients.)
-            List<double> crossCoeff = crossMatrix[keyCount];
             double[] X_base = new double[baseCorners.Length];
             for (int i = 0; i < baseCorners.Length; i++)
             {
                 double sum = 0.0;
                 for (int k = 0; k <= keyCount; k++)
                 {
-                    sum += X_ks[k][i] * crossCoeff[k];
+                    double crossVal = keyCount < crossMatrix.Count ? crossMatrix[keyCount][k] : 0.4;
+
+                    sum += X_ks[k][i] * crossVal;
                 }
                 X_base[i] = sum;
             }
