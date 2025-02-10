@@ -83,10 +83,10 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => kvp.Value)
                 .ToList();
- 
+
             foreach (var list in noteDict.Values)
             {
-                for (int i = 0; i < list.Count; i++) 
+                for (int i = 0; i < list.Count; i++)
                 {
                     var note = list[i];
                     note.ColumnIndex = i;
@@ -589,7 +589,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
                 int idx_start = -1;
 
                 for (int j = previous_idx_start; j < baseCorners.Length; j++) {
-                    if (baseCorners[j] >= startTime) 
+                    if (baseCorners[j] >= startTime)
                     {
                         idx_start = j;
                         previous_idx_start = j;
@@ -762,12 +762,27 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             double totalNotes = noteSeq.Count + 0.5 * LNSeq.Count;
             SR *= totalNotes / (totalNotes + 60);
 
+            SR = rescaleHigh(SR);
             SR *= 0.97;
 
             return SR;
         }
 
         #region Helper Methods
+
+        private static double rescaleHigh(double sr)
+        {
+            if (sr <= 9)
+                return sr;
+
+            if (sr <= 10.2)
+                return 9 + (sr - 9) * (1.0 / 1.2);
+
+            if (sr <= 11.5)
+                return 10 + (sr - 10.2) * (1.0 / 1.3);
+
+            return 11 + (sr - 11.5) * (2.0 / 3.0);
+        }
 
         // Returns the cumulative sum array for f evaluated on x.
         private static double[] CumulativeSum(double[] x, double[] f)
