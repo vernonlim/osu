@@ -101,8 +101,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
         private double varietyMultiplier(double acc, double variety)
         {
-            double floor = 0.94;
-            double cap = 1.06;
+            double floor = 0.89;
+            double cap = 1.11;
             double L = cap - floor;
             double v0 = 3.25;
             double k = 3;
