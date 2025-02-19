@@ -22,6 +22,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         [JsonProperty("variety")]
         public double Variety { get; set; }
 
+        [JsonProperty("spikiness")]
+        public double Spikiness { get; set; }
+
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())

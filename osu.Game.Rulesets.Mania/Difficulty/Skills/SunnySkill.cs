@@ -19,6 +19,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private List<Calculators.Note> noteSeq;
         private double od;
         private int totalColumns;
+        private double spikiness;
 
         public SunnySkill(Mod[] mods, int totalColumns, double od, int objectCount)
             : base(mods)
@@ -50,14 +51,20 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             double x = 0.3 * Math.Pow((64.5 - Math.Ceiling(od * 3.0)) / 500.0, 0.5);
             x = Math.Min(x, 0.6 * (x - 0.09) + 0.09);
 
-            double starRating = MACalculator.Calculate(noteSeq, totalColumns, x);
+            SRParams srParams = MACalculator.Calculate(noteSeq, totalColumns, x);
+            spikiness = srParams.Spikiness;
 
-            return starRating;
+            return srParams.SR;
         }
 
         public double VarietyValue()
         {
             return MACalculator.Variety(noteSeq);
+        }
+
+        public double SpikinessValue()
+        {
+            return spikiness;
         }
     }
 }

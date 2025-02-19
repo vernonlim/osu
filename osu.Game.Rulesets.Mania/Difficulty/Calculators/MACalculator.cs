@@ -37,6 +37,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
         public double Weight;
     }
 
+    public struct SRParams
+    {
+        public double SR;
+        public double Spikiness;
+    }
+
     /// <summary>
     /// MACalculator computes the difficulty rating from noteSeq (a sequence of notes).
     /// All methods are static.
@@ -46,7 +52,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
         /// <param name="noteSeq">List of Note objects.</param>
         /// <param name="keyCount">Number of keys (columns).</param>
         /// <returns>The computed difficulty (Level) as an int.</returns>
-        public static double Calculate(List<Note> noteSeq, int keyCount, double x)
+        public static SRParams Calculate(List<Note> noteSeq, int keyCount, double x)
         {
             // Fixed tuning constants.
             const double lambda_n = 5;
@@ -767,7 +773,25 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Calculators
             SR = rescaleHigh(SR);
             SR *= 0.97;
 
-            return SR;
+            double variance_sum_top = 0;
+            double variance_sum_bottom = denWeighted;
+
+            for (int i = 0; i < D_sorted.Length; i++)
+            {
+                variance_sum_top += Math.Pow(Math.Pow(D_sorted[i], 8) - Math.Pow(weightedMean, 8), 2) * sortedList[i].Weight;
+            }
+
+            double weighted_variance = Math.Pow(variance_sum_top / variance_sum_bottom, 1.0 / 8.0);
+
+            double spikiness = Math.Sqrt(weighted_variance) / weightedMean;
+
+            SRParams pr = new SRParams
+            {
+                SR = SR,
+                Spikiness = spikiness,
+            };
+
+            return pr;
         }
 
         #region Helper Methods

@@ -66,6 +66,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
                                      * 1.1 / (1.0 + Math.Sqrt(attributes.StarRating / (2 * totalHits))) // length bonus
                                      * proportion // scaled by the proportion
                                      * varietyMultiplier(scoreAccuracy, attributes.Variety)
+                                     * spikinessMultiplier(scoreAccuracy, attributes.Spikiness)
                                      * 1.25; // arbitrary scaling factor
 
             return difficultyValue;
@@ -108,6 +109,12 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
             double sigmoidVariety = floor + L / (1 + Math.Exp(-k * (variety - v0)));
             return 1 + 0.1 * (sigmoidVariety - 1) * (5 + Math.Max(0, acc - 95));
+        }
+
+        private double spikinessMultiplier(double acc, double spikiness)
+        {
+            double sigmoid_spikiness = 0.94 + 0.12 / (1.0 + Math.Exp(-20 * (spikiness - 1)));
+            return sigmoid_spikiness * (2 * Math.Pow(acc, 20) - 1) + 2 - 2 * Math.Pow(acc, 20);
         }
     }
 }
