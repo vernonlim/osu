@@ -31,14 +31,14 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         private readonly List<double> difficultyValues = new List<double>();
 
-        public DifficultySkill(Mod[] mods, int totalColumns, double od)
+        public DifficultySkill(Mod[] mods, int totalColumns, double greatHitWindow)
             : base(mods)
         {
             // A value shared between skills representing how "lenient" the map is.
             // Scales inversely with OD.
             // Uses a custom value instead of `getHitWindow300` to match stable (and Sunny's work).
             hitLeniency = 0.3 * Math.Pow(
-                (64.5 - Math.Ceiling(od * 3.0)) / 500.0,
+                (2 * greatHitWindow + 1) / 1000.0,
                 0.5);
 
             // Reduces the slope of the hitLeniency curve from OD0 to ~OD6.3, punishing low ODs less.
