@@ -51,11 +51,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double RightCatcherPosition => IsMovingRight ? ForwardCatcherPosition : BackwardCatcherPosition;
 
-        public float? LeftStandingPosition;
+        public double? BackwardStandingPosition;
 
-        public float? RightStandingPosition;
+        public double? ForwardStandingPosition;
 
-        public float ActionProbability;
+        public double? LeftStandingPosition => IsMovingRight ? BackwardStandingPosition : ForwardStandingPosition;
+
+        public double? RightStandingPosition => IsMovingRight ? ForwardStandingPosition : BackwardStandingPosition;
+
+        public double ActionProbability;
 
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
@@ -89,18 +93,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             IsStack = false;
             BackwardCatcherPosition = IsMovingRight ? Position - HalfCatcherWidth : Position + HalfCatcherWidth;
             ForwardCatcherPosition = IsMovingRight ? Position + HalfCatcherWidth : Position - HalfCatcherWidth;
-            LeftStandingPosition = null;
-            RightStandingPosition = null;
+            BackwardStandingPosition = null;
+            ForwardStandingPosition = null;
             ActionProbability = 1;
         }
 
         private double directionize(double val) => IsMovingRight ? val : -val;
+
+        private double furthestForward(double val1, double val2) => IsMovingRight ? Math.Max(val1, val2) : Math.Min(val1, val2);
+
+        private double furthestBackward(double val1, double val2) => IsMovingRight ? Math.Min(val1, val2) : Math.Max(val1, val2);
 
         private void enumerateCases()
         {
             // prevObject should never be null due to skipping this method for the 'first' object.
             Debug.Assert(prev != null, nameof(prev) + " != null");
 
+            // Cases 4.3.1 to 4.3.4
+            ForwardCatcherPosition = getDirectionChangePosition();
+        }
+
+        private double getDirectionChangePosition()
+        {
             double prevBackwardCatcherPosition = IsMovingRight ? prev.LeftCatcherPosition : prev.RightCatcherPosition;
             double prevForwardCatcherPosition = IsMovingRight ? prev.RightCatcherPosition : prev.LeftCatcherPosition;
 
@@ -109,17 +123,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             if (IsDirectionChange)
             {
                 if (prev.IsHyper && IsHyper)
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextSpeed);
+                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextSpeed);
 
                 if (prev.IsHyper && !IsHyper)
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
 
                 if (!prev.IsHyper && IsHyper)
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
+                    return NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
 
                 if (!prev.IsHyper && !IsHyper)
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
             }
+
+            return ForwardCatcherPosition;
         }
     }
 }

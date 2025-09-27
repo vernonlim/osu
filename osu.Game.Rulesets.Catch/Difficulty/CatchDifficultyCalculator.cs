@@ -81,13 +81,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double[] times = cdhos.Select(o => o.StartTime).ToArray();
                 int[] breaks = cdhos.Select(o => o.IsBreak ? 1 : 0).ToArray();
                 int[] stacks = cdhos.Select(o => o.IsStack ? 1 : 0).ToArray();
-                float[] lefts = cdhos.Select(o => o.LeftCatcherPosition).ToArray();
-                float[] rights = cdhos.Select(o => o.RightCatcherPosition).ToArray();
-                float[] leftMost = cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray();
-                float[] rightMost = cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray();
-                float[] leftStands = cdhos.Select(o => o.LeftStandingPosition ?? -1).ToArray();
-                float[] rightStands = cdhos.Select(o => o.RightStandingPosition ?? -1).ToArray();
-                float[] actionProb = cdhos.Select(o => o.ActionProbability).ToArray();
+                double[] lefts = cdhos.Select(o => o.LeftCatcherPosition).ToArray();
+                double[] rights = cdhos.Select(o => o.RightCatcherPosition).ToArray();
+                double[] leftMost = cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray();
+                double[] rightMost = cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray();
+                double[] leftStands = cdhos.Select(o => o.BackwardStandingPosition ?? -1).ToArray();
+                double[] rightStands = cdhos.Select(o => o.ForwardStandingPosition ?? -1).ToArray();
+                double[] actionProb = cdhos.Select(o => o.ActionProbability).ToArray();
 
                 ScottPlot.Plot plot = new ScottPlot.Plot();
                 // var bp = plot.Add.Scatter(times, breaks);
