@@ -12,21 +12,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
-        private readonly PalpableCatchHitObject nextObject;
+        private readonly PalpableCatchHitObject next;
 
-        private readonly CatchDifficultyHitObject? prevObject;
+        private readonly CatchDifficultyHitObject? prev;
 
         public bool IsHyper => ((PalpableCatchHitObject)BaseObject).HyperDash;
 
         public float Position => ((PalpableCatchHitObject)BaseObject).EffectiveX;
 
-        public float NextPosition => nextObject.EffectiveX;
+        public float NextPosition => next.EffectiveX;
 
         public float DeltaPosition => Math.Abs(Position - ((PalpableCatchHitObject)LastObject).EffectiveX);
 
-        public float NextDeltaPosition => Math.Abs(nextObject.EffectiveX - Position);
+        public float NextDeltaPosition => Math.Abs(next.EffectiveX - Position);
 
-        public double NextDeltaTime => nextObject.StartTime - BaseObject.StartTime;
+        public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
+
+        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
+        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
 
         public float CatcherWidth;
 
@@ -53,7 +56,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            this.nextObject = (PalpableCatchHitObject)nextObject;
+            this.next = (PalpableCatchHitObject)nextObject;
             CatcherWidth = catcherWidth;
             LeftNoteBorder = Position - (HalfCatcherWidth);
             RightNoteBorder = Position + (HalfCatcherWidth);
@@ -64,11 +67,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             if (prevHitObject is CatchDifficultyHitObject difficultyHitObject)
             {
-                prevObject = difficultyHitObject;
+                prev = difficultyHitObject;
             }
             else
             {
-                prevObject = null;
+                prev = null;
 
                 // If this is the 'first' object, set break=1 and leave other values at default.
                 IsBreak = true;
@@ -92,7 +95,69 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         private void enumerateCases()
         {
             // prevObject should never be null due to skipping this method for the 'first' object.
-            Debug.Assert(prevObject != null, nameof(prevObject) + " != null");
+            Debug.Assert(prev != null, nameof(prev) + " != null");
+
+            // Cases 4.3.1 - 4.3.4
+            if (Position > prev.Position && NextPosition < Position)
+            {
+                if (prev.IsHyper)
+                {
+                    if (IsHyper)
+                    {
+                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(NextDeltaTime * NextVelocity);
+                        return;
+                    }
+                    else
+                    {
+                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)NextDeltaTime;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (IsHyper)
+                    {
+                        double modifiedVelocity = (NextPosition - (prev.RightCatcherPosition + DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0);
+
+                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(modifiedVelocity * NextDeltaTime);
+                        return;
+                    }
+                    else
+                    {
+                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)NextDeltaTime;
+                    }
+                }
+            }
+            else if (Position < prev.Position && NextPosition > Position)
+            {
+                if (prev.IsHyper)
+                {
+                    if (IsHyper)
+                    {
+                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(NextDeltaTime * NextVelocity);
+                        return;
+                    }
+                    else
+                    {
+                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)NextDeltaTime;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (IsHyper)
+                    {
+                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
+
+                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(modifiedVelocity * NextDeltaTime);
+                        return;
+                    }
+                    else
+                    {
+                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)NextDeltaTime;
+                    }
+                }
+            }
         }
     }
 }
