@@ -68,7 +68,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             // Debug code
-            bool debug = true;
+            bool debug = false;
 
             if (debug)
             {
