@@ -28,8 +28,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
 
-        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0) * 0.001;
-        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0) * 0.001;
+        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
+        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
 
         public float CatcherWidth;
 
