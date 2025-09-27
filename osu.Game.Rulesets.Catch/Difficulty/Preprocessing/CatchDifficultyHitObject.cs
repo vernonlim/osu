@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
@@ -11,87 +12,87 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
-        public const float NORMALIZED_HALF_CATCHER_WIDTH = 41.0f;
-        private const float absolute_player_positioning_error = 16.0f;
+        private readonly PalpableCatchHitObject nextObject;
 
-        public new PalpableCatchHitObject BaseObject => (PalpableCatchHitObject)base.BaseObject;
+        private readonly CatchDifficultyHitObject? prevObject;
 
-        public new PalpableCatchHitObject LastObject => (PalpableCatchHitObject)base.LastObject;
+        public bool IsHyper => ((PalpableCatchHitObject)BaseObject).HyperDash;
 
-        /// <summary>
-        /// Normalized position of <see cref="BaseObject"/>.
-        /// </summary>
-        public readonly float NormalizedPosition;
+        public float Position => ((PalpableCatchHitObject)BaseObject).EffectiveX;
 
-        /// <summary>
-        /// Normalized position of <see cref="LastObject"/>.
-        /// </summary>
-        public readonly float LastNormalizedPosition;
+        public float NextPosition => nextObject.EffectiveX;
 
-        /// <summary>
-        /// Normalized position of the player required to catch <see cref="BaseObject"/>, assuming the player moves as little as possible.
-        /// </summary>
-        public float PlayerPosition { get; private set; }
+        public float DeltaPosition => Math.Abs(Position - ((PalpableCatchHitObject)LastObject).EffectiveX);
 
-        /// <summary>
-        /// Normalized position of the player after catching <see cref="LastObject"/>.
-        /// </summary>
-        public float LastPlayerPosition { get; private set; }
+        public float NextDeltaPosition => Math.Abs(nextObject.EffectiveX - Position);
 
-        /// <summary>
-        /// Normalized distance between <see cref="LastPlayerPosition"/> and <see cref="PlayerPosition"/>.
-        /// </summary>
-        /// <remarks>
-        /// The sign of the value indicates the direction of the movement: negative is left and positive is right.
-        /// </remarks>
-        public float DistanceMoved { get; private set; }
+        public double NextDeltaTime => nextObject.StartTime - BaseObject.StartTime;
 
-        /// <summary>
-        /// Normalized distance the player has to move from <see cref="LastPlayerPosition"/> in order to catch <see cref="BaseObject"/> at its <see cref="NormalizedPosition"/>.
-        /// </summary>
-        /// <remarks>
-        /// The sign of the value indicates the direction of the movement: negative is left and positive is right.
-        /// </remarks>
-        public float ExactDistanceMoved { get; private set; }
+        public float CatcherWidth;
 
-        /// <summary>
-        /// Milliseconds elapsed since the start time of the previous <see cref="CatchDifficultyHitObject"/>, with a minimum of 40ms.
-        /// </summary>
-        public readonly double StrainTime;
+        public float HalfCatcherWidth => CatcherWidth / 2;
 
-        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, float halfCatcherWidth, List<DifficultyHitObject> objects, int index)
+        public readonly float LeftNoteBorder;
+
+        public readonly float RightNoteBorder;
+
+        public bool IsBreak;
+
+        public bool IsStack;
+
+        public float LeftCatcherPosition;
+
+        public float RightCatcherPosition;
+
+        public float? LeftStandingPosition;
+
+        public float? RightStandingPosition;
+
+        public float ActionProbability;
+
+        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            // We will scale everything by this factor, so we can assume a uniform CircleSize among beatmaps.
-            float scalingFactor = NORMALIZED_HALF_CATCHER_WIDTH / halfCatcherWidth;
+            this.nextObject = (PalpableCatchHitObject)nextObject;
+            CatcherWidth = catcherWidth;
+            LeftNoteBorder = Position - (HalfCatcherWidth);
+            RightNoteBorder = Position + (HalfCatcherWidth);
 
-            NormalizedPosition = BaseObject.EffectiveX * scalingFactor;
-            LastNormalizedPosition = LastObject.EffectiveX * scalingFactor;
+            initializeVariables();
 
-            // Every strain interval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure
-            StrainTime = Math.Max(40, DeltaTime);
+            DifficultyHitObject prevHitObject = Previous(0);
 
-            setMovementState();
+            if (prevHitObject is CatchDifficultyHitObject difficultyHitObject)
+            {
+                prevObject = difficultyHitObject;
+            }
+            else
+            {
+                prevObject = null;
+
+                // If this is the 'first' object, set break=1 and leave other values at default.
+                IsBreak = true;
+                return;
+            }
+
+            enumerateCases();
         }
 
-        private void setMovementState()
+        private void initializeVariables()
         {
-            LastPlayerPosition = Index == 0 ? LastNormalizedPosition : ((CatchDifficultyHitObject)Previous(0)).PlayerPosition;
+            IsBreak = false;
+            IsStack = false;
+            LeftCatcherPosition = LeftNoteBorder;
+            RightCatcherPosition = RightNoteBorder;
+            LeftStandingPosition = null;
+            RightStandingPosition = null;
+            ActionProbability = 1;
+        }
 
-            PlayerPosition = Math.Clamp(
-                LastPlayerPosition,
-                NormalizedPosition - (NORMALIZED_HALF_CATCHER_WIDTH - absolute_player_positioning_error),
-                NormalizedPosition + (NORMALIZED_HALF_CATCHER_WIDTH - absolute_player_positioning_error)
-            );
-
-            DistanceMoved = PlayerPosition - LastPlayerPosition;
-
-            // For the exact position we consider that the catcher is in the correct position for both objects
-            ExactDistanceMoved = NormalizedPosition - LastPlayerPosition;
-
-            // After a hyperdash we ARE in the correct position. Always!
-            if (LastObject.HyperDash)
-                PlayerPosition = NormalizedPosition;
+        private void enumerateCases()
+        {
+            // prevObject should never be null due to skipping this method for the 'first' object.
+            Debug.Assert(prevObject != null, nameof(prevObject) + " != null");
         }
     }
 }
