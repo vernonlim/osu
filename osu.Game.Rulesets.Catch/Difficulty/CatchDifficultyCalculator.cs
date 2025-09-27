@@ -106,9 +106,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 var lb = plot.Add.ScatterPoints(times, leftMost);
                 var rb = plot.Add.ScatterPoints(times, rightMost);
                 lb.Color = Colors.Purple;
-                lb.MarkerSize = 10;
-                rb.Color = Colors.Red;
-                rb.MarkerSize = 10;
+                lb.MarkerSize = 30;
+                lb.MarkerLineWidth = 5;
+                lb.MarkerShape = MarkerShape.HorizontalBar;
+                rb.Color = Colors.Brown;
+                rb.MarkerSize = 30;
+                rb.MarkerLineWidth = 5;
+                rb.MarkerShape = MarkerShape.HorizontalBar;
                 // plot.Add.Scatter(times, leftStands);
                 // plot.Add.Scatter(times, rightStands);
 
