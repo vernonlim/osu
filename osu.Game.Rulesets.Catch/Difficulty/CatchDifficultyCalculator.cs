@@ -15,6 +15,7 @@ using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
+using ScottPlot;
 
 namespace osu.Game.Rulesets.Catch.Difficulty
 {
@@ -82,8 +83,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 int[] stacks = cdhos.Select(o => o.IsStack ? 1 : 0).ToArray();
                 float[] lefts = cdhos.Select(o => o.LeftCatcherPosition).ToArray();
                 float[] rights = cdhos.Select(o => o.RightCatcherPosition).ToArray();
-                float[] leftMost = cdhos.Select(o => o.Position - catcherWidth).ToArray();
-                float[] rightMost = cdhos.Select(o => o.Position + catcherWidth).ToArray();
+                float[] leftMost = cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray();
+                float[] rightMost = cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray();
                 float[] leftStands = cdhos.Select(o => o.LeftStandingPosition ?? -1).ToArray();
                 float[] rightStands = cdhos.Select(o => o.RightStandingPosition ?? -1).ToArray();
                 float[] actionProb = cdhos.Select(o => o.ActionProbability).ToArray();
@@ -96,9 +97,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 // sp.Axes.YAxis = plot.Axes.Right;
                 // ap.Axes.YAxis = plot.Axes.Right;
 
-                plot.Add.ScatterPoints(times, lefts);
-                plot.Add.ScatterPoints(times, rights);
-                plot.Add.ScatterPoints(times, rightMost);
+                var l = plot.Add.ScatterPoints(times, lefts);
+                var r = plot.Add.ScatterPoints(times, rights);
+                l.Color = Colors.Orange;
+                l.MarkerSize = 20;
+                r.Color = Colors.Blue;
+                r.MarkerSize = 20;
+                var lb = plot.Add.ScatterPoints(times, leftMost);
+                var rb = plot.Add.ScatterPoints(times, rightMost);
+                lb.Color = Colors.Purple;
+                lb.MarkerSize = 10;
+                rb.Color = Colors.Red;
+                rb.MarkerSize = 10;
                 // plot.Add.Scatter(times, leftStands);
                 // plot.Add.Scatter(times, rightStands);
 
@@ -110,7 +120,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
                 plot.Axes.SetLimitsY(512, 0);
 
-                plot.SavePng(outputPath, 50000, 1080);
+                int scale = (int)(times[^1] * 1.5);
+
+                plot.SavePng(outputPath, scale, 512 * 2 + 24);
 
                 Console.WriteLine($"Catcher Width: {catcherWidth}");
             }

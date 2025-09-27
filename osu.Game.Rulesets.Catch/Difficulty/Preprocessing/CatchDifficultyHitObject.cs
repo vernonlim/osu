@@ -126,7 +126,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                     if (IsHyper)
                     {
                         double modifiedVelocity = Math.Abs((NextPosition - (prev.RightCatcherPosition + DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
-                        Console.WriteLine($"Time: {BaseObject.StartTime}, modifiedVelocity: {modifiedVelocity}");
 
                         RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(modifiedVelocity * NextDeltaTime);
                         return;
@@ -157,7 +156,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 {
                     if (IsHyper)
                     {
-                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0) * 0.001);
+                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
 
                         LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(modifiedVelocity * NextDeltaTime);
                         return;
