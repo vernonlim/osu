@@ -28,8 +28,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
 
-        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
-        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
+        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0) * 0.001;
+        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0) * 0.001;
 
         public float CatcherWidth;
 
@@ -79,6 +79,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             }
 
             enumerateCases();
+
+            clampPositions();
         }
 
         private void initializeVariables()
@@ -90,6 +92,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;
+        }
+
+        private void clampPositions()
+        {
+            LeftCatcherPosition = float.Clamp(LeftCatcherPosition, 0, 512);
+            RightCatcherPosition = float.Clamp(RightCatcherPosition, 0, 512);
         }
 
         private void enumerateCases()
@@ -117,7 +125,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 {
                     if (IsHyper)
                     {
-                        double modifiedVelocity = (NextPosition - (prev.RightCatcherPosition + DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0);
+                        double modifiedVelocity = Math.Abs((NextPosition - (prev.RightCatcherPosition + DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
+                        Console.WriteLine($"Time: {BaseObject.StartTime}, modifiedVelocity: {modifiedVelocity}");
 
                         RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(modifiedVelocity * NextDeltaTime);
                         return;
@@ -125,6 +134,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                     else
                     {
                         RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)NextDeltaTime;
+                        return;
                     }
                 }
             }
@@ -147,7 +157,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 {
                     if (IsHyper)
                     {
-                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
+                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0) * 0.001);
 
                         LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(modifiedVelocity * NextDeltaTime);
                         return;
@@ -155,6 +165,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                     else
                     {
                         LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)NextDeltaTime;
+                        return;
                     }
                 }
             }

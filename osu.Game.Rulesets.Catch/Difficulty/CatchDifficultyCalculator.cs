@@ -67,6 +67,54 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lastObject = hitObject;
             }
 
+            // Debug code
+            bool debug = true;
+
+            if (debug)
+            {
+                // Change to output path
+                string outputPath = "/mnt/Storage/Programming/C#/osu-tools/PerformanceCalculator/Output/output.png";
+
+                List<CatchDifficultyHitObject> cdhos = objects.Select(o => (CatchDifficultyHitObject) o).ToList();
+
+                double[] times = cdhos.Select(o => o.StartTime).ToArray();
+                int[] breaks = cdhos.Select(o => o.IsBreak ? 1 : 0).ToArray();
+                int[] stacks = cdhos.Select(o => o.IsStack ? 1 : 0).ToArray();
+                float[] lefts = cdhos.Select(o => o.LeftCatcherPosition).ToArray();
+                float[] rights = cdhos.Select(o => o.RightCatcherPosition).ToArray();
+                float[] leftMost = cdhos.Select(o => o.Position - catcherWidth).ToArray();
+                float[] rightMost = cdhos.Select(o => o.Position + catcherWidth).ToArray();
+                float[] leftStands = cdhos.Select(o => o.LeftStandingPosition ?? -1).ToArray();
+                float[] rightStands = cdhos.Select(o => o.RightStandingPosition ?? -1).ToArray();
+                float[] actionProb = cdhos.Select(o => o.ActionProbability).ToArray();
+
+                ScottPlot.Plot plot = new ScottPlot.Plot();
+                // var bp = plot.Add.Scatter(times, breaks);
+                // var sp = plot.Add.Scatter(times, stacks);
+                // var ap = plot.Add.Scatter(times, actionProb);
+                // bp.Axes.YAxis = plot.Axes.Right;
+                // sp.Axes.YAxis = plot.Axes.Right;
+                // ap.Axes.YAxis = plot.Axes.Right;
+
+                plot.Add.ScatterPoints(times, lefts);
+                plot.Add.ScatterPoints(times, rights);
+                plot.Add.ScatterPoints(times, rightMost);
+                // plot.Add.Scatter(times, leftStands);
+                // plot.Add.Scatter(times, rightStands);
+
+                // float[] leftDisplacement = cdhos.Select(o => o.Position - o.LeftCatcherPosition).ToArray();
+                // float[] rightDisplacement = cdhos.Select(o => o.RightCatcherPosition - o.Position).ToArray();
+
+                // plot.Add.Scatter(times, leftDisplacement);
+                // plot.Add.Scatter(times, rightDisplacement);
+
+                plot.Axes.SetLimitsY(512, 0);
+
+                plot.SavePng(outputPath, 50000, 1080);
+
+                Console.WriteLine($"Catcher Width: {catcherWidth}");
+            }
+
             return objects;
         }
 
