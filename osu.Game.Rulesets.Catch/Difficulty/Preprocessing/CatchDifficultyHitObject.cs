@@ -28,8 +28,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
 
-        public double Velocity => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
-        public double NextVelocity => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
+        public double Speed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
+        public double NextSpeed => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
 
         public double CatcherWidth;
 
@@ -60,7 +60,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            this.next = (PalpableCatchHitObject)nextObject;
+            next = (PalpableCatchHitObject)nextObject;
             CatcherWidth = catcherWidth;
 
             initializeVariables();
@@ -109,7 +109,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             if (IsDirectionChange)
             {
                 if (prev.IsHyper && IsHyper)
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextVelocity);
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextSpeed);
 
                 if (prev.IsHyper && !IsHyper)
                     ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
