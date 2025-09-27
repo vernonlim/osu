@@ -35,17 +35,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public float HalfCatcherWidth => CatcherWidth / 2;
 
-        public readonly float LeftNoteBorder;
+        public bool IsMovingRight => Position >= ((PalpableCatchHitObject)LastObject).EffectiveX;
 
-        public readonly float RightNoteBorder;
+        public bool IsDirectionChange => IsMovingRight ? NextPosition < Position : NextPosition > Position;
+
+        public float BackwardCatcherPosition;
+
+        public float ForwardCatcherPosition;
 
         public bool IsBreak;
 
         public bool IsStack;
 
-        public float LeftCatcherPosition;
+        public float LeftCatcherPosition => IsMovingRight ? BackwardCatcherPosition : ForwardCatcherPosition;
 
-        public float RightCatcherPosition;
+        public float RightCatcherPosition => IsMovingRight ? ForwardCatcherPosition : BackwardCatcherPosition;
 
         public float? LeftStandingPosition;
 
@@ -58,8 +62,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         {
             this.next = (PalpableCatchHitObject)nextObject;
             CatcherWidth = catcherWidth;
-            LeftNoteBorder = Position - (HalfCatcherWidth);
-            RightNoteBorder = Position + (HalfCatcherWidth);
 
             initializeVariables();
 
@@ -79,94 +81,46 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             }
 
             enumerateCases();
-
-            clampPositions();
         }
 
         private void initializeVariables()
         {
             IsBreak = false;
             IsStack = false;
-            LeftCatcherPosition = LeftNoteBorder;
-            RightCatcherPosition = RightNoteBorder;
+            BackwardCatcherPosition = IsMovingRight ? Position - HalfCatcherWidth : Position + HalfCatcherWidth;
+            ForwardCatcherPosition = IsMovingRight ? Position + HalfCatcherWidth : Position - HalfCatcherWidth;
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;
         }
 
-        private void clampPositions()
-        {
-            LeftCatcherPosition = float.Clamp(LeftCatcherPosition, 0, 512);
-            RightCatcherPosition = float.Clamp(RightCatcherPosition, 0, 512);
-        }
+        private float directionize(float val) => IsMovingRight ? val : -val;
+
+        private double directionize(double val) => IsMovingRight ? val : -val;
 
         private void enumerateCases()
         {
             // prevObject should never be null due to skipping this method for the 'first' object.
             Debug.Assert(prev != null, nameof(prev) + " != null");
 
-            // Cases 4.3.1 - 4.3.4
-            if (Position > prev.Position && NextPosition < Position)
-            {
-                if (prev.IsHyper)
-                {
-                    if (IsHyper)
-                    {
-                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(NextDeltaTime * NextVelocity);
-                        return;
-                    }
-                    else
-                    {
-                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)NextDeltaTime;
-                        return;
-                    }
-                }
-                else
-                {
-                    if (IsHyper)
-                    {
-                        double modifiedVelocity = Math.Abs((NextPosition - (prev.RightCatcherPosition + DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
+            float prevBackwardCatcherPosition = IsMovingRight ? prev.LeftCatcherPosition : prev.RightCatcherPosition;
+            float prevForwardCatcherPosition = IsMovingRight ? prev.RightCatcherPosition : prev.LeftCatcherPosition;
 
-                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)(modifiedVelocity * NextDeltaTime);
-                        return;
-                    }
-                    else
-                    {
-                        RightCatcherPosition = NextPosition + HalfCatcherWidth + (float)NextDeltaTime;
-                        return;
-                    }
-                }
-            }
-            else if (Position < prev.Position && NextPosition > Position)
-            {
-                if (prev.IsHyper)
-                {
-                    if (IsHyper)
-                    {
-                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(NextDeltaTime * NextVelocity);
-                        return;
-                    }
-                    else
-                    {
-                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)NextDeltaTime;
-                        return;
-                    }
-                }
-                else
-                {
-                    if (IsHyper)
-                    {
-                        double modifiedVelocity = Math.Abs((NextPosition - (prev.LeftCatcherPosition - DeltaTime)) / (NextDeltaTime - 1000.0 / 60.0));
+            double modifiedVelocity = Math.Abs((NextPosition - (prevForwardCatcherPosition + directionize(DeltaTime))) / (NextDeltaTime - 1000.0 / 60.0));
 
-                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)(modifiedVelocity * NextDeltaTime);
-                        return;
-                    }
-                    else
-                    {
-                        LeftCatcherPosition = NextPosition - HalfCatcherWidth - (float)NextDeltaTime;
-                        return;
-                    }
-                }
+            if (IsDirectionChange)
+            {
+                if (prev.IsHyper && IsHyper)
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + (float)(NextDeltaTime * NextVelocity));
+
+                if (prev.IsHyper && !IsHyper)
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + (float)NextDeltaTime);
+
+                if (!prev.IsHyper && IsHyper)
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + (float)(modifiedVelocity * NextDeltaTime));
+
+                if (!prev.IsHyper && !IsHyper)
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + (float)NextDeltaTime);
             }
         }
     }
