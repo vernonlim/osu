@@ -7,6 +7,8 @@ using System.Diagnostics;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
+using Remotion.Linq.Parsing.Structure.ExpressionTreeProcessors;
+using ScottPlot.Colormaps;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
@@ -46,8 +48,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
 
-        public double CatcherSpeed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
-        public double NextCatcherSpeed => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
+        public double HyperdashSpeed =>
+            Math.Abs(
+                Position -
+                (1.0 / 2.0) * (Math.Max(prev.LeftCatcherPosition, prev.Position - HalfCatcherWidth)
+                               + Math.Min(prev.RightCatcherPosition, Position + HalfCatcherWidth))
+            ) / (DeltaTime - 1000.0 / 60.0);
+
+        public double NextHyperdashSpeed =>
+            Math.Abs(
+                NextPosition -
+                (1.0 / 2.0) * (Math.Max(LeftCatcherPosition, Position - HalfCatcherWidth)
+                               + Math.Min(RightCatcherPosition, NextPosition + HalfCatcherWidth))
+            ) / (NextDeltaTime - 1000.0 / 60.0);
 
         public double CatcherWidth;
 
@@ -94,9 +107,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double ActionProbability;
 
-        public double Precision;
+        public double PrecisionValue;
 
-        public double Speed;
+        public double SpeedValue;
 
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
@@ -124,6 +137,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             NoteType = classifyNote();
 
             updateVariables();
+
+            PrecisionValue = calculatePrecision();
         }
 
         private void initializeVariables()
@@ -144,13 +159,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             if (IsDirectionChange)
             {
                 if (prev.IsHyper && IsHyper)
-                    return PatternType.HyperjumpAfterJump;
+                    return PatternType.JumpAfterHyperjump;
 
                 if (prev.IsHyper && !IsHyper)
                     return PatternType.Hyperjumps;
 
                 if (!prev.IsHyper && IsHyper)
-                    return PatternType.JumpAfterHyperjump;
+                    return PatternType.HyperjumpAfterJump;
 
                 if (!prev.IsHyper && !IsHyper)
                     return PatternType.Jumps;
@@ -170,15 +185,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             switch (NoteType)
             {
-                case PatternType.HyperjumpAfterJump:
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextCatcherSpeed);
+                case PatternType.JumpAfterHyperjump:
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextHyperdashSpeed);
                     break;
 
                 case PatternType.Hyperjumps:
                     ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
                     break;
 
-                case PatternType.JumpAfterHyperjump:
+                case PatternType.HyperjumpAfterJump:
                     ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
                     break;
 
@@ -189,6 +204,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 case PatternType.None:
                     break;
             }
+        }
+
+        private double calculatePrecision()
+        {
+            // calculate here
+
+            return 0;
         }
     }
 }
