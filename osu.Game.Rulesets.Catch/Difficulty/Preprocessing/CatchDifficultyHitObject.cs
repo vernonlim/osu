@@ -10,11 +10,29 @@ using osu.Game.Rulesets.Objects;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
+    public enum PatternType
+    {
+        JumpAfterHyperjump,
+        Hyperjumps,
+        HyperjumpAfterJump,
+        Jumps,
+        None,
+    }
+
+    public enum MovementDirection
+    {
+        Right,
+        Left,
+        None
+    }
+
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
         private readonly PalpableCatchHitObject next;
 
         private readonly CatchDifficultyHitObject? prev;
+
+        private PalpableCatchHitObject prevBaseObject => (PalpableCatchHitObject)LastObject;
 
         public bool IsHyper => ((PalpableCatchHitObject)BaseObject).HyperDash;
 
@@ -22,14 +40,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double NextPosition => next.EffectiveX;
 
-        public double DeltaPosition => Math.Abs(Position - ((PalpableCatchHitObject)LastObject).EffectiveX);
+        public double DeltaPosition => Math.Abs(Position - prevBaseObject.EffectiveX);
 
         public double NextDeltaPosition => Math.Abs(next.EffectiveX - Position);
 
         public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
 
-        public double Speed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
-        public double NextSpeed => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
+        public double CatcherSpeed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
+        public double NextCatcherSpeed => NextDeltaPosition / (NextDeltaTime - 1000.0 / 60.0);
 
         public double CatcherWidth;
 
@@ -38,6 +56,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public bool IsMovingRight => Position >= ((PalpableCatchHitObject)LastObject).EffectiveX;
 
         public bool IsDirectionChange => IsMovingRight ? NextPosition < Position : NextPosition > Position;
+
+        public MovementDirection Direction =>
+            (Position - prevBaseObject.EffectiveX > HalfCatcherWidth) || (Position > prevBaseObject.EffectiveX && prevBaseObject.HyperDash)
+                ? MovementDirection.Right
+                : ((prevBaseObject.EffectiveX - Position > HalfCatcherWidth || (prevBaseObject.EffectiveX > Position && prevBaseObject.HyperDash))
+                    ? MovementDirection.Left
+                    : MovementDirection.None);
+
+        private double directionize(double val) => IsMovingRight ? val : -val;
+
+        private double furthestForward(double val1, double val2) => IsMovingRight ? Math.Max(val1, val2) : Math.Min(val1, val2);
+
+        private double furthestBackward(double val1, double val2) => IsMovingRight ? Math.Min(val1, val2) : Math.Max(val1, val2);
 
         public double BackwardCatcherPosition;
 
@@ -59,7 +90,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double? RightStandingPosition => IsMovingRight ? ForwardStandingPosition : BackwardStandingPosition;
 
+        public PatternType NoteType;
+
         public double ActionProbability;
+
+        public double Precision;
+
+        public double Speed;
 
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
@@ -84,7 +121,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 return;
             }
 
-            enumerateCases();
+            NoteType = classifyNote();
+
+            updateVariables();
         }
 
         private void initializeVariables()
@@ -98,44 +137,58 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             ActionProbability = 1;
         }
 
-        private double directionize(double val) => IsMovingRight ? val : -val;
-
-        private double furthestForward(double val1, double val2) => IsMovingRight ? Math.Max(val1, val2) : Math.Min(val1, val2);
-
-        private double furthestBackward(double val1, double val2) => IsMovingRight ? Math.Min(val1, val2) : Math.Max(val1, val2);
-
-        private void enumerateCases()
+        private PatternType classifyNote()
         {
-            // prevObject should never be null due to skipping this method for the 'first' object.
             Debug.Assert(prev != null, nameof(prev) + " != null");
 
-            // Cases 4.3.1 to 4.3.4
-            ForwardCatcherPosition = getDirectionChangePosition();
+            if (IsDirectionChange)
+            {
+                if (prev.IsHyper && IsHyper)
+                    return PatternType.HyperjumpAfterJump;
+
+                if (prev.IsHyper && !IsHyper)
+                    return PatternType.Hyperjumps;
+
+                if (!prev.IsHyper && IsHyper)
+                    return PatternType.JumpAfterHyperjump;
+
+                if (!prev.IsHyper && !IsHyper)
+                    return PatternType.Jumps;
+            }
+
+            return PatternType.None;
         }
 
-        private double getDirectionChangePosition()
+        private void updateVariables()
         {
+            Debug.Assert(prev != null, nameof(prev) + " != null");
+
             double prevBackwardCatcherPosition = IsMovingRight ? prev.LeftCatcherPosition : prev.RightCatcherPosition;
             double prevForwardCatcherPosition = IsMovingRight ? prev.RightCatcherPosition : prev.LeftCatcherPosition;
 
             double modifiedVelocity = Math.Abs((NextPosition - (prevForwardCatcherPosition + directionize(DeltaTime))) / (NextDeltaTime - 1000.0 / 60.0));
 
-            if (IsDirectionChange)
+            switch (NoteType)
             {
-                if (prev.IsHyper && IsHyper)
-                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextSpeed);
+                case PatternType.HyperjumpAfterJump:
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextCatcherSpeed);
+                    break;
 
-                if (prev.IsHyper && !IsHyper)
-                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                case PatternType.Hyperjumps:
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    break;
 
-                if (!prev.IsHyper && IsHyper)
-                    return NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
+                case PatternType.JumpAfterHyperjump:
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
+                    break;
 
-                if (!prev.IsHyper && !IsHyper)
-                    return NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                case PatternType.Jumps:
+                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    break;
+
+                case PatternType.None:
+                    break;
             }
-
-            return ForwardCatcherPosition;
         }
     }
 }
