@@ -49,7 +49,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
-            CatchHitObject? lastLastObject = null;
             CatchHitObject? lastObject = null;
 
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
@@ -61,11 +60,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (hitObject is Banana || hitObject is TinyDroplet)
                     continue;
 
-                if (lastObject != null && lastLastObject != null)
-                    objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, hitObject, clockRate, catcherWidth, objects, objects.Count));
+                if (lastObject != null)
+                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, objects.Count));
 
-                lastLastObject = lastObject;
                 lastObject = hitObject;
+            }
+
+            foreach (var o in objects)
+            {
+                CatchDifficultyHitObject catchDifficultyHitObject = (CatchDifficultyHitObject)o;
+                catchDifficultyHitObject.FinishInitialization();
             }
 
             // Debug code

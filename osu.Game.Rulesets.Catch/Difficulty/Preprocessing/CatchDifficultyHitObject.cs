@@ -3,21 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
-using Remotion.Linq.Parsing.Structure.ExpressionTreeProcessors;
-using ScottPlot.Colormaps;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public enum PatternType
     {
+        BreakBeginningRequiringMovement,
         JumpAfterHyperjump,
         Hyperjumps,
         HyperjumpAfterJump,
         Jumps,
+        LastNote,
         None,
     }
 
@@ -30,45 +29,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
-        private readonly PalpableCatchHitObject next;
-
-        private readonly CatchDifficultyHitObject? prev;
-
         private PalpableCatchHitObject prevBaseObject => (PalpableCatchHitObject)LastObject;
 
         public bool IsHyper => ((PalpableCatchHitObject)BaseObject).HyperDash;
 
         public double Position => ((PalpableCatchHitObject)BaseObject).EffectiveX;
 
-        public double NextPosition => next.EffectiveX;
-
         public double DeltaPosition => Math.Abs(Position - prevBaseObject.EffectiveX);
 
-        public double NextDeltaPosition => Math.Abs(next.EffectiveX - Position);
-
-        public double NextDeltaTime => next.StartTime - BaseObject.StartTime;
-
-        public double HyperdashSpeed =>
-            Math.Abs(
-                Position -
-                (1.0 / 2.0) * (Math.Max(prev.LeftCatcherPosition, prev.Position - HalfCatcherWidth)
-                               + Math.Min(prev.RightCatcherPosition, Position + HalfCatcherWidth))
-            ) / (DeltaTime - 1000.0 / 60.0);
-
-        public double NextHyperdashSpeed =>
-            Math.Abs(
-                NextPosition -
-                (1.0 / 2.0) * (Math.Max(LeftCatcherPosition, Position - HalfCatcherWidth)
-                               + Math.Min(RightCatcherPosition, NextPosition + HalfCatcherWidth))
-            ) / (NextDeltaTime - 1000.0 / 60.0);
-
-        public double CatcherWidth;
-
-        public double HalfCatcherWidth => CatcherWidth / 2;
-
         public bool IsMovingRight => Position >= ((PalpableCatchHitObject)LastObject).EffectiveX;
-
-        public bool IsDirectionChange => IsMovingRight ? NextPosition < Position : NextPosition > Position;
 
         public MovementDirection Direction =>
             (Position - prevBaseObject.EffectiveX > HalfCatcherWidth) || (Position > prevBaseObject.EffectiveX && prevBaseObject.HyperDash)
@@ -77,11 +46,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                     ? MovementDirection.Left
                     : MovementDirection.None);
 
+        public double DefaultHyperdashSpeed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
+
+        // Methods used for generalizing directional code
         private double directionize(double val) => IsMovingRight ? val : -val;
 
         private double furthestForward(double val1, double val2) => IsMovingRight ? Math.Max(val1, val2) : Math.Min(val1, val2);
 
         private double furthestBackward(double val1, double val2) => IsMovingRight ? Math.Min(val1, val2) : Math.Max(val1, val2);
+
+        // Initialized in constructor
+        public double CatcherWidth;
+
+        public double HalfCatcherWidth => CatcherWidth / 2;
 
         public double BackwardCatcherPosition;
 
@@ -103,45 +80,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         public double? RightStandingPosition => IsMovingRight ? ForwardStandingPosition : BackwardStandingPosition;
 
-        public PatternType NoteType;
-
         public double ActionProbability;
 
-        public double PrecisionValue;
+        // Initialized in second pass
+        public bool IsDirectionChange;
 
-        public double SpeedValue;
+        public double HyperdashSpeed;
 
-        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject nextObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
+        public PatternType NoteType;
+
+        private bool isProcessed = false;
+
+        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            next = (PalpableCatchHitObject)nextObject;
             CatcherWidth = catcherWidth;
 
-            initializeVariables();
-
-            DifficultyHitObject prevHitObject = Previous(0);
-
-            if (prevHitObject is CatchDifficultyHitObject difficultyHitObject)
-            {
-                prev = difficultyHitObject;
-            }
-            else
-            {
-                prev = null;
-
-                // If this is the 'first' object, set break=1 and leave other values at default.
-                IsBreak = true;
-                return;
-            }
-
-            NoteType = classifyNote();
-
-            updateVariables();
-
-            PrecisionValue = calculatePrecision();
+            initializeBasicProperties();
         }
 
-        private void initializeVariables()
+        private void initializeBasicProperties()
         {
             IsBreak = false;
             IsStack = false;
@@ -152,16 +110,52 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             ActionProbability = 1;
         }
 
-        private PatternType classifyNote()
+        public void FinishInitialization()
         {
-            Debug.Assert(prev != null, nameof(prev) + " != null");
+            if (isProcessed) return;
 
+            CatchDifficultyHitObject? prev = Previous(0) as CatchDifficultyHitObject;
+            CatchDifficultyHitObject? next = Next(0) as CatchDifficultyHitObject;
+
+            if (prev == null)
+            {
+                IsBreak = true;
+                NoteType = PatternType.BreakBeginningRequiringMovement;
+                return;
+            }
+
+            if (next == null)
+            {
+                ActionProbability = 0;
+                NoteType = PatternType.LastNote;
+                return;
+            }
+
+            initializeRelationshipProperties(prev, next);
+
+            NoteType = classifyNote(prev, next);
+
+            updateProperties(prev, next);
+
+            isProcessed = true;
+        }
+
+        private void initializeRelationshipProperties(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            IsDirectionChange = IsMovingRight ? next.Position < Position : next.Position > Position;
+            HyperdashSpeed =
+                Math.Abs(Position - 0.5 * (Math.Max(prev.LeftCatcherPosition, prev.Position - HalfCatcherWidth)) + Math.Min(prev.RightCatcherPosition, Position + HalfCatcherWidth))
+                / (DeltaTime - 1000.0 / 60.0);
+        }
+
+        private PatternType classifyNote(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
             if (IsDirectionChange)
             {
-                if (prev.IsHyper && IsHyper)
+                if (prev.IsHyper && !IsHyper)
                     return PatternType.JumpAfterHyperjump;
 
-                if (prev.IsHyper && !IsHyper)
+                if (prev.IsHyper && IsHyper)
                     return PatternType.Hyperjumps;
 
                 if (!prev.IsHyper && IsHyper)
@@ -174,31 +168,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             return PatternType.None;
         }
 
-        private void updateVariables()
+        private void updateProperties(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
-            Debug.Assert(prev != null, nameof(prev) + " != null");
-
-            double prevBackwardCatcherPosition = IsMovingRight ? prev.LeftCatcherPosition : prev.RightCatcherPosition;
             double prevForwardCatcherPosition = IsMovingRight ? prev.RightCatcherPosition : prev.LeftCatcherPosition;
 
-            double modifiedVelocity = Math.Abs((NextPosition - (prevForwardCatcherPosition + directionize(DeltaTime))) / (NextDeltaTime - 1000.0 / 60.0));
+            double modifiedVelocity = Math.Abs((next.Position - (prevForwardCatcherPosition + directionize(DeltaTime))) / (next.DeltaTime - 1000.0 / 60.0));
 
             switch (NoteType)
             {
                 case PatternType.JumpAfterHyperjump:
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime * NextHyperdashSpeed);
+                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime);
                     break;
 
                 case PatternType.Hyperjumps:
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime * next.DefaultHyperdashSpeed);
                     break;
 
                 case PatternType.HyperjumpAfterJump:
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + modifiedVelocity * NextDeltaTime);
+                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + modifiedVelocity * next.DeltaTime);
                     break;
 
                 case PatternType.Jumps:
-                    ForwardCatcherPosition = NextPosition + directionize(HalfCatcherWidth + NextDeltaTime);
+                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime);
                     break;
 
                 case PatternType.None:
