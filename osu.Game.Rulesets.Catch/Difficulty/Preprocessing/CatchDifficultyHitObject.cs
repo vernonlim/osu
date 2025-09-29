@@ -3,205 +3,100 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
-    public enum PatternType
-    {
-        BreakBeginningRequiringMovement,
-        JumpAfterHyperjump,
-        Hyperjumps,
-        HyperjumpAfterJump,
-        Jumps,
-        LastNote,
-        None,
-    }
-
-    public enum MovementDirection
-    {
-        Right,
-        Left,
-        None
-    }
-
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
-        private PalpableCatchHitObject prevBaseObject => (PalpableCatchHitObject)LastObject;
+        public new PalpableCatchHitObject BaseObject => (PalpableCatchHitObject)base.BaseObject;
 
-        public bool IsHyper => ((PalpableCatchHitObject)BaseObject).HyperDash;
+        public new PalpableCatchHitObject LastObject => (PalpableCatchHitObject)base.LastObject;
 
-        public double Position => ((PalpableCatchHitObject)BaseObject).EffectiveX;
+        private readonly IReadOnlyList<CatchDifficultyHitObject> noteDifficultyHitObjects;
 
-        public double DeltaPosition => Math.Abs(Position - prevBaseObject.EffectiveX);
+        public readonly int NoteIndex;
 
-        public bool IsMovingRight => Position >= ((PalpableCatchHitObject)LastObject).EffectiveX;
+        /// <summary>
+        /// Whether this note is a Hyperdash.
+        /// </summary>
+        public bool IsHyper => BaseObject.HyperDash;
 
-        public MovementDirection Direction =>
-            (Position - prevBaseObject.EffectiveX > HalfCatcherWidth) || (Position > prevBaseObject.EffectiveX && prevBaseObject.HyperDash)
-                ? MovementDirection.Right
-                : ((prevBaseObject.EffectiveX - Position > HalfCatcherWidth || (prevBaseObject.EffectiveX > Position && prevBaseObject.HyperDash))
-                    ? MovementDirection.Left
-                    : MovementDirection.None);
+        /// <summary>
+        /// The position of this note.
+        /// </summary>
+        public double Position => BaseObject.EffectiveX;
 
-        public double DefaultHyperdashSpeed => DeltaPosition / (DeltaTime - 1000.0 / 60.0);
-
-        // Methods used for generalizing directional code
-        private double directionize(double val) => IsMovingRight ? val : -val;
-
-        private double furthestForward(double val1, double val2) => IsMovingRight ? Math.Max(val1, val2) : Math.Min(val1, val2);
-
-        private double furthestBackward(double val1, double val2) => IsMovingRight ? Math.Min(val1, val2) : Math.Max(val1, val2);
-
-        // Initialized in constructor
+        /// <summary>
+        /// The width of the catcher.
+        /// </summary>
+        /// <remarks>
+        /// Equivalent to the width of the notes.
+        /// </remarks>
         public double CatcherWidth;
 
+        /// <summary>
+        /// Half of the catcher width.
+        /// </summary>
+        /// <remarks>
+        /// Equivalent to the radius of each note.
+        /// </remarks>
         public double HalfCatcherWidth => CatcherWidth / 2;
 
-        public double BackwardCatcherPosition;
+        /// <summary>
+        /// The distance between this note and the previous note.
+        /// </summary>
+        public double DeltaPosition => Math.Abs(Position - LastObject.EffectiveX);
 
-        public double ForwardCatcherPosition;
+        /// <summary>
+        /// Whether this note is to the right of the previous note.
+        /// </summary>
+        /// <remarks>
+        /// Difficulty calculation for each pattern is symmetric, with values having to be inverted depending on this property.
+        /// </remarks>
+        public bool IsMovingRight => Position >= LastObject.EffectiveX;
 
-        public bool IsBreak;
+        /// <summary>
+        /// The direction of movement between this note and the previous note.
+        /// </summary>
+        /// <remarks>
+        /// If the distance is not deemed 'significant' enough (allowing for the catcher to catch both notes without any), this is set to None.
+        /// </remarks>
+        public MovementDirection SignificantMovementDirection => (Position - LastObject.EffectiveX > HalfCatcherWidth || (Position > LastObject.EffectiveX && LastObject.HyperDash))
+            ? MovementDirection.Right
+            : ((LastObject.EffectiveX - Position > HalfCatcherWidth || (LastObject.EffectiveX > Position && LastObject.HyperDash))
+                ? MovementDirection.Left
+                : MovementDirection.None);
 
-        public bool IsStack;
+        /// <summary>
+        /// Movement data used in <see cref="MovementEvaluator"/>
+        /// This is updated with meaningful values for each note by <see cref="CatchMovementDifficultyPreprocessor"/>
+        /// </summary>
+        public CatchMovementData MovementData;
 
-        public double LeftCatcherPosition => IsMovingRight ? BackwardCatcherPosition : ForwardCatcherPosition;
-
-        public double RightCatcherPosition => IsMovingRight ? ForwardCatcherPosition : BackwardCatcherPosition;
-
-        public double? BackwardStandingPosition;
-
-        public double? ForwardStandingPosition;
-
-        public double? LeftStandingPosition => IsMovingRight ? BackwardStandingPosition : ForwardStandingPosition;
-
-        public double? RightStandingPosition => IsMovingRight ? ForwardStandingPosition : BackwardStandingPosition;
-
-        public double ActionProbability;
-
-        // Initialized in second pass
-        public bool IsDirectionChange;
-
-        public double HyperdashSpeed;
-
-        public PatternType NoteType;
-
-        private bool isProcessed = false;
-
-        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, float catcherWidth, List<DifficultyHitObject> objects, int index)
+        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
+                                        float catcherWidth,
+                                        List<DifficultyHitObject> objects,
+                                        List<CatchDifficultyHitObject> noteObjects,
+                                        int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             CatcherWidth = catcherWidth;
 
-            initializeBasicProperties();
+            noteDifficultyHitObjects = noteObjects;
+            noteObjects.Add(this);
+
+            NoteIndex = index;
+
+            MovementData = new CatchMovementData(this);
         }
 
-        private void initializeBasicProperties()
-        {
-            IsBreak = false;
-            IsStack = false;
-            BackwardCatcherPosition = IsMovingRight ? Position - HalfCatcherWidth : Position + HalfCatcherWidth;
-            ForwardCatcherPosition = IsMovingRight ? Position + HalfCatcherWidth : Position - HalfCatcherWidth;
-            BackwardStandingPosition = null;
-            ForwardStandingPosition = null;
-            ActionProbability = 1;
-        }
+        public CatchDifficultyHitObject? PreviousNote(int backwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex - (backwardsIndex + 1));
 
-        public void FinishInitialization()
-        {
-            if (isProcessed) return;
-
-            CatchDifficultyHitObject? prev = Previous(0) as CatchDifficultyHitObject;
-            CatchDifficultyHitObject? next = Next(0) as CatchDifficultyHitObject;
-
-            if (prev == null)
-            {
-                IsBreak = true;
-                NoteType = PatternType.BreakBeginningRequiringMovement;
-                return;
-            }
-
-            if (next == null)
-            {
-                ActionProbability = 0;
-                NoteType = PatternType.LastNote;
-                return;
-            }
-
-            initializeRelationshipProperties(prev, next);
-
-            NoteType = classifyNote(prev, next);
-
-            updateProperties(prev, next);
-
-            isProcessed = true;
-        }
-
-        private void initializeRelationshipProperties(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
-        {
-            IsDirectionChange = IsMovingRight ? next.Position < Position : next.Position > Position;
-            HyperdashSpeed =
-                Math.Abs(Position - 0.5 * (Math.Max(prev.LeftCatcherPosition, prev.Position - HalfCatcherWidth)) + Math.Min(prev.RightCatcherPosition, Position + HalfCatcherWidth))
-                / (DeltaTime - 1000.0 / 60.0);
-        }
-
-        private PatternType classifyNote(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
-        {
-            if (IsDirectionChange)
-            {
-                if (prev.IsHyper && !IsHyper)
-                    return PatternType.JumpAfterHyperjump;
-
-                if (prev.IsHyper && IsHyper)
-                    return PatternType.Hyperjumps;
-
-                if (!prev.IsHyper && IsHyper)
-                    return PatternType.HyperjumpAfterJump;
-
-                if (!prev.IsHyper && !IsHyper)
-                    return PatternType.Jumps;
-            }
-
-            return PatternType.None;
-        }
-
-        private void updateProperties(CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
-        {
-            double prevForwardCatcherPosition = IsMovingRight ? prev.RightCatcherPosition : prev.LeftCatcherPosition;
-
-            double modifiedVelocity = Math.Abs((next.Position - (prevForwardCatcherPosition + directionize(DeltaTime))) / (next.DeltaTime - 1000.0 / 60.0));
-
-            switch (NoteType)
-            {
-                case PatternType.JumpAfterHyperjump:
-                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime);
-                    break;
-
-                case PatternType.Hyperjumps:
-                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime * next.DefaultHyperdashSpeed);
-                    break;
-
-                case PatternType.HyperjumpAfterJump:
-                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + modifiedVelocity * next.DeltaTime);
-                    break;
-
-                case PatternType.Jumps:
-                    ForwardCatcherPosition = next.Position + directionize(HalfCatcherWidth + next.DeltaTime);
-                    break;
-
-                case PatternType.None:
-                    break;
-            }
-        }
-
-        private double calculatePrecision()
-        {
-            // calculate here
-
-            return 0;
-        }
+        public CatchDifficultyHitObject? NextNote(int forwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex + (forwardsIndex + 1));
     }
 }

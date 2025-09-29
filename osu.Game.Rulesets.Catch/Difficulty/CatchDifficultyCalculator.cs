@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
@@ -52,6 +53,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchHitObject? lastObject = null;
 
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
+            List<CatchDifficultyHitObject> noteObjects = new List<CatchDifficultyHitObject>();
 
             // In 2B beatmaps, it is possible that a normal Fruit is placed in the middle of a JuiceStream.
             foreach (var hitObject in CatchBeatmap.GetPalpableObjects(beatmap.HitObjects))
@@ -61,19 +63,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     continue;
 
                 if (lastObject != null)
-                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, objects.Count));
+                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
 
                 lastObject = hitObject;
             }
 
-            foreach (var o in objects)
-            {
-                CatchDifficultyHitObject catchDifficultyHitObject = (CatchDifficultyHitObject)o;
-                catchDifficultyHitObject.FinishInitialization();
-            }
+            CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
 
             // Debug code
-            bool debug = false;
+            bool debug = true;
 
             if (debug)
             {
@@ -81,17 +79,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 string outputPath = "/mnt/Storage/Programming/C#/osu-tools/PerformanceCalculator/Output/output.png";
 
                 List<CatchDifficultyHitObject> cdhos = objects.Select(o => (CatchDifficultyHitObject) o).ToList();
-
                 double[] times = cdhos.Select(o => o.StartTime).ToArray();
-                int[] breaks = cdhos.Select(o => o.IsBreak ? 1 : 0).ToArray();
-                int[] stacks = cdhos.Select(o => o.IsStack ? 1 : 0).ToArray();
-                double[] lefts = cdhos.Select(o => o.LeftCatcherPosition).ToArray();
-                double[] rights = cdhos.Select(o => o.RightCatcherPosition).ToArray();
-                double[] leftMost = cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray();
-                double[] rightMost = cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray();
-                double[] leftStands = cdhos.Select(o => o.BackwardStandingPosition ?? -1).ToArray();
-                double[] rightStands = cdhos.Select(o => o.ForwardStandingPosition ?? -1).ToArray();
-                double[] actionProb = cdhos.Select(o => o.ActionProbability).ToArray();
 
                 ScottPlot.Plot plot = new ScottPlot.Plot();
                 // var bp = plot.Add.Scatter(times, breaks);
@@ -101,14 +89,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 // sp.Axes.YAxis = plot.Axes.Right;
                 // ap.Axes.YAxis = plot.Axes.Right;
 
-                var l = plot.Add.ScatterPoints(times, lefts);
-                var r = plot.Add.ScatterPoints(times, rights);
+                var l = plot.Add.ScatterPoints(times, cdhos.Select(o => o.MovementData.LeftCatcherPosition).ToArray());
+                var r = plot.Add.ScatterPoints(times, cdhos.Select(o => o.MovementData.RightCatcherPosition).ToArray());
                 l.Color = Colors.Orange;
                 l.MarkerSize = 20;
                 r.Color = Colors.Blue;
                 r.MarkerSize = 20;
-                var lb = plot.Add.ScatterPoints(times, leftMost);
-                var rb = plot.Add.ScatterPoints(times, rightMost);
+                var lb = plot.Add.ScatterPoints(times, cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray());
+                var rb = plot.Add.ScatterPoints(times, cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray());
                 lb.Color = Colors.Purple;
                 lb.MarkerSize = 30;
                 lb.MarkerLineWidth = 5;
