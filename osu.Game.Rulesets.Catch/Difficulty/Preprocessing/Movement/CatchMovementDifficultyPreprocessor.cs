@@ -415,8 +415,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.RightStandingPosition = null;
                     data.SkipToDirectionChange = true;
 
-                    prevData.BackwardStandingPosition = prev.Position;
-                    prevData.ForwardStandingPosition = prev.Position + data.Directionize(note.HalfCatcherWidth);
+                    prevData.BackwardCatcherPosition = prev.Position;
+                    prevData.ForwardCatcherPosition = prev.Position + data.Directionize(note.HalfCatcherWidth);
 
                     // We need to re-classify the note as not a stack, then run this method again
                     data.NotePattern = classify(note, prev, next);
