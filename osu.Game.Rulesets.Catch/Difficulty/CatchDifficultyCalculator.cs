@@ -1,7 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Beatmaps;
@@ -16,7 +15,6 @@ using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
-using ScottPlot;
 
 namespace osu.Game.Rulesets.Catch.Difficulty
 {
@@ -69,71 +67,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
-
-            // Debug code
-            bool debug = false;
-
-            if (debug)
-            {
-                // Change to output path
-                string outputPath = "/mnt/Storage/Programming/C#/osu-tools/PerformanceCalculator/Output/output.png";
-
-                List<CatchDifficultyHitObject> cdhos = objects.Select(o => (CatchDifficultyHitObject) o).ToList();
-                double[] times = cdhos.Select(o => o.StartTime).ToArray();
-
-                ScottPlot.Plot plot = new ScottPlot.Plot();
-                // var bp = plot.Add.Scatter(times, breaks);
-                // var sp = plot.Add.Scatter(times, stacks);
-                // var ap = plot.Add.Scatter(times, actionProb);
-                // bp.Axes.YAxis = plot.Axes.Right;
-                // sp.Axes.YAxis = plot.Axes.Right;
-                // ap.Axes.YAxis = plot.Axes.Right;
-
-                var l = plot.Add.ScatterPoints(times, cdhos.Select(o => o.MovementData.LeftCatcherPosition).ToArray());
-                var r = plot.Add.ScatterPoints(times, cdhos.Select(o => o.MovementData.RightCatcherPosition).ToArray());
-                l.Color = Colors.Orange;
-                l.MarkerSize = 20;
-                r.Color = Colors.Blue;
-                r.MarkerSize = 20;
-                var lb = plot.Add.ScatterPoints(times, cdhos.Select(o => o.Position - o.HalfCatcherWidth).ToArray());
-                var rb = plot.Add.ScatterPoints(times, cdhos.Select(o => o.Position + o.HalfCatcherWidth).ToArray());
-                lb.Color = Colors.Purple;
-                lb.MarkerSize = 30;
-                lb.MarkerLineWidth = 5;
-                lb.MarkerShape = MarkerShape.HorizontalBar;
-                rb.Color = Colors.Brown;
-                rb.MarkerSize = 30;
-                rb.MarkerLineWidth = 5;
-                rb.MarkerShape = MarkerShape.HorizontalBar;
-                // plot.Add.Scatter(times, leftStands);
-                // plot.Add.Scatter(times, rightStands);
-
-                // float[] leftDisplacement = cdhos.Select(o => o.Position - o.LeftCatcherPosition).ToArray();
-                // float[] rightDisplacement = cdhos.Select(o => o.RightCatcherPosition - o.Position).ToArray();
-
-                // plot.Add.Scatter(times, leftDisplacement);
-                // plot.Add.Scatter(times, rightDisplacement);
-
-                plot.Axes.SetLimitsY(512, 0);
-
-                int scale = (int)(times[^1] * 1.5);
-
-                plot.SavePng(outputPath, scale, 512 * 2 + 24);
-
-                string[] noteNames = cdhos.Select(o => o.MovementData.NotePattern.ToString()).ToArray();
-                double?[] precisions = cdhos.Select(o => o.MovementData.NotePrecision).ToArray();
-                double[] actionProbabilities = cdhos.Select(o => o.MovementData.ActionProbability).ToArray();
-
-                string[] precisionNames = precisions.Select(d => d is null ? "Infty" : $"{d:0}").ToArray();
-
-                double[] deltat = cdhos.Select(o => o.DeltaTime).ToArray();
-                double[] deltap = cdhos.Select(o => o.DeltaPosition).ToArray();
-
-                for (int i = 0; i < noteNames.Length; i++)
-                {
-                    Console.WriteLine($"Time {times[i]:0}, p={precisionNames[i]}, q={actionProbabilities[i]:0}, dt={deltat[i]:0}, dp={deltap[i]:0}, {noteNames[i]}");
-                }
-            }
 
             return objects;
         }
