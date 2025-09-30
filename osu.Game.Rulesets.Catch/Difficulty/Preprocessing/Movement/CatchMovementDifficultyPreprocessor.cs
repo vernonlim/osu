@@ -554,7 +554,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             {
                 case PatternType.JumpAfterHyperjump:
                 {
-                    if (next.DeltaTime - next.DeltaPosition > note.HalfCatcherWidth)
+                    if (next.DeltaPosition - next.DeltaTime > note.HalfCatcherWidth)
                     {
                         return (next.DeltaTime - next.DeltaPosition + note.HalfCatcherWidth)
                                / (2 * calculateExpectedHyperdashSpeed(note, prev));
