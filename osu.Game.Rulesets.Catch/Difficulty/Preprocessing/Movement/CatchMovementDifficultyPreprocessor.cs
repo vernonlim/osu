@@ -182,12 +182,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
-            // Stacks
-            if (next.DeltaPosition <= note.CatcherWidth
-                && (note.DeltaPosition > note.CatcherWidth || prevData.BackwardStandingPosition is not null)
-                && (prevData.IsBreak || (note.DeltaPosition != 0 && data.IsDirectionChangeOrEqual)))
+            if (prevData.IsStack
+                && (prevData.LeftStandingPosition <= note.Position)
+                && (prevData.RightStandingPosition >= note.Position))
             {
-                return PatternType.PotentialStackBeginning;
+                return PatternType.StackContinuation;
+            }
+
+            if (prevData.IsStack
+                && (note.Position < prevData.LeftStandingPosition || note.Position > prevData.RightStandingPosition))
+            {
+                return PatternType.StackEnd;
             }
 
             if (prevData.BackwardStandingPosition is not null
@@ -204,17 +209,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 return PatternType.PotentialStack;
             }
 
-            if (prevData.IsStack
-                && (prevData.LeftStandingPosition <= note.Position)
-                && (prevData.RightStandingPosition >= note.Position))
+            if (data.BackwardStandingPosition is null
+                && next.DeltaPosition <= note.CatcherWidth
+                && data.IsDirectionChangeOrEqual)
             {
-                return PatternType.StackContinuation;
-            }
-
-            if (prevData.IsStack
-                && (note.Position < prevData.LeftStandingPosition || note.Position > prevData.RightStandingPosition))
-            {
-                return PatternType.StackEnd;
+                return PatternType.PotentialStackBeginning;
             }
 
             return PatternType.None;
@@ -381,20 +380,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     data.BackwardStandingPosition = next.Position - data.Directionize(note.CatcherWidth);
                     data.ForwardStandingPosition = note.Position + data.Directionize(note.CatcherWidth);
+                    data.SkipToDirectionChange = true;
 
-                    PatternType directionChangeType = classifyAsDirectionChange(note, prev);
-
-                    if (directionChangeType != PatternType.None)
-                    {
-                        data.NotePattern = directionChangeType;
-                    }
-                    else
-                    {
-                        Console.WriteLine("This shouldn't happen!");
-                    }
-
-                    // Re-run this assuming it's a direction change
+                    data.NotePattern = classify(note, prev, next);
                     updateData(note, prev, next);
+
+                    data.NotePattern = PatternType.PotentialStackBeginning;
 
                     break;
                 }
@@ -424,6 +415,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.StackContinuation:
                 {
+                    data.IsStack = true;
+
                     // TODO: Decaying q
                     data.ActionProbability = 0;
 

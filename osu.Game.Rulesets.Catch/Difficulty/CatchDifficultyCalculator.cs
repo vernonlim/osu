@@ -122,10 +122,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
                 string[] noteNames = cdhos.Select(o => o.MovementData.NotePattern.ToString()).ToArray();
                 double?[] precisions = cdhos.Select(o => o.MovementData.NotePrecision).ToArray();
+                double[] actionProbabilities = cdhos.Select(o => o.MovementData.ActionProbability).ToArray();
+
+                string[] precisionNames = precisions.Select(d => d is null ? "Infty" : $"{d:0}").ToArray();
+
+                double[] deltat = cdhos.Select(o => o.DeltaTime).ToArray();
+                double[] deltap = cdhos.Select(o => o.DeltaPosition).ToArray();
 
                 for (int i = 0; i < noteNames.Length; i++)
                 {
-                    Console.WriteLine($"Note {i}, Time {times[i]:0}, {noteNames[i]}, {precisions[i]:0}");
+                    Console.WriteLine($"Time {times[i]:0}, p={precisionNames[i]}, q={actionProbabilities[i]:0}, dt={deltat[i]:0}, dp={deltap[i]:0}, {noteNames[i]}");
                 }
             }
 

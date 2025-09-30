@@ -200,6 +200,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             IsBreak = false;
             IsStack = false;
             IsDirectionChange = false;
+            IsDirectionChangeOrEqual = false;
             LeftCatcherPosition = note.Position - note.HalfCatcherWidth;
             RightCatcherPosition = note.Position + note.HalfCatcherWidth;
             LeftStandingPosition = null;
