@@ -618,8 +618,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <returns></returns>
-        private static double calculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
-            Math.Abs((note.Position - 0.5 * (Math.Max(prev.MovementData.LeftCatcherPosition, prev.LeftNoteBorder) + Math.Min(prev.MovementData.RightCatcherPosition, prev.RightNoteBorder)))
-                     / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));
+        private static double calculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
+            double prevForwardNoteBorder = note.IsMovingRight ? prev.RightNoteBorder : prev.LeftNoteBorder;
+            double distance = Math.Abs(note.Position - data.FurthestForward(prevForwardCatcherPosition, prevForwardNoteBorder));
+
+            return distance / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
+        }
+
+        // private static double calculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+        //     Math.Abs((note.Position - 0.5 * (Math.Max(prev.MovementData.LeftCatcherPosition, prev.LeftNoteBorder) + Math.Min(prev.MovementData.RightCatcherPosition, prev.RightNoteBorder)))
+        //              / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));
     }
 }
