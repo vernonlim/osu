@@ -144,7 +144,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             return new Skill[]
             {
-                new Movement(mods, catcherWidth, clockRate),
+                new Movement(mods),
             };
         }
 

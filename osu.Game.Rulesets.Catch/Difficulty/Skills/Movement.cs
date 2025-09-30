@@ -15,28 +15,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double DecayWeight => 0.94;
 
-        protected readonly float CatcherWidth;
-
-        /// <summary>
-        /// The speed multiplier applied to the player's catcher.
-        /// </summary>
-        private readonly double catcherSpeedMultiplier;
-
-        public Movement(Mod[] mods, float catcherWidth, double clockRate)
+        public Movement(Mod[] mods)
             : base(mods)
         {
-            CatcherWidth = catcherWidth;
-
-            // In catch, clockrate adjustments do not only affect the timings of hitobjects,
-            // but also the speed of the player's catcher, which has an impact on difficulty
-            // TODO: Support variable clockrates caused by mods such as ModTimeRamp
-            //  (perhaps by using IApplicableToRate within the CatchDifficultyHitObject constructor to set a catcher speed for each object before processing)
-            catcherSpeedMultiplier = clockRate;
         }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
-            return MovementEvaluator.EvaluateDifficultyOf(current, catcherSpeedMultiplier);
+            return MovementEvaluator.EvaluateDifficultyOf(current);
         }
     }
 }
