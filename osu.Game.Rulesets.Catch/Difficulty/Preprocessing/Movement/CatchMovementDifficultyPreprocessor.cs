@@ -13,6 +13,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
     /// </summary>
     public class CatchMovementDifficultyPreprocessor
     {
+        /// <summary>
+        /// The custom SpeedWeight given to difficult actions.
+        /// </summary>
         private const double speed_bonus = 1.2;
 
         /// <summary>
@@ -112,6 +115,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return PatternType.None;
         }
 
+        /// <summary>
+        /// Attempts to classify a note as a break.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <param name="next">The next note.</param>
+        /// <returns>The <see cref="PatternType"/> corresponding to the break-related pattern, or null if none match.</returns>
         private static PatternType classifyAsBreak(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData prevData = prev.MovementData;
@@ -160,6 +170,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return PatternType.None;
         }
 
+        /// <summary>
+        /// Attempts to classify a note as a stack.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <param name="next">The next note.</param>
+        /// <returns>The <see cref="PatternType"/> corresponding to the stack-related pattern, or null if none match.</returns>
         private static PatternType classifyAsStack(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
@@ -203,6 +220,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return PatternType.None;
         }
 
+        /// <summary>
+        /// Attempts to classify a note as a direction change.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <param name="next">The next note.</param>
+        /// <returns>The <see cref="PatternType"/> corresponding to the direction change-related pattern, or null if none match.</returns>
         private static PatternType classifyAsDirectionChange(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
             CatchMovementData data = note.MovementData;
@@ -225,6 +249,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return PatternType.None;
         }
 
+        /// <summary>
+        /// Attempts to classify a note as a stream.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <param name="next">The next note.</param>
+        /// <returns>The <see cref="PatternType"/> corresponding to the stream-related pattern, or null if none match.</returns>
         private static PatternType classifyAsStream(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
@@ -508,6 +539,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             }
         }
 
+        /// <summary>
+        /// Calculates the precision value for a given note.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <param name="next">The next note.</param>
+        /// <returns>The precision value in milliseconds, or null if it is infinite.</returns>
         private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
@@ -567,10 +605,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return null;
         }
 
+        /// <summary>
+        /// Calculates the simple speed between a note and the one before it.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <returns></returns>
         private static double calculateSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / note.DeltaTime;
 
+        /// <summary>
+        /// Calculates the hyperdash speed between a note and the one before it, assuming that the catcher is perfectly positioned.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <returns></returns>
         private static double calculatePerfectHyperdashSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / (Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));
 
+        /// <summary>
+        /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <returns></returns>
         private static double calculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             Math.Abs((note.Position - 0.5 * (Math.Max(prev.MovementData.LeftCatcherPosition, prev.LeftNoteBorder) + Math.Min(prev.MovementData.RightCatcherPosition, prev.RightNoteBorder)))
                      / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));

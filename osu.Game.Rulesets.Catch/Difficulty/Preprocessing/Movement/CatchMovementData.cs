@@ -144,6 +144,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         public double HyperdashSpeed;
 
+        /// <summary>
+        /// A multiplier for the object's contribution to speed difficulty.
+        /// </summary>
+        /// <remarks>
+        /// Is set to 1 by default, is >1 when there an action is considered "difficult" (at the moment, tapping the same action key.)
+        /// </remarks>
         public double SpeedWeight;
 
         /// <summary>
@@ -178,6 +184,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </remarks>
         public double? NoteSpeed;
 
+        /// <summary>
+        /// Whether this note should skip break/stack classification within the preprocessor.
+        /// </summary>
         public bool SkipToDirectionChange;
 
         /// <summary>
