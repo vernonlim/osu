@@ -463,7 +463,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 case PatternType.Hyperjumps:
                 {
                     data.ForwardCatcherPosition =
-                        next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * calculatePerfectHyperdashSpeed(note));
+                        next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * calculatePerfectHyperdashSpeed(next));
                     break;
                 }
 
