@@ -135,9 +135,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         public bool IsDirectionChange;
 
         /// <summary>
+        /// IsDirectionChange but including the case where the next note is at the same position of the current
+        /// </summary>
+        public bool IsDirectionChangeOrEqual;
+
+        /// <summary>
         /// The speed of a hyperdash from the previous note to this note.
         /// </summary>
         public double HyperdashSpeed;
+
+        public double SpeedWeight;
 
         /// <summary>
         /// The likelihood of an action being performed.
@@ -171,6 +178,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </remarks>
         public double? NoteSpeed;
 
+        public bool SkipToDirectionChange;
+
         /// <summary>
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
         /// </summary>
@@ -186,10 +195,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             RightCatcherPosition = note.Position + note.HalfCatcherWidth;
             LeftStandingPosition = null;
             RightStandingPosition = null;
+            SpeedWeight = 1;
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
             NoteSpeed = null;
+            SkipToDirectionChange = false;
         }
 
         /// <summary>

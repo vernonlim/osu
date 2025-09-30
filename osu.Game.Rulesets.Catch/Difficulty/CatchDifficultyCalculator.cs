@@ -71,7 +71,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
 
             // Debug code
-            bool debug = true;
+            bool debug = false;
 
             if (debug)
             {
@@ -120,7 +120,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
                 plot.SavePng(outputPath, scale, 512 * 2 + 24);
 
-                Console.WriteLine($"Catcher Width: {catcherWidth}");
+                string[] noteNames = cdhos.Select(o => o.MovementData.NotePattern.ToString()).ToArray();
+                double?[] precisions = cdhos.Select(o => o.MovementData.NotePrecision).ToArray();
+
+                for (int i = 0; i < noteNames.Length; i++)
+                {
+                    Console.WriteLine($"Note {i}, Time {times[i]:0}, {noteNames[i]}, {precisions[i]:0}");
+                }
             }
 
             return objects;

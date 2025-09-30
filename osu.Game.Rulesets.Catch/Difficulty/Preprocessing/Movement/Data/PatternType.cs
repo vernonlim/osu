@@ -9,11 +9,40 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
     public enum PatternType
     {
         FirstNote,
+
+        // Breaks
         BreakBeginningRequiringMovement,
+        BreakBeginningWithoutMovement,
+        SingleNote,
+        HyperdashAfterBreak,
+        EdgedashAfterBreak,
+        StackAfterBreak,
+
+        // Stacks
+        PotentialStackBeginning,
+        NarrowStack,
+        PotentialStack,
+        StackContinuation,
+        StackEnd,
+
+        // Direction Changes
         JumpAfterHyperjump,
         Hyperjumps,
         HyperjumpAfterJump,
         Jumps,
+
+        // Streams
+        Hyperstream,
+        PotentialStandstill,
+        ExtendedDirectionChange,
+        AcceleratingStream,
+        FreeStream,
+
+        // Special Cases
+        Hyperwalk,
+        CurvedStack, // We are missing 4.5.3, that will be handled in the first/last note special case logic
+        FreeStackAtPlayfieldBorder,
+
         LastNote,
         None,
     }

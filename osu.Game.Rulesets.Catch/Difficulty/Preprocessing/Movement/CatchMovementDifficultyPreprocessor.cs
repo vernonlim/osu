@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
@@ -12,6 +13,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
     /// </summary>
     public class CatchMovementDifficultyPreprocessor
     {
+        private const double speed_bonus = 1.2;
+
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
         /// </summary>
@@ -22,7 +25,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchDifficultyHitObject first = (CatchDifficultyHitObject)hitObjects[0];
             first.MovementData.NotePattern = PatternType.FirstNote;
             updateInitialData(first, (CatchDifficultyHitObject)hitObjects[0]);
-            // Add any extra value calculations here (specifically precision, aim, etc)
+
 
             CatchDifficultyHitObject last = (CatchDifficultyHitObject)hitObjects[^1];
             last.MovementData.NotePattern = PatternType.LastNote;
@@ -39,9 +42,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 updateInitialData(note, next);
 
+                // I would make classify modify the data imperatively, but I think some flexibility is needed for some cases here
                 data.NotePattern = classify(note, prev, next);
 
                 updateData(note, prev, next);
+
+                data.NotePrecision = calculatePrecision(note, prev, next);
             }
         }
 
@@ -54,6 +60,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         {
             CatchMovementData data = note.MovementData;
             data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
+            data.IsDirectionChangeOrEqual = note.IsMovingRight ? next.Position <= note.Position : next.Position >= note.Position;
         }
 
         /// <summary>
@@ -67,6 +74,136 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <param name="next">The next note.</param>
         /// <returns>The <see cref="PatternType"/> corresponding to the note.</returns>
         private static PatternType classify(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+
+            // Breaks
+            PatternType breakType = classifyAsBreak(note, prev, next);
+
+            if (breakType != PatternType.None && !data.SkipToDirectionChange)
+            {
+                return breakType;
+            }
+
+            // Stacks
+            PatternType stackType = classifyAsStack(note, prev, next);
+
+            if (stackType != PatternType.None && !data.SkipToDirectionChange)
+            {
+                return stackType;
+            }
+
+            // Direction changes
+            PatternType directionChangeType = classifyAsDirectionChange(note, prev);
+
+            if (directionChangeType != PatternType.None)
+            {
+                return directionChangeType;
+            }
+
+            // Streams
+            PatternType streamType = classifyAsStream(note, prev, next);
+
+            if (streamType != PatternType.None)
+            {
+                return streamType;
+            }
+
+            return PatternType.None;
+        }
+
+        private static PatternType classifyAsBreak(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData prevData = prev.MovementData;
+
+            // Breaks
+            if (next.DeltaPosition < next.DeltaTime - 2 * note.CatcherWidth
+                && next.DeltaTime > 200)
+            {
+                return next.DeltaPosition > note.CatcherWidth
+                    ? PatternType.BreakBeginningRequiringMovement
+                    : PatternType.BreakBeginningWithoutMovement;
+            }
+
+            if (next.DeltaPosition < next.DeltaTime - 2 * note.CatcherWidth
+                && prevData.IsBreak)
+            {
+                return PatternType.SingleNote;
+            }
+
+            if (prevData.IsBreak
+                && note.DeltaPosition > note.CatcherWidth
+                && note.IsHyper)
+            {
+                return PatternType.HyperdashAfterBreak;
+            }
+
+            if (prevData.IsBreak
+                && !note.IsHyper
+                && note.DeltaPosition > 0
+                && (next.DeltaPosition > note.CatcherWidth
+                    || (next.DeltaPosition <= note.CatcherWidth
+                        && next.DeltaTime <= 2 * next.DeltaPosition)))
+            {
+                return PatternType.EdgedashAfterBreak;
+            }
+
+            if (prevData.IsBreak
+                && !note.IsHyper
+                && note.DeltaPosition >= 0
+                && next.DeltaTime > 2 * next.DeltaPosition
+                && next.DeltaPosition <= note.CatcherWidth)
+            {
+                return PatternType.StackAfterBreak;
+            }
+
+            return PatternType.None;
+        }
+
+        private static PatternType classifyAsStack(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            // Stacks
+            if (next.DeltaPosition <= note.CatcherWidth
+                && (note.DeltaPosition > note.CatcherWidth || prevData.BackwardStandingPosition is not null)
+                && (prevData.IsBreak || (note.DeltaPosition != 0 && data.IsDirectionChangeOrEqual)))
+            {
+                return PatternType.PotentialStackBeginning;
+            }
+
+            if (prevData.BackwardStandingPosition is not null
+                && next.DeltaPosition <= note.HalfCatcherWidth
+                && Math.Abs(next.Position - prev.Position) <= note.CatcherWidth)
+            {
+                return PatternType.NarrowStack;
+            }
+
+            if (prevData.BackwardStandingPosition is not null
+                && (note.HalfCatcherWidth < next.DeltaPosition && next.DeltaPosition <= note.CatcherWidth)
+                && data.IsDirectionChangeOrEqual)
+            {
+                return PatternType.PotentialStack;
+            }
+
+            if (prevData.IsStack
+                && (prevData.LeftStandingPosition <= note.Position)
+                && (prevData.RightStandingPosition >= note.Position))
+            {
+                return PatternType.StackContinuation;
+            }
+
+            if (prevData.IsStack
+                && (note.Position < prevData.LeftStandingPosition || note.Position > prevData.RightStandingPosition))
+            {
+                return PatternType.StackEnd;
+            }
+
+            return PatternType.None;
+        }
+
+        private static PatternType classifyAsDirectionChange(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
             CatchMovementData data = note.MovementData;
 
@@ -88,6 +225,53 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return PatternType.None;
         }
 
+        private static PatternType classifyAsStream(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+
+            if (!data.IsDirectionChange)
+            {
+                MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
+
+                if (prev.IsHyper)
+                {
+                    return PatternType.Hyperstream;
+                }
+
+                if (!prev.IsHyper
+                    && note.IsHyper
+                    && prev.SignificantMovementDirection == currentDirection)
+                {
+                    return PatternType.PotentialStandstill;
+                }
+
+                if (!prev.IsHyper
+                    && note.IsHyper
+                    && prev.SignificantMovementDirection != currentDirection)
+                {
+                    return PatternType.PotentialStandstill;
+                }
+
+                if (!prev.IsHyper
+                    && !note.IsHyper
+                    && prev.SignificantMovementDirection == currentDirection
+                    && calculateSpeed(note) <= calculateSpeed(next))
+                {
+                    return PatternType.AcceleratingStream;
+                }
+
+                if (!prev.IsHyper
+                    && !note.IsHyper
+                    && ((prev.SignificantMovementDirection != currentDirection)
+                        || (calculateSpeed(note) > calculateSpeed(next))))
+                {
+                    return PatternType.FreeStream;
+                }
+            }
+
+            return PatternType.None;
+        }
+
         /// <summary>
         /// Updates the Movement data of a note according to its <see cref="PatternType"/>
         /// </summary>
@@ -102,36 +286,293 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
-            CatchMovementData nextData = next.MovementData;
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
 
-            double modifiedVelocity = Math.Abs((next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / (next.DeltaTime - 1000.0 / 60.0));
+            double directionChangeVelocity = Math.Abs((next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / (next.DeltaTime - 1000.0 / 60.0));
+
+            switch (data.NotePattern)
+            {
+                case PatternType.BreakBeginningRequiringMovement:
+                {
+                    data.IsBreak = true;
+                    data.ActionProbability = 0;
+                    // TODO: Handle weird new object thing
+                    break;
+                }
+
+                case PatternType.BreakBeginningWithoutMovement:
+                {
+                    data.IsBreak = true;
+                    data.ActionProbability = 0;
+                    break;
+                }
+
+                case PatternType.SingleNote:
+                {
+                    data.IsBreak = true;
+                    data.ActionProbability = 0;
+                    break;
+                }
+
+                case PatternType.HyperdashAfterBreak:
+                {
+                    // default values, but we overwrite them to be sure
+                    data.ActionProbability = 1;
+                    data.LeftCatcherPosition = note.LeftNoteBorder;
+                    data.RightCatcherPosition = note.RightNoteBorder;
+                    break;
+                }
+
+                case PatternType.EdgedashAfterBreak:
+                {
+                    data.ActionProbability = 1;
+                    data.LeftCatcherPosition = data.FurthestForward(
+                        note.Position - data.Directionize(note.HalfCatcherWidth),
+                        next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime));
+                    data.RightCatcherPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    break;
+                }
+
+                case PatternType.StackAfterBreak:
+                {
+                    data.ActionProbability = 0;
+                    data.LeftCatcherPosition = data.FurthestForward(
+                        note.Position - data.Directionize(note.HalfCatcherWidth),
+                        next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime));
+                    data.RightCatcherPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    data.BackwardStandingPosition = next.Position - data.Directionize(note.HalfCatcherWidth);
+                    data.ForwardStandingPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    break;
+                }
+
+                case PatternType.PotentialStackBeginning:
+                {
+                    data.BackwardStandingPosition = next.Position - data.Directionize(note.CatcherWidth);
+                    data.ForwardStandingPosition = note.Position + data.Directionize(note.CatcherWidth);
+
+                    PatternType directionChangeType = classifyAsDirectionChange(note, prev);
+
+                    if (directionChangeType != PatternType.None)
+                    {
+                        data.NotePattern = directionChangeType;
+                    }
+                    else
+                    {
+                        Console.WriteLine("This shouldn't happen!");
+                    }
+
+                    // Re-run this assuming it's a direction change
+                    updateData(note, prev, next);
+
+                    break;
+                }
+
+                case PatternType.NarrowStack:
+                {
+                    data.ActionProbability = 0;
+                    data.IsStack = true;
+                    data.BackwardCatcherPosition = next.Position - data.Directionize(note.HalfCatcherWidth);
+                    data.ForwardCatcherPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    data.BackwardStandingPosition = next.Position - data.Directionize(note.HalfCatcherWidth);
+                    data.ForwardStandingPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    break;
+                }
+
+                case PatternType.PotentialStack:
+                {
+                    data.IsStack = true;
+                    data.BackwardStandingPosition = next.Position - data.Directionize(note.HalfCatcherWidth);
+                    data.ForwardStandingPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+
+                    // TODO: Local SR estimation
+                    data.ActionProbability = 0;
+
+                    break;
+                }
+
+                case PatternType.StackContinuation:
+                {
+                    // TODO: Decaying q
+                    data.ActionProbability = 0;
+
+                    Debug.Assert(prevData.LeftStandingPosition != null, "prevData.LeftStandingPosition != null");
+                    Debug.Assert(prevData.RightStandingPosition != null, "prevData.RightStandingPosition != null");
+
+                    data.LeftCatcherPosition = (double)prevData.LeftStandingPosition;
+                    data.RightCatcherPosition = (double)prevData.RightStandingPosition;
+
+                    data.LeftStandingPosition = prevData.LeftStandingPosition;
+                    data.RightStandingPosition = prevData.RightStandingPosition;
+
+                    break;
+                }
+
+                case PatternType.StackEnd:
+                {
+                    data.IsStack = false;
+                    data.LeftStandingPosition = null;
+                    data.RightStandingPosition = null;
+                    data.SkipToDirectionChange = true;
+
+                    prevData.BackwardStandingPosition = prev.Position;
+                    prevData.ForwardStandingPosition = prev.Position + data.Directionize(note.HalfCatcherWidth);
+
+                    // We need to re-classify the note as not a stack, then run this method again
+                    data.NotePattern = classify(note, prev, next);
+                    updateData(note, prev, next);
+
+                    break;
+                }
+
+                // Direction changes
+                case PatternType.JumpAfterHyperjump:
+                {
+                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
+                    break;
+                }
+
+                case PatternType.Hyperjumps:
+                {
+                    data.ForwardCatcherPosition =
+                        next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * calculatePerfectHyperdashSpeed(note));
+                    break;
+                }
+
+                case PatternType.HyperjumpAfterJump:
+                {
+                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + directionChangeVelocity * next.DeltaTime);
+                    break;
+                }
+
+                case PatternType.Jumps:
+                {
+                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
+                    break;
+                }
+
+                // Streams
+                case PatternType.Hyperstream:
+                {
+                    data.ActionProbability = 0;
+                    data.LeftCatcherPosition = note.Position;
+                    data.RightCatcherPosition = note.Position;
+                    break;
+                }
+
+                case PatternType.PotentialStandstill:
+                {
+                    // TODO: Replace with probability
+                    data.ActionProbability = 0;
+                    data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
+                    data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
+                    data.SpeedWeight = speed_bonus;
+                    break;
+                }
+
+                case PatternType.ExtendedDirectionChange:
+                {
+                    data.ActionProbability = 0;
+                    data.LeftCatcherPosition = note.LeftNoteBorder;
+                    data.RightCatcherPosition = note.RightNoteBorder;
+
+                    break;
+                }
+
+                case PatternType.AcceleratingStream:
+                {
+                    // TODO: replace with probability
+                    data.ActionProbability = 0;
+
+                    data.BackwardStandingPosition = data.FurthestForward(next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime), note.Position - data.Directionize(note.HalfCatcherWidth));
+                    data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(note.HalfCatcherWidth));
+
+                    break;
+                }
+
+                case PatternType.FreeStream:
+                {
+                    data.ActionProbability = 0;
+
+                    data.LeftCatcherPosition = note.LeftNoteBorder;
+                    data.RightCatcherPosition = note.RightNoteBorder;
+
+                    break;
+                }
+
+                default:
+                {
+                    data.ActionProbability = 0;
+                    break;
+                }
+            }
+        }
+
+        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            double expectedDistance = Math.Abs(note.Position - (prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0);
+            double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
 
             switch (data.NotePattern)
             {
                 case PatternType.JumpAfterHyperjump:
-                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
-                    break;
+                {
+                    if (next.DeltaTime + next.DeltaPosition > note.HalfCatcherWidth)
+                    {
+                        return (next.DeltaTime - next.DeltaPosition + note.HalfCatcherWidth)
+                               / (2 * calculateExpectedHyperdashSpeed(note, prev));
+                    }
+
+                    return (note.DeltaTime + next.DeltaTime + note.HalfCatcherWidth - next.DeltaPosition -
+                            (expectedDistance - note.HalfCatcherWidth) / calculateExpectedHyperdashSpeed(note, prev)) / 2.0;
+                }
 
                 case PatternType.Hyperjumps:
-                    data.ForwardCatcherPosition =
-                        next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * calculatePerfectHyperdashSpeed(note));
-                    break;
+                {
+                    return (2 * note.DeltaTime + note.CatcherWidth / calculatePerfectHyperdashSpeed(next) - (2 * expectedDistance - note.CatcherWidth) / calculateExpectedHyperdashSpeed(note, prev));
+                }
 
                 case PatternType.HyperjumpAfterJump:
-                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + modifiedVelocity * next.DeltaTime);
-                    break;
+                {
+                    // far right or far left
+                    double farPosition = prevForwardCatcherPosition + data.Directionize(note.DeltaTime);
+
+                    return Math.Abs(farPosition - note.BackwardNoteBorder) + note.HalfCatcherWidth / (2 * calculateExpectedHyperdashSpeed(note, prev));
+                }
 
                 case PatternType.Jumps:
-                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
-                    break;
+                {
+                    return next.DeltaPosition + note.HalfCatcherWidth + next.DeltaTime;
+                }
 
-                case PatternType.None:
+                case PatternType.PotentialStandstill:
+                {
+                    return note.DeltaTime;
+                }
+
+                case PatternType.AcceleratingStream:
+                {
+                    if (next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
+                    {
+                        return Math.Abs((note.Position + data.Directionize(note.HalfCatcherWidth)) - (next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime)));
+                    }
+
                     break;
+                }
             }
+
+            return null;
         }
 
-        private static double calculatePerfectHyperdashSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / (note.DeltaTime - 1000.0 / 60.0);
+        private static double calculateSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / note.DeltaTime;
+
+        private static double calculatePerfectHyperdashSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / (Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));
+
+        private static double calculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+            Math.Abs((note.Position - 0.5 * (Math.Max(prev.MovementData.LeftCatcherPosition, prev.LeftNoteBorder) + Math.Min(prev.MovementData.RightCatcherPosition, prev.RightNoteBorder)))
+                     / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1));
     }
 }

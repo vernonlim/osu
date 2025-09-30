@@ -52,6 +52,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// </summary>
         public double DeltaPosition => Math.Abs(Position - LastObject.EffectiveX);
 
+        public double LeftNoteBorder => Position - HalfCatcherWidth;
+
+        public double RightNoteBorder => Position + HalfCatcherWidth;
+
+        public double BackwardNoteBorder => IsMovingRight ? LeftNoteBorder : RightNoteBorder;
+
+        public double ForwardNoteBorder => IsMovingRight ? RightNoteBorder : LeftNoteBorder;
+
         /// <summary>
         /// Whether this note is to the right of the previous note.
         /// </summary>
