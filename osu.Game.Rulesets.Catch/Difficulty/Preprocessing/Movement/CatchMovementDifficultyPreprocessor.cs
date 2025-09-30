@@ -51,6 +51,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 updateData(note, prev, next);
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
+
+                data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
+
+                data.ExpectedHyperdashSpeed = calculateExpectedHyperdashSpeed(note, prev);
+
+                data.PerfectHyperdashSpeed = calculatePerfectHyperdashSpeed(note);
             }
         }
 
@@ -596,7 +602,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         }
 
         private static double calculatePrevToNextDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
-            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.ForwardNoteBorder) - next.Position);
+            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition, note.ForwardNoteBorder) - next.Position);
 
         /// <summary>
         /// Calculates the simple speed between a note and the one before it.
