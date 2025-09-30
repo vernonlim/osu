@@ -140,11 +140,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         public bool IsDirectionChangeOrEqual;
 
         /// <summary>
-        /// The speed of a hyperdash from the previous note to this note.
-        /// </summary>
-        public double HyperdashSpeed;
-
-        /// <summary>
         /// A multiplier for the object's contribution to speed difficulty.
         /// </summary>
         /// <remarks>
