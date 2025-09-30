@@ -463,7 +463,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) * next.DeltaTime);
+                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / (next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
                     break;
                 }
 
@@ -548,7 +548,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             {
                 case PatternType.JumpAfterHyperjump:
                 {
-                    if (next.DeltaTime + next.DeltaPosition > note.HalfCatcherWidth)
+                    if (next.DeltaTime - next.DeltaPosition > note.HalfCatcherWidth)
                     {
                         return (next.DeltaTime - next.DeltaPosition + note.HalfCatcherWidth)
                                / (2 * calculateExpectedHyperdashSpeed(note, prev));
