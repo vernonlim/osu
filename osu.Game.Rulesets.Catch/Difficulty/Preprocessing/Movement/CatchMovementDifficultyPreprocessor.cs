@@ -475,11 +475,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.ForwardCatcherPosition =
                         next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
 
-                    if (data.LeftCatcherPosition > data.RightCatcherPosition)
-                    {
-                        Console.WriteLine($"Time: {note.StartTime}, {data.LeftCatcherPosition}, {data.RightCatcherPosition}, {note.IsMovingRight}");
-                        Console.WriteLine($"{next.Position} + {data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime)}");
-                    }
                     break;
                 }
 
