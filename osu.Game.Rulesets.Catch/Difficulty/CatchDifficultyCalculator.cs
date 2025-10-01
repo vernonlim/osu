@@ -20,7 +20,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 4.59;
+        private const double difficulty_multiplier = 2;
 
         private float catcherWidth;
 
@@ -38,7 +38,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = skills.OfType<Movement>().Single().DifficultyValue(),
+                StarRating = skills.OfType<Movement>().Single().DifficultyValue() * difficulty_multiplier,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
             };
