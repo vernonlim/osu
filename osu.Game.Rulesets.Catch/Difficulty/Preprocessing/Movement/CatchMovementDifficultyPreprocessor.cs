@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <summary>
         /// The custom SpeedWeight given to difficult actions.
         /// </summary>
-        private const double speed_bonus = 1.2;
+        private const double speed_bonus = 1.5;
 
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
@@ -133,15 +133,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchMovementData prevData = prev.MovementData;
 
             // Breaks
-            if (next.DeltaPosition < next.DeltaTime - 2 * note.CatcherWidth
-                && next.DeltaTime > 200)
+            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
+                && next.DeltaTime > 150)
             {
                 return next.DeltaPosition > note.CatcherWidth
                     ? PatternType.BreakBeginningRequiringMovement
                     : PatternType.BreakBeginningWithoutMovement;
             }
 
-            if (next.DeltaPosition < next.DeltaTime - 2 * note.CatcherWidth
+            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
                 && prevData.IsBreak)
             {
                 return PatternType.SingleNote;
