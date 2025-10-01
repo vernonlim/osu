@@ -20,7 +20,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return data.ActionProbability * 12 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
+            return data.ActionProbability * 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
         }
     }
 }

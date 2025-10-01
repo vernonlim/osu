@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
     public class Movement : StrainDecaySkill
     {
         protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0;
+        protected override double StrainDecayBase => 0.15;
 
         public Movement(Mod[] mods)
             : base(mods)
