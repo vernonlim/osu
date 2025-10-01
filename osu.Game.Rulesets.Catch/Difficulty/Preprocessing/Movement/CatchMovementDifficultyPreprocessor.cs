@@ -54,9 +54,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
 
-                data.ExpectedHyperdashSpeed = calculateMinimalHyperdashSpeed(note, prev);
+                data.MinimalHyperdashSpeed = calculateMinimalHyperdashSpeed(note, prev);
 
                 data.PerfectHyperdashSpeed = calculatePerfectHyperdashSpeed(note);
+
+                data.AverageHyperdashSpeed = calculateAverageHyperdashSpeed(note, prev);
             }
         }
 
