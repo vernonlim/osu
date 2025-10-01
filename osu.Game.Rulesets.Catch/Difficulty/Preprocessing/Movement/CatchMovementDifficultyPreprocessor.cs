@@ -474,6 +474,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     // data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / (next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
                     data.ForwardCatcherPosition =
                         next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
+
+                    if (data.LeftCatcherPosition > data.RightCatcherPosition)
+                    {
+                        Console.WriteLine($"Time: {note.StartTime}, {data.LeftCatcherPosition}, {data.RightCatcherPosition}, {note.IsMovingRight}");
+                        Console.WriteLine($"{next.Position} + {data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime)}");
+                    }
                     break;
                 }
 
@@ -610,7 +616,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             note.IsMovingRight ? prev.MovementData.RightCatcherPosition : prev.MovementData.LeftCatcherPosition;
 
         private static double calculatePrevToNextDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
-            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), next.ForwardNoteBorder) - next.Position);
+            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.ForwardNoteBorder) - next.Position);
 
         private static double calculateMinimalDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             Math.Abs(note.Position - note.MovementData.FurthestForward(getPrevForwardCatcherPosition(note, prev), prev.Position + note.MovementData.Directionize(note.HalfCatcherWidth)));
