@@ -361,8 +361,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     // default values, but we overwrite them to be sure
                     data.ActionProbability = 1;
-                    data.BackwardCatcherPosition = note.LeftNoteBorder;
-                    data.ForwardCatcherPosition = note.RightNoteBorder;
+                    data.BackwardCatcherPosition = note.BackwardNoteBorder;
+                    data.ForwardCatcherPosition = note.ForwardNoteBorder;
                     break;
                 }
 
