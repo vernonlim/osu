@@ -52,6 +52,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 updateData(note, prev, next);
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
+                data.NoteAim = calculateAim(note, prev, next);
 
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
 
@@ -644,6 +645,23 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             }
 
             return null;
+        }
+
+        public static double? calculateAim(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            return data.NotePattern switch
+            {
+                PatternType.SingleNote => note.CatcherWidth,
+                PatternType.HyperdashAfterBreak => note.CatcherWidth,
+                PatternType.EdgedashAfterBreak => note.Position + note.CatcherWidth - Math.Max(note.Position, next.Position - next.DeltaTime),
+                PatternType.NarrowStack => note.CatcherWidth - next.DeltaPosition,
+                PatternType.PotentialStack => note.CatcherWidth - next.DeltaPosition,
+                PatternType.StackContinuation => note.CatcherWidth - next.DeltaPosition,
+                _ => null
+            };
         }
 
         private static double cdfWithNote(double x, CatchDifficultyHitObject note) =>
