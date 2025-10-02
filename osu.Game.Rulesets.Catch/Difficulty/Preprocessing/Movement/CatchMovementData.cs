@@ -147,6 +147,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </remarks>
         public double SpeedWeight;
 
+        public double StackCount;
+
         /// <summary>
         /// The likelihood of an action being performed.
         /// </summary>
@@ -201,6 +203,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             LeftStandingPosition = null;
             RightStandingPosition = null;
             SpeedWeight = 1;
+            StackCount = 0;
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
