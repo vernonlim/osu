@@ -30,7 +30,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             first.MovementData.NotePattern = PatternType.FirstNote;
             updateInitialData(first, (CatchDifficultyHitObject)hitObjects[0]);
 
-
             CatchDifficultyHitObject last = (CatchDifficultyHitObject)hitObjects[^1];
             last.MovementData.NotePattern = PatternType.LastNote;
             last.MovementData.IsDirectionChange = false; // There is no next note to change direction to.
@@ -53,6 +52,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.NoteAim = calculateAim(note, prev, next);
+
+                if (data.ActionProbability > 0)
+                {
+                    data.AllActionIndex = data.allActionDifficultyHitObjects.Count;
+                    data.allActionDifficultyHitObjects.Add(note);
+                }
+
+                if (data.ActionProbability == 1)
+                {
+                    data.GuaranteedActionIndex = data.guaranteedActionDifficultyHitObjects.Count;
+                    data.guaranteedActionDifficultyHitObjects.Add(note);
+                }
+
+                data.NoteSpeed = calculateSpeed(note, prev) * 10;
 
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
 
@@ -234,7 +247,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
-        /// <param name="next">The next note.</param>
         /// <returns>The <see cref="PatternType"/> corresponding to the direction change-related pattern, or null if none match.</returns>
         private static PatternType classifyAsDirectionChange(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
@@ -647,7 +659,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return null;
         }
 
-        public static double? calculateAim(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        private static double? calculateAim(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
@@ -662,6 +674,46 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 PatternType.StackContinuation => note.CatcherWidth - next.DeltaPosition,
                 _ => null
             };
+        }
+
+        private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
+            CatchDifficultyHitObject? prevAction = data.PreviousActionNote(0);
+
+            if (data.ActionProbability > 0)
+            {
+                // Speed should be 0 if there is no previous action
+                if (prevAction is null)
+                {
+                    return 0;
+                }
+
+                if (prevGuaranteedAction is null)
+                {
+                    double predictedSpeed = 1.0 / (note.StartTime - prevAction.StartTime);
+
+                    return prevAction.MovementData.ActionProbability * predictedSpeed;
+                }
+
+                if (prevGuaranteedAction.StartTime >= prevAction.StartTime)
+                {
+                    return 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
+                }
+                else
+                {
+                    double predictedSpeed = 1.0 / (note.StartTime - prevAction.StartTime);
+                    double guaranteedSpeed = 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
+                    double prevActionProbability = prevAction.MovementData.ActionProbability;
+
+                    return prevActionProbability * predictedSpeed + (1 - prevActionProbability) * guaranteedSpeed;
+                }
+            }
+
+            return 0;
         }
 
         private static double cdfWithNote(double x, CatchDifficultyHitObject note) =>

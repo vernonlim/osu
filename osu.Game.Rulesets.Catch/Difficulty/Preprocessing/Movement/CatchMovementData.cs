@@ -2,6 +2,8 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 {
@@ -11,6 +13,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// The parent note object containing this data.
         /// </summary>
         public CatchDifficultyHitObject Note;
+
+        public List<CatchDifficultyHitObject> guaranteedActionDifficultyHitObjects;
+
+        public int GuaranteedActionIndex;
+
+        public List<CatchDifficultyHitObject> allActionDifficultyHitObjects;
+
+        public int AllActionIndex;
+
+        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => guaranteedActionDifficultyHitObjects.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
+
+        public CatchDifficultyHitObject? PreviousActionNote(int backwardsIndex) => allActionDifficultyHitObjects.ElementAtOrDefault(AllActionIndex - (backwardsIndex + 1));
 
         /// <summary>
         /// The pattern type associated with this note.
@@ -174,12 +188,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         public double? NoteAim;
 
         /// <summary>
-        /// The time interval between this note and the last expected action.
+        /// 1 divided by the time interval between this note and the last expected action.
         /// </summary>
-        /// <remarks>
-        /// Is null when <see cref="ActionProbability"/> is 0.
-        /// </remarks>
-        public double? NoteSpeed;
+        public double NoteSpeed;
 
         /// <summary>
         /// Whether this note should skip break/stack classification within the preprocessor.
@@ -190,8 +201,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
         /// </summary>
         /// <param name="note"></param>
-        public CatchMovementData(CatchDifficultyHitObject note)
+        public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> allActionNoteObjects)
         {
+            guaranteedActionDifficultyHitObjects = guaranteedActionNoteObjects;
+            allActionDifficultyHitObjects = allActionNoteObjects;
+
             Note = note;
             NotePattern = PatternType.None;
             IsBreak = false;
@@ -207,7 +221,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
-            NoteSpeed = null;
+            NoteSpeed = 0;
             SkipToDirectionChange = false;
         }
 

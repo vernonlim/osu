@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -15,12 +16,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
             CatchMovementData data = note.MovementData;
 
-            if (data.NotePrecision is null)
-            {
-                return 0;
-            }
+            double precision = data.NotePrecision is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
+            double speed = data.NoteSpeed * data.SpeedWeight;
+            double aim = data.NoteAim is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NoteAim);
 
-            return data.ActionProbability * 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
+            double plsr = data.ActionProbability * Math.Sqrt(Math.Pow(precision, 2) + Math.Pow(speed, 2) + 0.2 * precision * speed);
+            double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - data.ActionProbability, 2) * Math.Pow(aim, 2));
+
+            return plsr;
         }
     }
 }
