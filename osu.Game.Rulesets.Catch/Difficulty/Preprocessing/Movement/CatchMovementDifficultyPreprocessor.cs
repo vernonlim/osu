@@ -521,8 +521,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.PotentialStandstill:
                 {
-                    // TODO: Replace with probability
-                    data.ActionProbability = 0;
+                    if (note.IsMovingRight)
+                    {
+                        data.ActionProbability = 1 - cdfWithNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev);
+                    }
+                    else
+                    {
+                        data.ActionProbability = cdfWithNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev);
+                    }
+
                     data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
                     data.SpeedWeight = speed_bonus;
@@ -540,8 +547,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.AcceleratingStream:
                 {
-                    // TODO: replace with probability
-                    data.ActionProbability = 0;
+                    if (note.IsMovingRight)
+                    {
+                        data.ActionProbability = Math.Abs(cdfWithNote(next.Position - note.HalfCatcherWidth - (note.DeltaTime + next.DeltaTime) / 2.0, prev) - cdfWithNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
+                    }
+                    else
+                    {
+                        data.ActionProbability = Math.Abs(cdfWithNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev) - cdfWithNote(next.Position + note.HalfCatcherWidth + (note.DeltaTime + next.DeltaTime) / 2.0, prev));
+                    }
 
                     data.BackwardStandingPosition = data.FurthestForward(next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime), note.Position - data.Directionize(note.HalfCatcherWidth));
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(note.HalfCatcherWidth));
@@ -632,6 +645,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
             return null;
         }
+
+        private static double cdfWithNote(double x, CatchDifficultyHitObject note) =>
+            cdf(x, (note.MovementData.LeftCatcherPosition + note.MovementData.RightCatcherPosition) / 2.0,
+            Math.Abs(note.MovementData.ForwardCatcherPosition - note.MovementData.BackwardCatcherPosition) / 6.0);
+
+        private static double cdf(double x, double mean, double std) => 0.5 * (1 + DifficultyCalculationUtils.Erf((x - mean) / (Math.Sqrt(2) * std)));
 
         private static double getPrevForwardCatcherPosition(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             note.IsMovingRight ? prev.MovementData.RightCatcherPosition : prev.MovementData.LeftCatcherPosition;
