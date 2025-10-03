@@ -51,16 +51,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.NoteAim = calculateAim(note, prev, next);
 
-                if (data.ActionProbability > 0)
+                if (data.ActionProbability > 0 && data.ActionProbability < 1)
                 {
-                    data.AllActionIndex = data.allActionDifficultyHitObjects.Count;
-                    data.allActionDifficultyHitObjects.Add(note);
+                    data.AmbiguousActionIndex = data.AmbiguousActionDifficultyHitObjects.Count;
+                    data.AmbiguousActionDifficultyHitObjects.Add(note);
                 }
 
                 if (data.ActionProbability == 1)
                 {
-                    data.GuaranteedActionIndex = data.guaranteedActionDifficultyHitObjects.Count;
-                    data.guaranteedActionDifficultyHitObjects.Add(note);
+                    data.GuaranteedActionIndex = data.GuaranteedActionDifficultyHitObjects.Count;
+                    data.GuaranteedActionDifficultyHitObjects.Add(note);
                 }
 
                 data.NoteSpeed = calculateSpeed(note, prev) * 10;
@@ -432,7 +432,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.ForwardStandingPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
 
                     // d_2 <= c/2 is already handled before any of the cases
-                    // 300BPM
                     if (next.DeltaTime < DifficultyCalculationUtils.BPMToMilliseconds(300))
                     {
                         data.ActionProbability = 0;
@@ -691,34 +690,37 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchMovementData prevData = prev.MovementData;
 
             CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
-            CatchDifficultyHitObject? prevAction = data.PreviousActionNote(0);
+            CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousActionNote(0);
 
             if (data.ActionProbability > 0)
             {
-                // Speed should be 0 if there is no previous action
-                if (prevAction is null)
+                if (data.ActionProbability < 1)
                 {
-                    return 0;
+                    return 1.0 / note.DeltaTime;
                 }
 
-                if (prevGuaranteedAction is null)
-                {
-                    double predictedSpeed = 1.0 / (note.StartTime - prevAction.StartTime);
-
-                    return prevAction.MovementData.ActionProbability * predictedSpeed;
-                }
-
-                if (prevGuaranteedAction.StartTime >= prevAction.StartTime)
+                if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
                 {
                     return 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
                 }
-                else
-                {
-                    double predictedSpeed = 1.0 / (note.StartTime - prevAction.StartTime);
-                    double guaranteedSpeed = 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
-                    double prevActionProbability = prevAction.MovementData.ActionProbability;
 
-                    return prevActionProbability * predictedSpeed + (1 - prevActionProbability) * guaranteedSpeed;
+                if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
+                {
+                    return prevAmbiguousAction.MovementData.ActionProbability / (note.StartTime - prevAmbiguousAction.StartTime);
+                }
+
+                if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
+                {
+                    if (prevGuaranteedAction.StartTime >= prevAmbiguousAction.StartTime)
+                    {
+                        return 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
+                    }
+
+                    double ambiguousSpeed = 1.0 / (note.StartTime - prevAmbiguousAction.StartTime);
+                    double guaranteedSpeed = 1.0 / (note.StartTime - prevGuaranteedAction.StartTime);
+                    double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
+
+                    return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;
                 }
             }
 

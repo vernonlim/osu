@@ -53,7 +53,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
             List<CatchDifficultyHitObject> noteObjects = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> guaranteedActionNoteObjects = new List<CatchDifficultyHitObject>();
-            List<CatchDifficultyHitObject> allActionNoteObjects = new List<CatchDifficultyHitObject>();
+            List<CatchDifficultyHitObject> ambiguousActionNoteObjects = new List<CatchDifficultyHitObject>();
 
             // In 2B beatmaps, it is possible that a normal Fruit is placed in the middle of a JuiceStream.
             foreach (var hitObject in CatchBeatmap.GetPalpableObjects(beatmap.HitObjects))
@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     continue;
 
                 if (lastObject != null)
-                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count, guaranteedActionNoteObjects, allActionNoteObjects));
+                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count, guaranteedActionNoteObjects, ambiguousActionNoteObjects));
 
                 lastObject = hitObject;
             }

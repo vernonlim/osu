@@ -104,7 +104,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                                         List<CatchDifficultyHitObject> noteObjects,
                                         int index,
                                         List<CatchDifficultyHitObject> guaranteedActionNoteObjects,
-                                        List<CatchDifficultyHitObject> allActionNoteObjects)
+                                        List<CatchDifficultyHitObject> ambiguousActionNoteObjects)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             CatcherWidth = catcherWidth;
@@ -114,7 +114,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             NoteIndex = index;
 
-            MovementData = new CatchMovementData(this, guaranteedActionNoteObjects, allActionNoteObjects);
+            MovementData = new CatchMovementData(this, guaranteedActionNoteObjects, ambiguousActionNoteObjects);
         }
 
         public CatchDifficultyHitObject? PreviousNote(int backwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex - (backwardsIndex + 1));

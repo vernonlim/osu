@@ -14,17 +14,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         public CatchDifficultyHitObject Note;
 
-        public List<CatchDifficultyHitObject> guaranteedActionDifficultyHitObjects;
+        public List<CatchDifficultyHitObject> GuaranteedActionDifficultyHitObjects;
 
         public int GuaranteedActionIndex;
 
-        public List<CatchDifficultyHitObject> allActionDifficultyHitObjects;
+        public List<CatchDifficultyHitObject> AmbiguousActionDifficultyHitObjects;
 
-        public int AllActionIndex;
+        public int AmbiguousActionIndex;
 
-        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => guaranteedActionDifficultyHitObjects.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
+        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => GuaranteedActionDifficultyHitObjects.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
 
-        public CatchDifficultyHitObject? PreviousActionNote(int backwardsIndex) => allActionDifficultyHitObjects.ElementAtOrDefault(AllActionIndex - (backwardsIndex + 1));
+        public CatchDifficultyHitObject? PreviousActionNote(int backwardsIndex) => AmbiguousActionDifficultyHitObjects.ElementAtOrDefault(AmbiguousActionIndex - (backwardsIndex + 1));
 
         /// <summary>
         /// The pattern type associated with this note.
@@ -201,10 +201,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
         /// </summary>
         /// <param name="note"></param>
-        public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> allActionNoteObjects)
+        public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> ambiguousActionNoteObjects)
         {
-            guaranteedActionDifficultyHitObjects = guaranteedActionNoteObjects;
-            allActionDifficultyHitObjects = allActionNoteObjects;
+            GuaranteedActionDifficultyHitObjects = guaranteedActionNoteObjects;
+            AmbiguousActionDifficultyHitObjects = ambiguousActionNoteObjects;
 
             Note = note;
             NotePattern = PatternType.None;
