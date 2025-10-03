@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <param name="hitObjects"></param>
         public static void ProcessAndAssign(List<DifficultyHitObject> hitObjects)
         {
-            // Special handling for the first and last objects of the map, as they lack a previous or future object
+            // TODO: Special handling for the first and last objects of the map, as they lack a previous or future object
             CatchDifficultyHitObject first = (CatchDifficultyHitObject)hitObjects[0];
             first.MovementData.NotePattern = PatternType.FirstNote;
             updateInitialData(first, (CatchDifficultyHitObject)hitObjects[0]);
@@ -33,7 +33,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchDifficultyHitObject last = (CatchDifficultyHitObject)hitObjects[^1];
             last.MovementData.NotePattern = PatternType.LastNote;
             last.MovementData.IsDirectionChange = false; // There is no next note to change direction to.
-            // As above
 
             for (int i = 1; i < hitObjects.Count - 1; i++)
             {
@@ -45,7 +44,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 updateInitialData(note, next);
 
-                // I would make classify modify the data imperatively, but I think some flexibility is needed for some cases here
                 data.NotePattern = classify(note, prev, next);
 
                 updateData(note, prev, next);
@@ -67,12 +65,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 data.NoteSpeed = calculateSpeed(note, prev) * 10;
 
+                // Debug
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
-
                 data.MinimalHyperdashSpeed = calculateMinimalHyperdashSpeed(note, prev);
-
                 data.PerfectHyperdashSpeed = calculatePerfectHyperdashSpeed(note);
-
                 data.AverageHyperdashSpeed = calculateAverageHyperdashSpeed(note, prev);
             }
         }
@@ -659,6 +655,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return null;
         }
 
+        /// <summary>
+        /// Calculates the aim value for a given note.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
         private static double? calculateAim(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
@@ -676,6 +679,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             };
         }
 
+        /// <summary>
+        /// Calculates the speed value for a given note.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <returns></returns>
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
             CatchMovementData data = note.MovementData;
@@ -716,18 +725,43 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return 0;
         }
 
+        /// <summary>
+        /// Calculates the value of the CDF for the catcher position at the given note for the value x.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="note"></param>
+        /// <returns></returns>
         private static double cdfWithNote(double x, CatchDifficultyHitObject note) =>
             cdf(x, (note.MovementData.LeftCatcherPosition + note.MovementData.RightCatcherPosition) / 2.0,
-            Math.Abs(note.MovementData.ForwardCatcherPosition - note.MovementData.BackwardCatcherPosition) / 6.0);
+                Math.Abs(note.MovementData.ForwardCatcherPosition - note.MovementData.BackwardCatcherPosition) / 6.0);
 
+        /// <summary>
+        /// Returns the value of the CDF with given mean and standard deviation at value x.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="mean"></param>
+        /// <param name="std"></param>
+        /// <returns></returns>
         private static double cdf(double x, double mean, double std) => 0.5 * (1 + DifficultyCalculationUtils.Erf((x - mean) / (Math.Sqrt(2) * std)));
 
+        /// <summary>
+        /// Gets the catcher position of the last note closest to the current one.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <returns></returns>
         private static double getPrevForwardCatcherPosition(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             note.IsMovingRight ? prev.MovementData.RightCatcherPosition : prev.MovementData.LeftCatcherPosition;
 
         private static double calculatePrevToNextDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
             Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.ForwardNoteBorder) - next.Position);
 
+        /// <summary>
+        /// Calculates the minimal distance a catcher could travel between two notes.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <returns></returns>
         private static double calculateMinimalDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             Math.Abs(note.Position - note.MovementData.FurthestForward(getPrevForwardCatcherPosition(note, prev), prev.Position + note.MovementData.Directionize(note.HalfCatcherWidth)));
 
@@ -754,6 +788,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         private static double calculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             calculateMinimalDistance(note, prev) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
 
+        /// <summary>
+        /// Calculates the average hyperdash speed between two notes.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <returns></returns>
         private static double calculateAverageHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
             CatchMovementData data = note.MovementData;

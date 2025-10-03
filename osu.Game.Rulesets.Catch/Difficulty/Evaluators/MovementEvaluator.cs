@@ -18,12 +18,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 
             double precision = data.NotePrecision is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
             double speed = data.NoteSpeed * data.SpeedWeight;
-            double aim = data.NoteAim is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NoteAim);
+            double aim = data.NoteAim is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NoteAim) / 10;
 
             double plsr = data.ActionProbability * Math.Sqrt(Math.Pow(precision, 2) + Math.Pow(speed, 2) + 0.2 * precision * speed);
             double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - data.ActionProbability, 2) * Math.Pow(aim, 2));
 
-            return plsr;
+            // To switch to precision-only mode, comment out this line
+            // return lsr * 0.9;
+
+            return precision;
         }
     }
 }
