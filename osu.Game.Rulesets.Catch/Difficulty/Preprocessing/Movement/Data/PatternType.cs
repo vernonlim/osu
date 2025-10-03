@@ -19,8 +19,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         StackAfterBreak,
 
         // Stacks
-        PotentialStackBeginning,
-        NarrowStack,
         PotentialStack,
         StackContinuation,
         StackEnd,
