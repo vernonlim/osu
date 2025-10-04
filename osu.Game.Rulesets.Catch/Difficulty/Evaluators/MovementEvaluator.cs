@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             // To switch to precision-only mode, comment out this line
             // return aim;
             // return plsr * 0.85;
-            return lsr * 0.9;
+            // return lsr * 0.9;
             // return speed;
 
             return precision;

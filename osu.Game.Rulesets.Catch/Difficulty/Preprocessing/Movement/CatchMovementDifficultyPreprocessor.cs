@@ -214,8 +214,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 return PatternType.StackContinuation;
             }
 
-            if (note.DeltaPosition <= note.CatcherWidth)
+            if (data.IsDirectionChangeOrEqual
+                && note.DeltaPosition <= note.CatcherWidth)
             {
+                // There should be other cases covering this
+                Debug.Assert(prevData.IsStack != true);
+
                 return PatternType.PotentialStack;
             }
 
@@ -389,18 +393,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 // if x_1 - c/2 <= x_2 <= x_1 + c/2, run stack detection
                 case PatternType.PotentialStack:
                 {
-                    data.LeftStandingPosition = Math.Max(Math.Max(note.Position - note.CatcherWidth, prev.Position - note.CatcherWidth), next.Position - note.CatcherWidth);
-                    data.RightStandingPosition = Math.Min(Math.Min(note.Position + note.CatcherWidth, prev.Position + note.CatcherWidth), next.Position + note.CatcherWidth);
-
-                    if (!data.IsDirectionChange && Math.Abs(next.Position - prev.Position) <= note.HalfCatcherWidth)
-                    {
-                        data.ActionProbability = 0;
-
-                        data.SkipToDirectionChange = true;
-
-                        data.NotePattern = classify(note, prev, next);
-                        updateData(note, prev, next);
-                    }
+                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
 
                     if (Math.Abs(next.Position - prev.Position) > note.HalfCatcherWidth)
                     {
