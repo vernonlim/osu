@@ -201,14 +201,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             CatchMovementData prevData = prev.MovementData;
 
             if (prevData.IsStack
-                && ((note.Position < prevData.LeftStandingPosition || note.Position > prevData.RightStandingPosition) || (next.Position < prevData.LeftStandingPosition || next.Position > prevData.RightStandingPosition)))
+                && (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition))
             {
                 return PatternType.StackEnd;
             }
 
             if (prevData.IsStack
-                && (prevData.LeftStandingPosition <= note.Position)
-                && (prevData.RightStandingPosition >= note.Position))
+                && (prevData.LeftStandingPosition <= note.Position + note.HalfCatcherWidth)
+                && (prevData.RightStandingPosition >= note.Position - note.HalfCatcherWidth))
             {
                 return PatternType.StackContinuation;
             }
@@ -403,8 +403,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.NarrowStack:
                 {
-                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
-                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+                    data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
                     data.LeftCatcherPosition = (double)data.LeftStandingPosition;
                     data.RightCatcherPosition = (double)data.RightStandingPosition;
 
@@ -423,8 +423,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                         break;
                     }
 
-                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
-                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+                    data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
 
                     data.SkipToDirectionChange = true;
 
@@ -440,9 +440,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 // if x_1 - c/2 <= x_2 <= x_1 + c/2, run stack detection
                 case PatternType.PotentialStack:
                 {
-                    if (next.Position < prevData.LeftStandingPosition || next.Position > prevData.RightStandingPosition)
+                    if (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition)
                     {
                         data.SkipToDirectionChange = true;
+                        data.LeftStandingPosition = null;
+                        data.RightStandingPosition = null;
+                        data.IsStack = false;
 
                         data.NotePattern = classify(note, prev, next);
                         updateData(note, prev, next);
@@ -450,8 +453,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                         break;
                     }
 
-                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
-                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+                    data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
 
                     data.IsStack = true;
 
@@ -508,6 +511,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                         prevData.LeftCatcherPosition = prev.LeftNoteBorder;
                         prevData.RightCatcherPosition = prev.Position;
                     }
+
+                    data.BackwardCatcherPosition = note.BackwardNoteBorder;
+                    data.ForwardCatcherPosition = prev.Position + data.Directionize(note.HalfCatcherWidth + note.DeltaTime);
 
                     // We need to re-classify the note as not a stack, then run this method again
                     data.NotePattern = classify(note, prev, next);
