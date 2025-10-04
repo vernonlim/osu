@@ -651,7 +651,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double optimalVelocity = Math.Abs(data.Directionize(next.Position - prevForwardCatcherPosition) - note.DeltaTime) / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
+                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
 
                     if (data.Directionize(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - note.HalfCatcherWidth)
                     {
@@ -661,8 +661,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     double first = data.Directionize(next.Position - prevForwardCatcherPosition);
                     double second = (first + note.HalfCatcherWidth - note.DeltaTime) / optimalVelocity;
                     double third = nextToPrevDeltaTime + data.Directionize(prevForwardCatcherPosition - note.Position) + note.HalfCatcherWidth;
+                    double fourth = second + third;
 
-                    return third / 2.0;
+                    return fourth / 2.0;
                 }
 
                 case PatternType.Jumps:
