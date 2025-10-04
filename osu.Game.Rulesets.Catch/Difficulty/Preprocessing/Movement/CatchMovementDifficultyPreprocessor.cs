@@ -161,7 +161,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             }
 
             if (prevData.IsBreak
-                && note.DeltaPosition > note.CatcherWidth
                 && note.IsHyper)
             {
                 return PatternType.HyperdashAfterBreak;
@@ -214,13 +213,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 return PatternType.StackContinuation;
             }
 
+            if (prevData.LeftStandingPosition is not null
+                && next.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
+            {
+                return PatternType.NarrowStack;
+            }
+
+            if (prevData.LeftStandingPosition is not null
+                && next.DeltaPosition <= note.CatcherWidth)
+            {
+                return PatternType.PotentialStack;
+            }
+
+            // direction change check to exclude streams
             if (data.IsDirectionChangeOrEqual
                 && note.DeltaPosition <= note.CatcherWidth)
             {
                 // There should be other cases covering this
                 Debug.Assert(prevData.IsStack != true);
 
-                return PatternType.PotentialStack;
+                return PatternType.PotentialStackBeginning;
             }
 
             return PatternType.None;
@@ -389,49 +401,69 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     break;
                 }
 
+                case PatternType.NarrowStack:
+                {
+                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+                    data.LeftCatcherPosition = (double)data.LeftStandingPosition;
+                    data.RightCatcherPosition = (double)data.RightStandingPosition;
+
+                    data.IsStack = true;
+                    data.ActionProbability = 0;
+
+                    break;
+                }
+
+                case PatternType.PotentialStackBeginning:
+                {
+                    if (next.DeltaPosition <= 3 * note.CatcherWidth / 5.0)
+                    {
+                        data.NotePattern = PatternType.NarrowStack;
+                        updateData(note, prev, next);
+                        break;
+                    }
+
+                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+
+                    data.SkipToDirectionChange = true;
+
+                    data.NotePattern = classify(note, prev, next);
+                    updateData(note, prev, next);
+
+                    break;
+                }
+
                 // first: if d_1 <= c/2, potential stack beginning, action probability 0/no jumps, set stand values
                 // also c/2 < d_1 <= c
                 // if x_2 > x_0 + c/2 or x_2 < x_0 - c/2, the pattern is normal, leave it as detected jumps or such continue on to the next note
                 // if x_1 - c/2 <= x_2 <= x_1 + c/2, run stack detection
                 case PatternType.PotentialStack:
                 {
-                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
-                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
-
-                    if (Math.Abs(next.Position - prev.Position) > note.HalfCatcherWidth)
+                    if (next.Position < prevData.LeftStandingPosition || next.Position > prevData.RightStandingPosition)
                     {
-                        // If you can't catch the next note, you just treat it as a jump or stream or something
                         data.SkipToDirectionChange = true;
 
                         data.NotePattern = classify(note, prev, next);
                         updateData(note, prev, next);
+
+                        break;
                     }
-                    else if (Math.Abs(next.Position - prev.Position) <= note.HalfCatcherWidth)
+
+                    data.LeftStandingPosition = Math.Max(note.Position - note.CatcherWidth, next.Position - note.CatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.CatcherWidth, next.Position + note.CatcherWidth);
+
+                    data.IsStack = true;
+
+                    if (next.DeltaPosition / note.CatcherWidth >= millisecondsToCatcherStandingWidth(next.DeltaTime))
                     {
-                        data.IsStack = true;
-
-                        // But if you can catch it, we try to detect if it's actually a stack before setting values
-                        // if precise, set aim for x_1, future notes don't have difficulty
-                        // otherwise, calculate speed for all notes
-
-                        // we are standing in all cases if the stack is narrow
-                        if (next.DeltaPosition <= 3.0 / 5.0 * note.CatcherWidth)
-                        {
-                            data.ActionProbability = 0;
-                        }
-                        else
-                        {
-                            if (next.DeltaPosition / note.CatcherWidth >= millisecondsToCatcherStandingWidth(next.DeltaTime))
-                            {
-                                // wiggle
-                                data.ActionProbability = 1;
-                            }
-                            else
-                            {
-                                // stand
-                                data.ActionProbability = 0;
-                            }
-                        }
+                        // wiggle
+                        data.ActionProbability = 1;
+                    }
+                    else
+                    {
+                        // stand
+                        data.ActionProbability = 0;
                     }
 
                     break;
@@ -440,26 +472,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 case PatternType.StackContinuation:
                 {
                     data.IsStack = true;
-                    // Not useful for now
-                    data.StackCount = prevData.StackCount + 1;
-
-                    if (next.DeltaPosition <= 3.0 / 5.0 * note.CatcherWidth)
-                    {
-                        data.ActionProbability = 0;
-                    }
-                    else
-                    {
-                        if (next.DeltaPosition / note.CatcherWidth >= millisecondsToCatcherStandingWidth(next.DeltaTime))
-                        {
-                            // wiggle
-                            data.ActionProbability = 1;
-                        }
-                        else
-                        {
-                            // stand
-                            data.ActionProbability = 0;
-                        }
-                    }
 
                     Debug.Assert(prevData.LeftStandingPosition != null, "prevData.LeftStandingPosition != null");
                     Debug.Assert(prevData.RightStandingPosition != null, "prevData.RightStandingPosition != null");
@@ -470,6 +482,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                     data.LeftStandingPosition = prevData.LeftStandingPosition;
                     data.RightStandingPosition = prevData.RightStandingPosition;
+
+                    double catcherStandingWidthBoundary = millisecondsToCatcherStandingWidth(next.DeltaTime);
+                    data.CatcherStandingWidth = catcherStandingWidthBoundary;
+                    bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
+
+                    data.ActionProbability = isWigglingBetter ? 1 : 0;
 
                     break;
                 }
@@ -627,6 +645,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     return Math.Abs(data.RightCatcherPosition - data.LeftCatcherPosition);
                 }
 
+                case PatternType.StackContinuation:
+                {
+                    if (data.ActionProbability == 1)
+                    {
+                        data.SkipToDirectionChange = true;
+                        data.NotePattern = classify(note, prev, next);
+                        double? precision = calculatePrecision(note, prev, next);
+                        data.NotePattern = PatternType.StackContinuation;
+
+                        return precision;
+                    }
+
+                    break;
+                }
+
                 case PatternType.JumpAfterHyperjump:
                 {
                     if (next.DeltaPosition - next.DeltaTime >= note.HalfCatcherWidth)
@@ -707,7 +740,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 PatternType.BreakBeginningRequiringMovement => note.CatcherWidth,
                 PatternType.BreakBeginningWithoutMovement => note.CatcherWidth,
                 PatternType.SingleNote => note.CatcherWidth,
-                PatternType.PotentialStack => note.CatcherWidth - next.DeltaPosition, // if the note is a jump it wouldn't have this type
+                PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
                 _ => null
             };
         }
@@ -761,7 +794,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return 0;
         }
 
-        private static double millisecondsToCatcherStandingWidth(double ms) => 2.2 * 10e-5 * Math.Pow(ms, 2) - 8.3 * 10e-3 * ms + 1.35;
+        private static double millisecondsToCatcherStandingWidth(double ms) => 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35;
 
         /// <summary>
         /// Calculates the value of the CDF for the catcher position at the given note for the value x.
