@@ -793,7 +793,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             return 0;
         }
 
-        private static double millisecondsToCatcherStandingWidth(double ms) => 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35;
+        private static double millisecondsToCatcherStandingWidth(double ms) => ms <= 188 ? 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35 : 0.567;
 
         /// <summary>
         /// Calculates the value of the CDF for the catcher position at the given note for the value x.
