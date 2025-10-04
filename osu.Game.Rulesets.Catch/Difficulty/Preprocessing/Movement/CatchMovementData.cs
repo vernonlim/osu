@@ -197,8 +197,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         public bool SkipToDirectionChange;
 
-        public double CatcherStandingWidth;
-
         /// <summary>
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
         /// </summary>
@@ -225,7 +223,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             NoteAim = null;
             NoteSpeed = 0;
             SkipToDirectionChange = false;
-            CatcherStandingWidth = 0;
         }
 
         /// <summary>

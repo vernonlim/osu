@@ -484,7 +484,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.RightStandingPosition = prevData.RightStandingPosition;
 
                     double catcherStandingWidthBoundary = millisecondsToCatcherStandingWidth(next.DeltaTime);
-                    data.CatcherStandingWidth = catcherStandingWidthBoundary;
                     bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
 
                     data.ActionProbability = isWigglingBetter ? 1 : 0;
