@@ -824,7 +824,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <param name="next">The next note.</param>
         /// <returns></returns>
         private static double calculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
-            calculateMinimalDistance(note, prev) / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
+            calculateMinimalDistance(note, prev) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
 
         /// <summary>
         /// Calculates the average hyperdash speed between two notes.
