@@ -70,6 +70,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 data.MinimalHyperdashSpeed = calculateMinimalHyperdashSpeed(note, prev, next);
                 data.PerfectHyperdashSpeed = calculatePerfectHyperdashSpeed(note);
                 data.AverageHyperdashSpeed = calculateAverageHyperdashSpeed(note, prev);
+
+                if (data.DisplayPattern == PatternType.None)
+                {
+                    data.DisplayPattern = data.NotePattern;
+                }
             }
         }
 
@@ -203,6 +208,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             if (prevData.IsStack
                 && (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition))
             {
+                data.DisplayPattern = PatternType.StackEnd;
                 return PatternType.StackEnd;
             }
 
@@ -210,18 +216,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 && (prevData.LeftStandingPosition <= note.Position + note.HalfCatcherWidth)
                 && (prevData.RightStandingPosition >= note.Position - note.HalfCatcherWidth))
             {
+                data.DisplayPattern = PatternType.StackContinuation;
                 return PatternType.StackContinuation;
             }
 
             if (prevData.LeftStandingPosition is not null
                 && next.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
             {
+                data.DisplayPattern = PatternType.NarrowStack;
                 return PatternType.NarrowStack;
             }
 
             if (prevData.LeftStandingPosition is not null
                 && next.DeltaPosition <= note.CatcherWidth)
             {
+                data.DisplayPattern = PatternType.PotentialStack;
                 return PatternType.PotentialStack;
             }
 
@@ -232,6 +241,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 // There should be other cases covering this
                 Debug.Assert(prevData.IsStack != true);
 
+                data.DisplayPattern = PatternType.PotentialStackBeginning;
                 return PatternType.PotentialStackBeginning;
             }
 

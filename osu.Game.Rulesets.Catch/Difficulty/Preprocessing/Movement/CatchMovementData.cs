@@ -197,6 +197,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         public bool SkipToDirectionChange;
 
+        public PatternType DisplayPattern;
+
         /// <summary>
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
         /// </summary>
@@ -223,6 +225,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             NoteAim = null;
             NoteSpeed = 0;
             SkipToDirectionChange = false;
+
+            DisplayPattern = PatternType.None;
         }
 
         /// <summary>
