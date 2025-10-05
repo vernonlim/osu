@@ -240,7 +240,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
             // direction change check to exclude streams
             if (data.IsDirectionChangeOrEqual
-                && note.DeltaPosition <= note.CatcherWidth)
+                && next.DeltaPosition <= note.CatcherWidth)
             {
                 // There should be other cases covering this
                 Debug.Assert(prevData.IsStack != true);
