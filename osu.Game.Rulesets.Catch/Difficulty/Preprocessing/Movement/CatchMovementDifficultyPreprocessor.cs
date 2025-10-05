@@ -18,7 +18,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <summary>
         /// The custom SpeedWeight given to difficult actions.
         /// </summary>
-        private const double speed_bonus = 1.5;
+        private const double speed_bonus = 1.2;
 
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
@@ -64,7 +64,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.GuaranteedActionDifficultyHitObjects.Add(note);
                 }
 
-                data.NoteSpeed = calculateSpeed(note, prev) * 10;
+                data.NoteSpeed = MovementEvaluator.calculateSpeed(note, prev) * 14;
 
                 // Debug
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
@@ -748,56 +748,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
                 _ => null
             };
-        }
-
-        /// <summary>
-        /// Calculates the speed value for a given note.
-        /// </summary>
-        /// <param name="note"></param>
-        /// <param name="prev"></param>
-        /// <returns></returns>
-        private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
-        {
-            CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
-
-            CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
-            CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousActionNote(0);
-
-            if (data.ActionProbability > 0)
-            {
-                if (data.ActionProbability < 1
-                    && data.DisplayPattern != PatternType.StackEnd)
-                {
-                    return 1.0 / Math.Max(note.DeltaTime, 1);
-                }
-
-                if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
-                {
-                    return 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
-                }
-
-                if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
-                {
-                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(note.StartTime - prevAmbiguousAction.StartTime, 1);
-                }
-
-                if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
-                {
-                    if (prevGuaranteedAction.StartTime >= prevAmbiguousAction.StartTime)
-                    {
-                        return 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
-                    }
-
-                    double ambiguousSpeed = 1.0 / Math.Max(note.StartTime - prevAmbiguousAction.StartTime, 1);
-                    double guaranteedSpeed = 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
-                    double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
-
-                    return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;
-                }
-            }
-
-            return 0;
         }
 
         private static double millisecondsToCatcherStandingWidth(double ms) => ms <= 188 ? 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35 : 0.567;
