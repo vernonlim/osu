@@ -230,6 +230,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             SkipToDirectionChange = false;
 
             DisplayPattern = PatternType.None;
+            PartialLocalStarRating = 0;
+            LocalStarRating = 0;
         }
 
         /// <summary>
