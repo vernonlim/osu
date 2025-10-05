@@ -55,41 +55,47 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         /// <param name="note"></param>
         /// <param name="prev"></param>
         /// <returns></returns>
-        public static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
+        public static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
+            CatchMovementData? nextData = next?.MovementData;
 
             CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
             CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousActionNote(0);
+
+            // hack
+            double timeBonus = data.NotePattern == PatternType.BreakBeginningRequiringMovement
+                ? (next is not null ? Math.Max((next.StartTime + prev.StartTime) / 2.0 - note.StartTime, note.StartTime) : 10000)
+                : 0;
 
             if (data.ActionProbability > 0)
             {
                 if (data.ActionProbability < 1
                     && data.DisplayPattern != PatternType.StackEnd)
                 {
-                    return 1.0 / Math.Max(note.DeltaTime, 1);
+                    return 1.0 / Math.Max(note.DeltaTime + timeBonus, 1);
                 }
 
                 if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
                 {
-                    return 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
+                    return 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
                 }
 
                 if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
                 {
-                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(note.StartTime - prevAmbiguousAction.StartTime, 1);
+                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(note.StartTime + timeBonus - prevAmbiguousAction.StartTime, 1);
                 }
 
                 if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
                 {
                     if (prevGuaranteedAction.StartTime >= prevAmbiguousAction.StartTime)
                     {
-                        return 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
+                        return 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
                     }
 
-                    double ambiguousSpeed = 1.0 / Math.Max(note.StartTime - prevAmbiguousAction.StartTime, 1);
-                    double guaranteedSpeed = 1.0 / Math.Max(note.StartTime - prevGuaranteedAction.StartTime, 1);
+                    double ambiguousSpeed = 1.0 / Math.Max(note.StartTime + timeBonus - prevAmbiguousAction.StartTime, 1);
+                    double guaranteedSpeed = 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
                     double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
 
                     return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;
@@ -102,15 +108,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         public static double EvaluateSpeedOf(CatchDifficultyHitObject current)
         {
             CatchDifficultyHitObject? prev = current.PreviousNote(0);
+            CatchDifficultyHitObject? next = current.PreviousNote(0);
 
             if (prev is null)
             {
                 return 0;
             }
 
-            double speed = calculateSpeed(current, prev);
+            double speed = calculateSpeed(current, prev, next);
 
-            return speed * 14;
+            return speed * 7;
         }
 
         public static double EvaluatePartialLocalStarRatingOf(CatchDifficultyHitObject current)

@@ -64,7 +64,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.GuaranteedActionDifficultyHitObjects.Add(note);
                 }
 
-                data.NoteSpeed = MovementEvaluator.calculateSpeed(note, prev) * 14;
+                data.NoteSpeed = MovementEvaluator.calculateSpeed(note, prev, next) * 14;
 
                 // Debug
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
