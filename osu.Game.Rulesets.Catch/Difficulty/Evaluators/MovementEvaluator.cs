@@ -16,11 +16,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
             CatchMovementData data = note.MovementData;
 
-            double precision = data.NotePrecision is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NotePrecision);
-            double speed = data.NoteSpeed * data.SpeedWeight * 0.9;
-            double aim = data.NoteAim is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)data.NoteAim);
+            double precision = EvaluatePrecisionOf(note);
+            double plsr = EvaluatePartialLocalStarRatingOf(note);
+            double aim = EvaluateAimOf(note);
 
-            double plsr = data.ActionProbability * Math.Sqrt(Math.Pow(precision, 2) + Math.Pow(speed, 2) + 0.2 * precision * speed);
             double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - data.ActionProbability, 2) * Math.Pow(aim, 2));
 
 
@@ -31,6 +30,38 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             // return speed;
 
             return precision;
+        }
+
+        public static double EvaluatePrecisionOf(CatchDifficultyHitObject current)
+        {
+            double precision = current.MovementData.NotePrecision is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)current.MovementData.NotePrecision);
+
+            return precision;
+        }
+
+        public static double EvaluateAimOf(CatchDifficultyHitObject current)
+        {
+            double aim = current.MovementData.NoteAim is null ? 0 : 6 * DifficultyCalculationUtils.Erf(1 / (double)current.MovementData.NoteAim);
+
+            return aim;
+        }
+
+        public static double EvaluateSpeedOf(CatchDifficultyHitObject current)
+        {
+            double speed = current.MovementData.NoteSpeed * current.MovementData.SpeedWeight * 0.9;
+
+            return speed;
+        }
+
+        public static double EvaluatePartialLocalStarRatingOf(CatchDifficultyHitObject current)
+        {
+            double precision = EvaluatePrecisionOf(current);
+            double aim = EvaluateAimOf(current);
+            double speed = EvaluateSpeedOf(current);
+
+            double plsr = current.MovementData.ActionProbability * Math.Sqrt(Math.Pow(precision, 2) + Math.Pow(speed, 2) + 0.2 * precision * speed);
+
+            return plsr;
         }
     }
 }
