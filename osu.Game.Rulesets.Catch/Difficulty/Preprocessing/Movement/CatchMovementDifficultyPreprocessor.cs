@@ -185,15 +185,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 return PatternType.EdgedashAfterBreak;
             }
 
-            if (prevData.IsBreak
-                && !note.IsHyper
-                && note.DeltaPosition >= 0
-                && next.DeltaTime > 2 * next.DeltaPosition
-                && next.DeltaPosition <= note.CatcherWidth)
-            {
-                return PatternType.StackAfterBreak;
-            }
-
             return PatternType.None;
         }
 
@@ -239,7 +230,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             }
 
             // direction change check to exclude streams
-            if (data.IsDirectionChangeOrEqual
+            if ((data.IsDirectionChangeOrEqual
+                 || prevData.IsBreak)
                 && next.DeltaPosition <= note.CatcherWidth)
             {
                 // There should be other cases covering this
@@ -364,7 +356,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 case PatternType.BreakBeginningRequiringMovement:
                 {
                     data.IsBreak = true;
-                    data.ActionProbability = 0;
+                    data.ActionProbability = 1;
                     // Handle the action for speed at an earlier time in the speed evaluation - the case is already detected and stored
                     break;
                 }
@@ -402,19 +394,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     break;
                 }
 
-                case PatternType.StackAfterBreak:
-                {
-                    data.ActionProbability = 0;
-                    data.BackwardCatcherPosition = data.FurthestForward(
-                        note.Position - data.Directionize(note.HalfCatcherWidth),
-                        next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime));
-                    data.ForwardCatcherPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
-
-                    data.BackwardStandingPosition = next.Position - data.Directionize(note.HalfCatcherWidth);
-                    data.ForwardStandingPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
-                    break;
-                }
-
                 case PatternType.NarrowStack:
                 {
                     data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
@@ -430,6 +409,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.PotentialStackBeginning:
                 {
+                    if (prevData.IsBreak)
+                    {
+                        data.NotePattern = PatternType.None;
+                        updateData(note, prev, next);
+                        break;
+                    }
+
                     if (next.DeltaPosition <= 3 * note.CatcherWidth / 5.0)
                     {
                         data.NotePattern = PatternType.NarrowStack;
@@ -671,7 +657,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                         data.SkipToDirectionChange = true;
                         data.NotePattern = classify(note, prev, next);
                         double? precision = calculatePrecision(note, prev, next);
-                        data.NotePattern = PatternType.StackContinuation;
 
                         return precision;
                     }
@@ -759,6 +744,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 PatternType.BreakBeginningRequiringMovement => note.CatcherWidth,
                 PatternType.BreakBeginningWithoutMovement => note.CatcherWidth,
                 PatternType.SingleNote => note.CatcherWidth,
+                PatternType.NarrowStack => note.CatcherWidth - next.DeltaPosition,
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
                 _ => null
             };
@@ -780,7 +766,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
             if (data.ActionProbability > 0)
             {
-                if (data.ActionProbability < 1)
+                if (data.ActionProbability < 1
+                    && data.DisplayPattern != PatternType.StackEnd)
                 {
                     return 1.0 / Math.Max(note.DeltaTime, 1);
                 }
