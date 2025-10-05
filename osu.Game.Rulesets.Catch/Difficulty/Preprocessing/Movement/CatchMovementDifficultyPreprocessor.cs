@@ -18,7 +18,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// <summary>
         /// The custom SpeedWeight given to difficult actions.
         /// </summary>
-        private const double speed_bonus = 1.2;
+        private const double speed_stand = 1.8;
+        private const double speed_walk = 1.4;
 
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
@@ -573,7 +574,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                     data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
-                    data.SpeedWeight = speed_bonus;
+                    if (prev.DeltaPosition < note.CatcherWidth / 4)
+                    {
+                        data.SpeedWeight = speed_stand;
+                    }
+                    else
+                    {
+                        data.SpeedWeight = speed_walk;
+                    }
                     break;
                 }
 
@@ -590,11 +598,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     if (note.IsMovingRight)
                     {
-                        data.ActionProbability = Math.Abs(cdfWithNote(next.Position - note.HalfCatcherWidth - (note.DeltaTime + next.DeltaTime) / 2.0, prev) - cdfWithNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
+                        data.ActionProbability = Math.Max(0,(cdfWithNote(next.Position - note.HalfCatcherWidth - (note.DeltaTime + next.DeltaTime) / 2.0, prev) - cdfWithNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev)));
                     }
                     else
                     {
-                        data.ActionProbability = Math.Abs(cdfWithNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev) - cdfWithNote(next.Position + note.HalfCatcherWidth + (note.DeltaTime + next.DeltaTime) / 2.0, prev));
+                        data.ActionProbability = Math.Max(0,(cdfWithNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev) - cdfWithNote(next.Position + note.HalfCatcherWidth + (note.DeltaTime + next.DeltaTime) / 2.0, prev)));
                     }
 
                     data.BackwardCatcherPosition = data.FurthestForward(next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime), note.Position - data.Directionize(note.HalfCatcherWidth));
