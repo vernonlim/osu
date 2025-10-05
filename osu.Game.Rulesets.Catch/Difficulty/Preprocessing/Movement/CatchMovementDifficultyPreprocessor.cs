@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 
@@ -75,6 +76,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     data.DisplayPattern = data.NotePattern;
                 }
+
+                data.LocalStarRating = MovementEvaluator.EvaluateDifficultyOf(note);
+                data.PartialLocalStarRating = MovementEvaluator.EvaluatePartialLocalStarRatingOf(note);
             }
         }
 

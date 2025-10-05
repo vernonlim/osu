@@ -197,7 +197,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </summary>
         public bool SkipToDirectionChange;
 
+        // For debug
         public PatternType DisplayPattern;
+        public double PartialLocalStarRating;
+        public double LocalStarRating;
 
         /// <summary>
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
