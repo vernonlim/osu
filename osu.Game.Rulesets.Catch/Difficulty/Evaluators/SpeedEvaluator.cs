@@ -32,6 +32,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         /// </summary>
         /// <param name="note"></param>
         /// <param name="prev"></param>
+        /// <param name="next"></param>
         /// <returns></returns>
         public static double CalculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
         {

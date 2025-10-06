@@ -98,6 +98,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <param name="next">The next note.</param>
+        /// <param name="skipToDirectionChange"></param>
         /// <returns>The <see cref="PatternType"/> corresponding to the note.</returns>
         private static PatternType classify(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, bool skipToDirectionChange = false)
         {

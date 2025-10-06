@@ -200,6 +200,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementPreprocessor"/>.
         /// </summary>
         /// <param name="note"></param>
+        /// <param name="guaranteedActionNoteObjects"></param>
+        /// <param name="ambiguousActionNoteObjects"></param>
         public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> ambiguousActionNoteObjects)
         {
             GuaranteedActionDifficultyHitObjects = guaranteedActionNoteObjects;
