@@ -435,10 +435,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     break;
                 }
 
-                // first: if d_1 <= c/2, potential stack beginning, action probability 0/no jumps, set stand values
-                // also c/2 < d_1 <= c
-                // if x_2 > x_0 + c/2 or x_2 < x_0 - c/2, the pattern is normal, leave it as detected jumps or such continue on to the next note
-                // if x_1 - c/2 <= x_2 <= x_1 + c/2, run stack detection
                 case PatternType.PotentialStack:
                 {
                     if (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition)
