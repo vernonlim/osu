@@ -119,13 +119,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double speedStrain = speedStrains[i];
                 double aimStrain = aimStrains[i];
 
-                double plsr = actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2));
-                double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2));
-
-                combinedStrains.Add(lsr);
+                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain));
             }
 
             return combinedStrains;
+        }
+
+        public static double CalculatePartialLocalStarRating(double actionProbability, double precisionStrain, double speedStrain)
+        {
+            return actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2));
+        }
+
+        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double aimStrain)
+        {
+            double plsr = CalculatePartialLocalStarRating(actionProbability, precisionStrain, speedStrain);
+
+            return Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2));
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)

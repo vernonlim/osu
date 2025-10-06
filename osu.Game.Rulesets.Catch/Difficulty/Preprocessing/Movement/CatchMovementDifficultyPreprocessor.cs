@@ -77,6 +77,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     data.DisplayPattern = data.NotePattern;
                 }
+
+                double precisionStrain = AimEvaluator.EvaluateDifficultyOf(note);
+                double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
+                double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(note);
+
+                data.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(data.ActionProbability, precisionStrain, speedStrain);
+                data.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(data.ActionProbability, precisionStrain, speedStrain, aimStrain);
             }
         }
 
