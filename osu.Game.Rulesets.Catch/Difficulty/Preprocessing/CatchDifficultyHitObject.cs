@@ -94,7 +94,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
         /// <summary>
         /// Movement data used in <see cref="MovementEvaluator"/>
-        /// This is updated with meaningful values for each note by <see cref="CatchMovementDifficultyPreprocessor"/>
+        /// This is updated with meaningful values for each note by <see cref="CatchMovementPreprocessor"/>
         /// </summary>
         public CatchMovementData MovementData;
 

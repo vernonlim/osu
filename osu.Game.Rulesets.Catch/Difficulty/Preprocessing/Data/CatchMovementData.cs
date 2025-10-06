@@ -203,7 +203,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         public double LocalStarRating;
 
         /// <summary>
-        /// Populates the class with default values which may be overwritten in <see cref="CatchMovementDifficultyPreprocessor"/>.
+        /// Populates the class with default values which may be overwritten in <see cref="CatchMovementPreprocessor"/>.
         /// </summary>
         /// <param name="note"></param>
         public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> ambiguousActionNoteObjects)

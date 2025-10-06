@@ -157,7 +157,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lastObject = hitObject;
             }
 
-            CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
+            CatchMovementPreprocessor.ProcessAndAssign(objects);
 
             return objects;
         }
