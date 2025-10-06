@@ -33,6 +33,11 @@ namespace osu.Game.Rulesets.Difficulty
         /// </summary>
         protected readonly IWorkingBeatmap WorkingBeatmap;
 
+        /// <summary>
+        /// The list of <see cref="DifficultyHitObject"/>s belonging to the beatmap for which difficulty will be calculated.
+        /// </summary>
+        protected IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; private set; }
+
         private Mod[] playableMods;
         private double clockRate;
 
@@ -79,7 +84,9 @@ namespace osu.Game.Rulesets.Difficulty
             if (!Beatmap.HitObjects.Any())
                 return CreateDifficultyAttributes(Beatmap, playableMods, skills, clockRate);
 
-            foreach (var hitObject in getDifficultyHitObjects())
+            DifficultyHitObjects = getDifficultyHitObjects().ToList();
+
+            foreach (var hitObject in DifficultyHitObjects)
             {
                 foreach (var skill in skills)
                 {

@@ -25,8 +25,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         private float catcherWidth;
 
-        private List<CatchDifficultyHitObject> noteDifficultyHitObjects;
-
         public override int Version => 20250306;
 
         public CatchDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
@@ -39,8 +37,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
 
-            List<double> startTimes = noteDifficultyHitObjects.Select(n => n.StartTime).ToList();
-            List<double> actionProbabilities = noteDifficultyHitObjects.Select(n => n.MovementData.ActionProbability).ToList();
+            List<double> startTimes = DifficultyHitObjects.Select(n => n.StartTime).ToList();
+            List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
@@ -160,8 +158,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
-
-            noteDifficultyHitObjects = noteObjects;
 
             return objects;
         }
