@@ -421,13 +421,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                         break;
                     }
 
-                    if (next.DeltaPosition <= 3 * note.CatcherWidth / 5.0)
-                    {
-                        data.NotePattern = PatternType.NarrowStack;
-                        updateData(note, prev, next);
-                        break;
-                    }
-
                     data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
                     data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
 
@@ -441,6 +434,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
 
                 case PatternType.PotentialStack:
                 {
+                    if (next.DeltaPosition <= 3 * note.CatcherWidth / 5.0)
+                    {
+                        data.NotePattern = PatternType.NarrowStack;
+                        updateData(note, prev, next);
+                        break;
+                    }
+
                     if (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition)
                     {
                         data.SkipToDirectionChange = true;
