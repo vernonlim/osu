@@ -65,7 +65,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                     data.GuaranteedActionDifficultyHitObjects.Add(note);
                 }
 
-                data.NoteSpeed = MovementEvaluator.calculateSpeed(note, prev, next) * 14;
+                data.NoteSpeed = SpeedEvaluator.CalculateSpeed(note, prev, next) * 14;
 
                 // Debug
                 data.PrevToNextDistance = calculatePrevToNextDistance(note, prev, next);
@@ -77,9 +77,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
                 {
                     data.DisplayPattern = data.NotePattern;
                 }
-
-                data.LocalStarRating = MovementEvaluator.EvaluateDifficultyOf(note);
-                data.PartialLocalStarRating = MovementEvaluator.EvaluatePartialLocalStarRatingOf(note);
             }
         }
 

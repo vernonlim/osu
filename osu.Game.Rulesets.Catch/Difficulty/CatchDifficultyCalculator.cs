@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Beatmaps;
@@ -20,9 +21,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 1.5;
+        private const double difficulty_multiplier = 1.45;
 
         private float catcherWidth;
+
+        private List<CatchDifficultyHitObject> noteDifficultyHitObjects;
 
         public override int Version => 20250306;
 
@@ -36,14 +39,93 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
 
+            List<double> startTimes = noteDifficultyHitObjects.Select(n => n.StartTime).ToList();
+            List<double> actionProbabilities = noteDifficultyHitObjects.Select(n => n.MovementData.ActionProbability).ToList();
+            List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
+            List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
+            List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
+            // List<double> readingStrains = skills.OfType<Reading>().Single().GetObjectStrains().ToList();
+
+            List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains);
+
+            double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
+
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = skills.OfType<Movement>().Single().DifficultyValue() * difficulty_multiplier,
+                StarRating = sr,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
             };
 
             return attributes;
+        }
+
+        /// <summary>
+        /// Replicates StrainSkill behaviour with Strain Peaks.
+        /// </summary>
+        /// <param name="startTimes"></param>
+        /// <param name="combinedStrains"></param>
+        /// <returns></returns>
+        private double calculateDifficultyValue(List<double> startTimes, List<double> combinedStrains)
+        {
+            List<double> strainPeaks = new List<double>();
+
+            const double decay_weight = 0.9;
+            double currentSectionPeak = 0;
+            double currentSectionEnd = 0;
+            const double section_length = 400;
+
+            for (int i = 0; i < combinedStrains.Count; i++)
+            {
+                double strain = combinedStrains[i];
+                double startTime = startTimes[i];
+
+                while (startTime > currentSectionEnd)
+                {
+                    strainPeaks.Add(currentSectionPeak);
+                    currentSectionPeak = strain;
+                    currentSectionEnd += section_length;
+                }
+
+                currentSectionPeak = Math.Max(strain, currentSectionPeak);
+            }
+
+            double difficulty = 0;
+            double weight = 1;
+
+            // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
+            // These sections will not contribute to the difficulty.
+            var peaks = strainPeaks.Where(p => p > 0);
+
+            // Difficulty is the weighted sum of the highest strains from every section.
+            // We're sorting from highest to lowest strain.
+            foreach (double strain in peaks.OrderDescending())
+            {
+                difficulty += strain * weight;
+                weight *= decay_weight;
+            }
+
+            return difficulty;
+        }
+
+        private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains)
+        {
+            List<double> combinedStrains = new List<double>();
+
+            for (int i = 0; i < precisionStrains.Count; i++)
+            {
+                double actionProbability = actionProbabilities[i];
+                double precisionStrain = precisionStrains[i];
+                double speedStrain = speedStrains[i];
+                double aimStrain = aimStrains[i];
+
+                double plsr = actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2));
+                double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2));
+
+                combinedStrains.Add(lsr);
+            }
+
+            return combinedStrains;
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
@@ -70,6 +152,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchMovementDifficultyPreprocessor.ProcessAndAssign(objects);
 
+            noteDifficultyHitObjects = noteObjects;
+
             return objects;
         }
 
@@ -79,7 +163,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             return new Skill[]
             {
-                new Movement(mods),
+                new Aim(mods),
+                new Precision(mods),
+                new Speed(mods),
             };
         }
 

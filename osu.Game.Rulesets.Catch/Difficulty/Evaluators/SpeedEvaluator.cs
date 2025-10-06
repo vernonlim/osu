@@ -8,45 +8,23 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 {
-    public static class MovementEvaluator
+    public class SpeedEvaluator
     {
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
-            CatchMovementData data = note.MovementData;
 
-            double precision = EvaluatePrecisionOf(note);
-            double plsr = EvaluatePartialLocalStarRatingOf(note);
-            double aim = EvaluateAimOf(note);
-            double speed = EvaluateSpeedOf(note);
+            CatchDifficultyHitObject? prev = note.PreviousNote(0);
+            CatchDifficultyHitObject? next = note.PreviousNote(0);
 
-            double lsr = Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - data.ActionProbability, 2) * Math.Pow(aim, 2));
+            if (prev is null)
+            {
+                return 0;
+            }
 
-            // To switch to precision-only mode, comment out this line
-            // return aim;
-            // return plsr * 0.85;
-            return lsr * 0.87;
-            return speed * data.ActionProbability;
+            double speed = CalculateSpeed(note, prev, next);
 
-            return precision;
-        }
-
-        public static double EvaluatePrecisionOf(CatchDifficultyHitObject current)
-        {
-            double precision = current.MovementData.NotePrecision is null
-                ? 0
-                : 32 - 7 * Math.Log((double)current.MovementData.NotePrecision);
-
-            return precision / 35;
-        }
-
-        public static double EvaluateAimOf(CatchDifficultyHitObject current)
-        {
-            double aim = current.MovementData.NoteAim is null
-                ? 0
-                : 32 - 7 * Math.Log((double)current.MovementData.NoteAim + 15.0);
-
-            return aim / 35;
+            return speed * 9;
         }
 
         /// <summary>
@@ -55,7 +33,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         /// <param name="note"></param>
         /// <param name="prev"></param>
         /// <returns></returns>
-        public static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
+        public static double CalculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
@@ -103,32 +81,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             }
 
             return 0;
-        }
-
-        public static double EvaluateSpeedOf(CatchDifficultyHitObject current)
-        {
-            CatchDifficultyHitObject? prev = current.PreviousNote(0);
-            CatchDifficultyHitObject? next = current.PreviousNote(0);
-
-            if (prev is null)
-            {
-                return 0;
-            }
-
-            double speed = calculateSpeed(current, prev, next);
-
-            return speed * 7;
-        }
-
-        public static double EvaluatePartialLocalStarRatingOf(CatchDifficultyHitObject current)
-        {
-            double precision = EvaluatePrecisionOf(current);
-            double aim = EvaluateAimOf(current);
-            double speed = EvaluateSpeedOf(current);
-
-            double plsr = current.MovementData.ActionProbability * Math.Sqrt(Math.Pow(precision, 2) + Math.Pow(speed, 2));
-
-            return plsr;
         }
     }
 }

@@ -8,19 +8,19 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class Movement : StrainDecaySkill
+    public class Speed : StrainDecaySkill
     {
         protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0.05;
+        protected override double StrainDecayBase => 0.10;
 
-        public Movement(Mod[] mods)
+        public Speed(Mod[] mods)
             : base(mods)
         {
         }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
-            return MovementEvaluator.EvaluateDifficultyOf(current);
+            return SpeedEvaluator.EvaluateDifficultyOf(current);
         }
     }
 }
