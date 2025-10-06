@@ -40,11 +40,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double value = Math.Pow(5.0 * Math.Max(1.0, catchAttributes.StarRating / 0.0049) - 4.0, 2.0) / 100000.0;
 
             // Longer maps are worth more. "Longer" means how many hits there are which can contribute to combo
-            int numTotalHits = totalComboHits();
+            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions;
 
             double lengthBonus =
-                0.95 + 0.3 * Math.Min(1.0, numTotalHits / 2500.0) +
-                (numTotalHits > 2500 ? Math.Log10(numTotalHits / 2500.0) * 0.475 : 0.0);
+                0.95 + 0.3 * Math.Min(1.0, totalActions / 1250.0) +
+                (totalActions > 1250 ? Math.Log10(totalActions / 1250.0) * 0.475 : 0.0);
             value *= lengthBonus;
 
             value *= Math.Pow(0.97, numMiss);

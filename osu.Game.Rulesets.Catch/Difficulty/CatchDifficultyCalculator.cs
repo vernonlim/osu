@@ -37,6 +37,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
 
+            double totalActions = DifficultyHitObjects
+                                  .Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability)
+                                  .Sum();
+
             List<double> startTimes = DifficultyHitObjects.Select(n => n.StartTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
@@ -53,6 +57,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 StarRating = sr,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
+                TotalActions = totalActions,
             };
 
             return attributes;
@@ -152,7 +157,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     continue;
 
                 if (lastObject != null)
-                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count, guaranteedActionNoteObjects, ambiguousActionNoteObjects));
+                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count, guaranteedActionNoteObjects,
+                        ambiguousActionNoteObjects));
 
                 lastObject = hitObject;
             }

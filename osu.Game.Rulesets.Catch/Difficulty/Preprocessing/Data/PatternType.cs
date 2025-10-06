@@ -16,7 +16,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         SingleNote,
         HyperdashAfterBreak,
         EdgedashAfterBreak,
-        StackAfterBreak,
 
         // Stacks
         PotentialStack,

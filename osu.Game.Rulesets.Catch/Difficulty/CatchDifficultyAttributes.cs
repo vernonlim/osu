@@ -9,6 +9,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyAttributes : DifficultyAttributes
     {
+        /// <summary>
+        /// The number of actions the player is expected to perform while playing the beatmap.
+        /// </summary>
+        public double TotalActions { get; set; }
+
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())
