@@ -8,19 +8,25 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class Speed : StrainDecaySkill
+    public class Speed : StrainSkill
     {
-        protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0.10;
+        /// <summary>
+        /// The current strain level.
+        /// </summary>
+        protected double CurrentStrain { get; private set; }
 
         public Speed(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain;
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
-            return SpeedEvaluator.EvaluateDifficultyOf(current);
+            CurrentStrain = SpeedEvaluator.EvaluateDifficultyOf(current);
+
+            return CurrentStrain * 3;
         }
     }
 }
