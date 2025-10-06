@@ -3,7 +3,7 @@
 
 using System;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
@@ -36,8 +36,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         public static double CalculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
         {
             CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
-            CatchMovementData? nextData = next?.MovementData;
+            _ = prev.MovementData;
+            _ = next?.MovementData;
 
             CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
             CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousActionNote(0);

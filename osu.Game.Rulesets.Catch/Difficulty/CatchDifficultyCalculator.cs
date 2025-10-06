@@ -7,7 +7,7 @@ using System.Linq;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
@@ -157,7 +157,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lastObject = hitObject;
             }
 
-            CatchMovementPreprocessor.ProcessAndAssign(objects);
+            CatchMovementPreprocessor.Process(objects);
+            CatchDifficultyPreprocessor.Process(objects);
 
             return objects;
         }

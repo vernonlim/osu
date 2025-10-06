@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement;
+using osu.Game.Rulesets.Catch.Difficulty.Data;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
@@ -93,8 +94,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 : MovementDirection.None);
 
         /// <summary>
-        /// Movement data used in <see cref="MovementEvaluator"/>
-        /// This is updated with meaningful values for each note by <see cref="CatchMovementPreprocessor"/>
+        /// Movement data used in difficulty calculation.
+        /// This is updated with meaningful values for each note by the available Preprocessors.
         /// </summary>
         public CatchMovementData MovementData;
 

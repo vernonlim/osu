@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
 
-namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
+namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 {
     public class CatchMovementData
     {
@@ -161,8 +162,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </remarks>
         public double SpeedWeight;
 
-        public double StackCount;
-
         /// <summary>
         /// The likelihood of an action being performed.
         /// </summary>
@@ -187,17 +186,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
         /// </remarks>
         public double? NoteAim;
 
+        // For debug
         /// <summary>
         /// 1 divided by the time interval between this note and the last expected action.
         /// </summary>
         public double NoteSpeed;
 
-        /// <summary>
-        /// Whether this note should skip break/stack classification within the preprocessor.
-        /// </summary>
-        public bool SkipToDirectionChange;
-
-        // For debug
         public PatternType DisplayPattern;
         public double PartialLocalStarRating;
         public double LocalStarRating;
@@ -222,12 +216,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Movement
             LeftStandingPosition = null;
             RightStandingPosition = null;
             SpeedWeight = 1;
-            StackCount = 0;
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
             NoteSpeed = 0;
-            SkipToDirectionChange = false;
 
             DisplayPattern = PatternType.None;
             PartialLocalStarRating = 0;
