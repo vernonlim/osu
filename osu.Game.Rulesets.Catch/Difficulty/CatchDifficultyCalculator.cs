@@ -180,6 +180,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 new Precision(mods),
                 new Speed(mods),
                 new RealSpeed(mods),
+                new PartialLocalStarRating(mods),
+                new LocalStarRating(mods),
             };
         }
 

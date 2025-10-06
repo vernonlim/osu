@@ -10,20 +10,24 @@ using osu.Game.Rulesets.Mods;
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
     // For debug purposes (displays on osu-tools PerformanceCalculatorGUI)
-    public class RealSpeed : StrainDecaySkill
+    public class PartialLocalStarRating : StrainDecaySkill
     {
         protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0.10;
 
-        public RealSpeed(Mod[] mods)
+        protected override double StrainDecayBase => 0.0;
+
+        public PartialLocalStarRating(Mod[] mods)
             : base(mods)
         {
         }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
+            double precision = PrecisionEvaluator.EvaluateDifficultyOf(current);
+            double speed = SpeedEvaluator.EvaluateDifficultyOf(current);
             double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
-            return SpeedEvaluator.EvaluateDifficultyOf(current) * actionProbability;
+
+            return CatchDifficultyCalculator.CalculatePartialLocalStarRating(actionProbability, precision, speed);
         }
     }
 }
