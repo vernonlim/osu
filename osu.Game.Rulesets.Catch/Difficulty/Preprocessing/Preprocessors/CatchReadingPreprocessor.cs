@@ -3,7 +3,7 @@
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
-    public class CatchReadingPreprocessor
+    public static class CatchReadingPreprocessor
     {
     }
 }

@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     /// <summary>
     /// Utility class that calculates Movement-related properties.
     /// </summary>
-    public class CatchMovementPreprocessor
+    public static class CatchMovementPreprocessor
     {
         /// <summary>
         /// The custom SpeedWeight given to difficult actions.

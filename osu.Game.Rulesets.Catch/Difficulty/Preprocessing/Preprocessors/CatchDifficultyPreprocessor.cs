@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
-    public class CatchDifficultyPreprocessor
+    public static class CatchDifficultyPreprocessor
     {
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
