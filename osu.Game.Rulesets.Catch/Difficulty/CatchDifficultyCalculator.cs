@@ -159,6 +159,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchMovementPreprocessor.Process(objects);
             CatchDifficultyPreprocessor.Process(objects);
+            CatchReadingPreprocessor.Process(objects);
 
             return objects;
         }
