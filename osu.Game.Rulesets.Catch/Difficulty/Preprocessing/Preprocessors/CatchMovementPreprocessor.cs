@@ -341,12 +341,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
 
-            // To simplify things, set ActionProbability to 0 for all narrow stacks
-            if (next.DeltaPosition <= note.HalfCatcherWidth)
-            {
-                data.ActionProbability = 0;
-            }
-
             switch (data.NotePattern)
             {
                 case PatternType.BreakBeginningRequiringMovement:
