@@ -149,6 +149,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 PatternType.BreakBeginningRequiringMovement => note.CatcherWidth,
                 PatternType.BreakBeginningWithoutMovement => note.CatcherWidth,
                 PatternType.SingleNote => note.CatcherWidth,
+                PatternType.StackAfterBreak => note.CatcherWidth - next.DeltaPosition,
                 PatternType.PotentialStack => data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
                 PatternType.NarrowStack => note.CatcherWidth - next.DeltaPosition,
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,

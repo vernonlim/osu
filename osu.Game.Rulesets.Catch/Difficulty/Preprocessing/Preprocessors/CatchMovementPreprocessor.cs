@@ -166,6 +166,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.IsBreak
+                && next.DeltaPosition <= note.CatcherWidth)
+            {
+                return PatternType.StackAfterBreak;
+            }
+
+            if (prevData.IsBreak
                 && note.IsHyper)
             {
                 return PatternType.HyperdashAfterBreak;
@@ -226,8 +232,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             // direction change check to exclude streams
-            if ((data.IsDirectionChangeOrEqual
-                 || prevData.IsBreak)
+            if ((data.IsDirectionChangeOrEqual)
                 && next.DeltaPosition <= note.CatcherWidth)
             {
                 // There should be other cases covering this
@@ -365,6 +370,27 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     break;
                 }
 
+                case PatternType.StackAfterBreak:
+                {
+                    if (next.DeltaPosition / note.CatcherWidth >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime))
+                    {
+                        data.NotePattern = PatternType.EdgedashAfterBreak;
+                        updateData(note, prev, next);
+
+                        break;
+                    }
+
+                    data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
+                    data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
+                    data.LeftCatcherPosition = (double)data.LeftStandingPosition;
+                    data.RightCatcherPosition = (double)data.RightStandingPosition;
+
+                    data.IsStack = true;
+                    data.ActionProbability = 0;
+
+                    break;
+                }
+
                 case PatternType.HyperdashAfterBreak:
                 {
                     data.ActionProbability = 1;
@@ -399,13 +425,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.PotentialStackBeginning:
                 {
-                    if (prevData.IsBreak)
-                    {
-                        data.NotePattern = PatternType.None;
-                        updateData(note, prev, next);
-                        break;
-                    }
-
                     data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
                     data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
 

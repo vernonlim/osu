@@ -14,6 +14,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         BreakBeginningRequiringMovement,
         BreakBeginningWithoutMovement,
         SingleNote,
+        StackAfterBreak,
         HyperdashAfterBreak,
         EdgedashAfterBreak,
 
