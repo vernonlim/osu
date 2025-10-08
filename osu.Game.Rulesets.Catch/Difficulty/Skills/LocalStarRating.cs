@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
     {
         protected override double SkillMultiplier => 1;
 
-        protected override double StrainDecayBase => 0.0;
+        protected override double StrainDecayBase => 0.05;
 
         public LocalStarRating(Mod[] mods)
             : base(mods)
