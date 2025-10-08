@@ -168,6 +168,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             if (prevData.IsBreak
                 && next.DeltaPosition <= note.CatcherWidth)
             {
+                note.MovementData.DisplayPattern = PatternType.StackAfterBreak;
                 return PatternType.StackAfterBreak;
             }
 
