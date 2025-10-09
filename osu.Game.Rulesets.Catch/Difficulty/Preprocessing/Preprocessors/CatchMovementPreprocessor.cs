@@ -435,6 +435,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         break;
                     }
 
+
                     if (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition)
                     {
                         data.LeftStandingPosition = null;
@@ -443,7 +444,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);
-
                         break;
                     }
 
@@ -455,6 +455,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (next.DeltaPosition / note.CatcherWidth >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime))
                     {
                         // wiggle
+                        data.NotePattern = classify(note, prev, next, true);
+                        updateData(note, prev, next);
                         data.ActionProbability = 1;
                     }
                     else
