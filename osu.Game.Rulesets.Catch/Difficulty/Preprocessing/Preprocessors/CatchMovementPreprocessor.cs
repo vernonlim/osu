@@ -221,14 +221,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.LeftStandingPosition is not null
-                && next.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
+                && next.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0
+                && Math.Abs(next.Position - prev.Position) <= note.CatcherWidth)
             {
                 data.DisplayPattern = PatternType.NarrowStack;
                 return PatternType.NarrowStack;
             }
 
             if (prevData.LeftStandingPosition is not null
-                && next.DeltaPosition <= note.CatcherWidth)
+                && next.DeltaPosition <= note.CatcherWidth
+                && Math.Abs(next.Position - prev.Position) <= note.CatcherWidth)
             {
                 data.DisplayPattern = PatternType.PotentialStack;
                 return PatternType.PotentialStack;
@@ -583,7 +585,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
 
-                    double first = Math.Abs(note.Position - prevForwardCatcherPosition) + data.Directionize(next.Position - prevForwardCatcherPosition);
+                    double first = data.Directionize(note.Position + next.Position - 2 * prevForwardCatcherPosition);
                     double second = 2 * prev.StartTime + note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second) / 4.0;

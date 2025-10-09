@@ -73,7 +73,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     if (next.DeltaPosition - next.DeltaTime >= note.HalfCatcherWidth)
                     {
-                        return note.CatcherWidth / (2.0 * minimalVelocity);
+                        return (note.CatcherWidth + next.DeltaTime - data.Directionize(next.DeltaPosition)) / (2.0 * minimalVelocity);
                     }
 
                     double first = note.HalfCatcherWidth - next.DeltaPosition + nextToPrevDeltaTime;
