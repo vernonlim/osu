@@ -601,7 +601,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.PotentialStandstill:
                 {
-                    if (note.IsMovingRight)
+                    if ((prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0 <= note.Position)
                     {
                         data.ActionProbability = 1 - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev);
                     }

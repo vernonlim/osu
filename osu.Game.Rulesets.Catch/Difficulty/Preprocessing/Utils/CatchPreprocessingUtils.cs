@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="mean"></param>
         /// <param name="std"></param>
         /// <returns></returns>
-        public static double Cdf(double x, double mean, double std) => 0.5 * (1 + DifficultyCalculationUtils.Erf((x - mean) / (Math.Sqrt(2) * std)));
+        public static double Cdf(double x, double mean, double std) => 0.5 * DifficultyCalculationUtils.Erfc((mean - x) / (std * Math.Sqrt(2)));
 
         /// <summary>
         /// Gets the catcher position of the last note closest to the current one.
