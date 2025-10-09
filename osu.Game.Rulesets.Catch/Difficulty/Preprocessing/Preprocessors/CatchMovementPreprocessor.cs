@@ -32,10 +32,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             // TODO: Special handling for the first and last objects of the map, as they lack a previous or future object
             CatchDifficultyHitObject first = (CatchDifficultyHitObject)hitObjects[0];
             first.MovementData.NotePattern = PatternType.FirstNote;
+            first.MovementData.ActionProbability = 0;
             updateInitialData(first, (CatchDifficultyHitObject)hitObjects[0]);
 
             CatchDifficultyHitObject last = (CatchDifficultyHitObject)hitObjects[^1];
             last.MovementData.NotePattern = PatternType.LastNote;
+            last.MovementData.ActionProbability = 0;
             last.MovementData.IsDirectionChange = false; // There is no next note to change direction to.
 
             for (int i = 1; i < hitObjects.Count - 1; i++)
