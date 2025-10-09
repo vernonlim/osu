@@ -465,7 +465,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         // wiggle
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);
-                        data.ActionProbability = 1;
                     }
                     else
                     {
