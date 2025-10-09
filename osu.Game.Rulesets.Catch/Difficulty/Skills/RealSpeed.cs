@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
         protected override double StrainValueOf(DifficultyHitObject current)
         {
             double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
-            return SpeedEvaluator.EvaluateDifficultyOf(current) * actionProbability;
+            return SpeedEvaluator.EvaluateDifficultyOf(current) * actionProbability * ((CatchDifficultyHitObject)current).MovementData.SpeedWeight;
         }
     }
 }

@@ -37,44 +37,39 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         public static double CalculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject? next)
         {
             CatchMovementData data = note.MovementData;
-            _ = prev.MovementData;
+            CatchMovementData prevData = prev.MovementData;
             _ = next?.MovementData;
 
             CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
-            CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousActionNote(0);
-
-            // hack
-            double timeBonus = data.NotePattern == PatternType.BreakBeginningRequiringMovement
-                ? (next is not null ? Math.Max((next.StartTime + prev.StartTime) / 2.0 - note.StartTime, note.StartTime) : 10000)
-                : 0;
+            CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousAmbiguousActionNote(0);
 
             if (data.ActionProbability > 0)
             {
                 if (data.ActionProbability < 1
                     && data.DisplayPattern != PatternType.StackEnd)
                 {
-                    return 1.0 / Math.Max(note.DeltaTime + timeBonus, 1);
+                    return 1.0 / Math.Max(data.EffectiveTime - prevData.EffectiveTime, 1);
                 }
 
                 if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
                 {
-                    return 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
+                    return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
                 }
 
                 if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
                 {
-                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(note.StartTime + timeBonus - prevAmbiguousAction.StartTime, 1);
+                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1);
                 }
 
                 if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
                 {
-                    if (prevGuaranteedAction.StartTime >= prevAmbiguousAction.StartTime)
+                    if (prevGuaranteedAction.MovementData.EffectiveTime >= prevAmbiguousAction.MovementData.EffectiveTime)
                     {
-                        return 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
+                        return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
                     }
 
-                    double ambiguousSpeed = 1.0 / Math.Max(note.StartTime + timeBonus - prevAmbiguousAction.StartTime, 1);
-                    double guaranteedSpeed = 1.0 / Math.Max(note.StartTime + timeBonus - prevGuaranteedAction.StartTime, 1);
+                    double ambiguousSpeed = 1.0 / Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1);
+                    double guaranteedSpeed = 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
                     double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
 
                     return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;

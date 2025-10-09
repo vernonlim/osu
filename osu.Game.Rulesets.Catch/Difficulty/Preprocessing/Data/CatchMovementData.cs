@@ -15,22 +15,27 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         public CatchDifficultyHitObject Note;
 
-        public List<CatchDifficultyHitObject> GuaranteedActionDifficultyHitObjects;
+        public List<CatchDifficultyHitObject> GuaranteedActionNotes;
 
         public int GuaranteedActionIndex;
 
-        public List<CatchDifficultyHitObject> AmbiguousActionDifficultyHitObjects;
+        public List<CatchDifficultyHitObject> AmbiguousActionNotes;
 
         public int AmbiguousActionIndex;
 
-        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => GuaranteedActionDifficultyHitObjects.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
+        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => GuaranteedActionNotes.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
 
-        public CatchDifficultyHitObject? PreviousActionNote(int backwardsIndex) => AmbiguousActionDifficultyHitObjects.ElementAtOrDefault(AmbiguousActionIndex - (backwardsIndex + 1));
+        public CatchDifficultyHitObject? PreviousAmbiguousActionNote(int backwardsIndex) => AmbiguousActionNotes.ElementAtOrDefault(AmbiguousActionIndex - (backwardsIndex + 1));
 
         /// <summary>
         /// The pattern type associated with this note.
         /// </summary>
         public PatternType NotePattern;
+
+        /// <summary>
+        /// The time at which the action associated with this note takes place.
+        /// </summary>
+        public double EffectiveTime;
 
         /// <summary>
         /// The leftmost position at the current time for which it is possible to catch both the previous note and the next note.
@@ -204,11 +209,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// <param name="ambiguousActionNoteObjects"></param>
         public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> ambiguousActionNoteObjects)
         {
-            GuaranteedActionDifficultyHitObjects = guaranteedActionNoteObjects;
-            AmbiguousActionDifficultyHitObjects = ambiguousActionNoteObjects;
+            GuaranteedActionNotes = guaranteedActionNoteObjects;
+            AmbiguousActionNotes = ambiguousActionNoteObjects;
 
             Note = note;
             NotePattern = PatternType.None;
+            EffectiveTime = note.StartTime;
             IsBreak = false;
             IsStack = false;
             IsDirectionChange = false;
