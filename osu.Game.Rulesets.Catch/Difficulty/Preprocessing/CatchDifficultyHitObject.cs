@@ -87,11 +87,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <remarks>
         /// If the distance is not deemed 'significant' enough (allowing for the catcher to catch both notes without any), this is set to None.
         /// </remarks>
-        public MovementDirection SignificantMovementDirection => (Position - LastObject.EffectiveX > HalfCatcherWidth || (Position > LastObject.EffectiveX && LastObject.HyperDash))
-            ? MovementDirection.Right
-            : ((LastObject.EffectiveX - Position > HalfCatcherWidth || (LastObject.EffectiveX > Position && LastObject.HyperDash))
-                ? MovementDirection.Left
-                : MovementDirection.None);
+        public MovementDirection SignificantMovementDirection =>
+            (Position - LastObject.EffectiveX > HalfCatcherWidth || (Position > LastObject.EffectiveX && LastObject.HyperDash))
+                ? MovementDirection.Right
+                : ((LastObject.EffectiveX - Position > HalfCatcherWidth || (LastObject.EffectiveX > Position && LastObject.HyperDash))
+                    ? MovementDirection.Left
+                    : MovementDirection.None);
 
         /// <summary>
         /// Movement data used in difficulty calculation.

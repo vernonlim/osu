@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 
             double speed = CalculateSpeed(note, prev, next);
 
-            return speed * 9;
+            return speed * 8;
         }
 
         /// <summary>
