@@ -625,14 +625,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         if (note.IsMovingRight)
                         {
                             data.ActionProbability =
-                                Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
+                                Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
                                          - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
                         }
                         else
                         {
                             data.ActionProbability =
-                                Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev)
-                                         - CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev));
+                                Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev)
+                                        - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev));
                         }
 
                         data.NotePattern = PatternType.HyperWalk;

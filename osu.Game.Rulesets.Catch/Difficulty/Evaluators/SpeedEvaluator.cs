@@ -46,9 +46,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             if (data.ActionProbability > 0)
             {
                 if (data.ActionProbability < 1
-                    && data.DisplayPattern != PatternType.StackEnd)
+                    && data.DisplayPattern != PatternType.StackEnd
+                    && prevGuaranteedAction is not null)
                 {
-                    return 1.0 / Math.Max(data.EffectiveTime - prevData.EffectiveTime, 1);
+                    return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
                 }
 
                 if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
