@@ -16,6 +16,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("total_actions")]
         public double TotalActions { get; set; }
 
+        /// <summary>
+        /// Temporary debug property.
+        /// </summary>
+        [JsonProperty("hyperwalks")]
+        public int HyperWalkCount { get; set; }
+
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())

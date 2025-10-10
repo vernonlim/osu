@@ -38,6 +38,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double EffectiveTime;
 
         /// <summary>
+        /// Is this note a HyperWalk?
+        /// </summary>
+        public bool IsHyperWalk;
+
+        /// <summary>
         /// The leftmost position at the current time for which it is possible to catch both the previous note and the next note.
         /// </summary>
         public double LeftCatcherPosition;
@@ -215,6 +220,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             Note = note;
             NotePattern = PatternType.None;
             EffectiveTime = note.StartTime;
+            IsHyperWalk = false;
             IsBreak = false;
             IsStack = false;
             IsDirectionChange = false;

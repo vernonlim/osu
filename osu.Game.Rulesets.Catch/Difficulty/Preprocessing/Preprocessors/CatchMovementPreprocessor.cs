@@ -89,6 +89,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
             data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
             data.IsDirectionChangeOrEqual = note.IsMovingRight ? next.Position <= note.Position : next.Position >= note.Position;
+            data.IsHyperWalk =
+                (next.DeltaPosition * (next.StartTime - note.StartTime)) / (2 * next.DeltaTime) >= next.DeltaPosition - note.HalfCatcherWidth
+                && note.IsHyper;
         }
 
         /// <summary>

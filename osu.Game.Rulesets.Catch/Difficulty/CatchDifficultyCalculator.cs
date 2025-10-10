@@ -41,6 +41,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                                   .Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability)
                                   .Sum();
 
+            int hyperWalkCount = DifficultyHitObjects.Count(n => ((CatchDifficultyHitObject)n).MovementData.IsHyperWalk);
+
             List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.EffectiveTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
@@ -58,6 +60,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
+                HyperWalkCount = hyperWalkCount,
             };
 
             return attributes;
