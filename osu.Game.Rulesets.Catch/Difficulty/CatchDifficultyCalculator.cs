@@ -41,7 +41,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                                   .Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability)
                                   .Sum();
 
-            List<double> startTimes = DifficultyHitObjects.Select(n => n.StartTime).ToList();
+            List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.EffectiveTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();

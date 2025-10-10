@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 
@@ -12,6 +13,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// The number of actions the player is expected to perform while playing the beatmap.
         /// </summary>
+        [JsonProperty("total_actions")]
         public double TotalActions { get; set; }
 
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
@@ -21,6 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             // Todo: osu!catch should not output star rating in the 'aim' attribute.
             yield return (ATTRIB_ID_AIM, StarRating);
+            yield return (ATTRIB_ID_TOTAL_ACTIONS, TotalActions);
         }
 
         public override void FromDatabaseAttributes(IReadOnlyDictionary<int, double> values, IBeatmapOnlineInfo onlineInfo)
@@ -28,6 +31,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             base.FromDatabaseAttributes(values, onlineInfo);
 
             StarRating = values[ATTRIB_ID_AIM];
+            TotalActions = values[ATTRIB_ID_TOTAL_ACTIONS];
         }
     }
 }
