@@ -350,7 +350,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData prevData = prev.MovementData;
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
-            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, next);
+            double prevBackwardCatcherPosition = note.IsMovingRight ? prevData.LeftCatcherPosition : prevData.RightCatcherPosition;
+            double perfectSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
             switch (data.NotePattern)
             {
@@ -534,11 +535,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (next.DeltaPosition <= note.HalfCatcherWidth + next.DeltaTime)
                     {
-                        data.EffectiveTime = (Math.Abs(note.Position - prevForwardCatcherPosition) / minimalVelocity + prev.StartTime + note.StartTime) / 2.0;
+                        double first = data.Directionize(note.Position + next.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition + next.DeltaTime) / perfectSpeed;
+                        double second = 2 * prev.StartTime + 2 * note.StartTime;
+                        data.EffectiveTime = (first + second) / 4.0;
                         break;
                     }
 
-                    data.EffectiveTime = (Math.Abs(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / minimalVelocity + note.HalfCatcherWidth - next.DeltaPosition
+                    data.EffectiveTime = (data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / perfectSpeed + note.HalfCatcherWidth - next.DeltaPosition
                                           + prev.StartTime + 2 * note.StartTime + next.StartTime) / 4.0;
 
                     break;
@@ -549,7 +552,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ForwardCatcherPosition =
                         next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
 
-                    double first = Math.Abs(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / minimalVelocity;
+                    double first = data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / perfectSpeed;
                     double second = (note.HalfCatcherWidth - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
@@ -566,15 +569,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         next.Position + data.Directionize(note.HalfCatcherWidth
                                                           + velocity2 * next.DeltaTime);
 
-                    if (Math.Abs(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - note.HalfCatcherWidth)
+                    if (Math.Abs(note.Position - prevBackwardCatcherPosition) <= note.DeltaTime - note.HalfCatcherWidth)
                     {
-                        data.EffectiveTime = (Math.Abs(note.Position - prevForwardCatcherPosition) + prev.StartTime + note.StartTime) / 2.0;
+                        data.EffectiveTime = (data.Directionize(2 * note.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition) + 2 * prev.StartTime + 2 * note.StartTime) / 4.0;
 
                         break;
                     }
 
-                    double first = Math.Abs(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth;
-                    double second = Math.Abs(data.Directionize(next.Position - prevForwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / velocity2;
+                    double first = data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth;
+                    double second = data.Directionize(data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / velocity2;
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
@@ -585,7 +588,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
 
-                    double first = data.Directionize(note.Position + next.Position - 2 * prevForwardCatcherPosition);
+                    double first = data.Directionize(note.Position + next.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition);
                     double second = 2 * prev.StartTime + note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second) / 4.0;
