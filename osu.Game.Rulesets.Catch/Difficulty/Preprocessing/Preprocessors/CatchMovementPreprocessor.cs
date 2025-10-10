@@ -60,7 +60,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.AmbiguousActionNotes.Add(note);
                 }
 
-                if (data.ActionProbability == 1)
+                if (data.ActionProbability > 0.97)
                 {
                     data.GuaranteedActionIndex = data.GuaranteedActionNotes.Count;
                     data.GuaranteedActionNotes.Add(note);
@@ -393,7 +393,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.HyperdashAfterBreak:
                 {
-                    data.ActionProbability = 1;
+                    data.ActionProbability = 0;
                     // Reset
                     data.LeftCatcherPosition = note.LeftNoteBorder;
                     data.RightCatcherPosition = note.RightNoteBorder;
@@ -404,7 +404,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.EdgedashAfterBreak:
                 {
-                    data.ActionProbability = 1;
+                    data.ActionProbability = 0;
                     data.BackwardCatcherPosition = data.FurthestForward(
                         note.Position - data.Directionize(note.HalfCatcherWidth),
                         next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime));

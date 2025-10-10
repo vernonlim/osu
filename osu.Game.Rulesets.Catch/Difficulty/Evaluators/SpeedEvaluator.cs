@@ -45,7 +45,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 
             if (data.ActionProbability > 0)
             {
-                if (data.ActionProbability < 1
+                if (data.ActionProbability <= 0.97
                     && data.DisplayPattern != PatternType.StackEnd
                     && prevGuaranteedAction is not null)
                 {

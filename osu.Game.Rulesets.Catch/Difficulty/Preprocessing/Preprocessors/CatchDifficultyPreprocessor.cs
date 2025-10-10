@@ -54,16 +54,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             switch (data.NotePattern)
             {
-                case PatternType.HyperdashAfterBreak:
-                {
-                    return note.CatcherWidth;
-                }
-
-                case PatternType.EdgedashAfterBreak:
-                {
-                    return Math.Abs(data.RightCatcherPosition - data.LeftCatcherPosition);
-                }
-
                 case PatternType.StackContinuation:
                 {
                     break;
@@ -146,10 +136,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             return data.NotePattern switch
             {
-                PatternType.BreakBeginningRequiringMovement => note.CatcherWidth,
-                PatternType.BreakBeginningWithoutMovement => note.CatcherWidth,
                 PatternType.SingleNote => note.CatcherWidth,
                 PatternType.StackAfterBreak => note.CatcherWidth,
+                PatternType.EdgedashAfterBreak => Math.Abs(data.RightCatcherPosition - data.LeftCatcherPosition),
+                PatternType.HyperdashAfterBreak => note.CatcherWidth,
                 PatternType.PotentialStack => data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
                 PatternType.NarrowStack => note.CatcherWidth - next.DeltaPosition,
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - next.DeltaPosition : null,
