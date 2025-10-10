@@ -54,7 +54,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 updateData(note, prev, next);
 
-                if (data.ActionProbability > 0 && data.ActionProbability < 1)
+                if (data.ActionProbability >= 0.03 && data.ActionProbability <= 0.97)
                 {
                     data.AmbiguousActionIndex = data.AmbiguousActionNotes.Count;
                     data.AmbiguousActionNotes.Add(note);
@@ -153,8 +153,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData prevData = prev.MovementData;
 
             // Breaks
-            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
-                && next.DeltaTime > 150)
+            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
+                //old version: && next.DeltaTime > 150)
             {
                 return next.DeltaPosition > note.CatcherWidth
                     ? PatternType.BreakBeginningRequiringMovement
