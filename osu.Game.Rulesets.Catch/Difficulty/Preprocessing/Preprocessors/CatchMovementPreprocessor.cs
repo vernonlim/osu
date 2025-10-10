@@ -298,7 +298,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (prev.IsHyper)
                 {
-                    return PatternType.Hyperstream;
+                    return PatternType.HyperStream;
+                }
+
+                if (!prev.IsHyper
+                    && data.IsHyperWalk)
+                {
+                    return PatternType.HyperWalk;
                 }
 
                 if (!prev.IsHyper
@@ -599,7 +605,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Streams
-                case PatternType.Hyperstream:
+                case PatternType.HyperStream:
                 {
                     data.ActionProbability = 0;
                     data.BackwardCatcherPosition = note.Position;

@@ -32,14 +32,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         Jumps,
 
         // Streams
-        Hyperstream,
+        HyperStream,
         PotentialStandstill,
         ExtendedDirectionChange,
         AcceleratingStream,
         FreeStream,
 
         // Special Cases
-        Hyperwalk,
+        HyperWalk,
         CurvedStack, // We are missing 4.5.3, that will be handled in the first/last note special case logic
         FreeStackAtPlayfieldBorder,
 
