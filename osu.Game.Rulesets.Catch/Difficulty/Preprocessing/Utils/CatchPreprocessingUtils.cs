@@ -39,7 +39,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         public static double GetPrevForwardCatcherPosition(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             note.IsMovingRight ? prev.MovementData.RightCatcherPosition : prev.MovementData.LeftCatcherPosition;
 
-        public static double CalculatePrevToNextDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
+        public static double GetPrevBackwardCatcherPosition(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+            note.IsMovingRight ? prev.MovementData.LeftCatcherPosition : prev.MovementData.RightCatcherPosition;
+
+        /// <summary>
+        /// Similar to MaximalDistance, but taking into account the maximal position the catcher can actually reach from
+        /// the previous note, assuming it isn't a hyperdash.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
+        public static double CalculateHighestDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
             Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.ForwardNoteBorder) - next.Position);
 
         /// <summary>
@@ -50,6 +61,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <returns></returns>
         public static double CalculateMinimalDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             Math.Abs(note.Position - note.MovementData.FurthestBackward(GetPrevForwardCatcherPosition(note, prev), prev.Position + note.MovementData.Directionize(note.HalfCatcherWidth)));
+
+        /// <summary>
+        /// Calculates the maximal distance a catcher could travel between two notes.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <returns></returns>
+        public static double CalculateMaximalDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+            Math.Abs(note.Position - note.MovementData.FurthestForward(GetPrevBackwardCatcherPosition(note, prev), prev.Position - note.MovementData.Directionize(note.HalfCatcherWidth)));
 
         /// <summary>
         /// Calculates the simple speed between a note and the one before it.
@@ -70,10 +90,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// </summary>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
-        /// <param name="next">The next note.</param>
         /// <returns></returns>
-        public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
+        public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
             CalculateMinimalDistance(note, prev) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
+
+        /// <summary>
+        /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <returns></returns>
+        public static double CalculateMaximalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+            CalculateMaximalDistance(note, prev) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
 
         /// <summary>
         /// Calculates the average hyperdash speed between two notes.

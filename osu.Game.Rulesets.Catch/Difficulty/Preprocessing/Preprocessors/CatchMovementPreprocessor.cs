@@ -67,8 +67,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Debug
-                data.PrevToNextDistance = CatchPreprocessingUtils.CalculatePrevToNextDistance(note, prev, next);
-                data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, next);
+                data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
+                data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
                 data.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
                 data.AverageHyperdashSpeed = CatchPreprocessingUtils.CalculateAverageHyperdashSpeed(note, prev);
 
@@ -89,9 +89,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
             data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
             data.IsDirectionChangeOrEqual = note.IsMovingRight ? next.Position <= note.Position : next.Position >= note.Position;
-            data.IsHyperWalk =
-                (next.DeltaPosition * (next.StartTime - note.StartTime)) / (2 * next.DeltaTime) >= next.DeltaPosition - note.HalfCatcherWidth
-                && note.IsHyper;
         }
 
         /// <summary>
@@ -108,12 +105,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static PatternType classify(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, bool skipToDirectionChange = false)
         {
             CatchMovementData data = note.MovementData;
-
-            if (!prev.IsHyper
-                && data.IsHyperWalk)
-            {
-                return PatternType.HyperWalk;
-            }
 
             // Breaks
             PatternType breakType = classifyAsBreak(note, prev, next);
@@ -573,7 +564,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double velocity2 = CatchPreprocessingUtils.CalculatePrevToNextDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0);
+                    double velocity2 = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0);
 
                     // data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / (next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
                     data.ForwardCatcherPosition =
@@ -615,33 +606,41 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     break;
                 }
 
-                case PatternType.HyperWalk:
+                case PatternType.PotentialStandstill:
                 {
-                    if (note.IsMovingRight)
-                    {
-                        data.ActionProbability =
-                            Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
-                                     - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
-                    }
-                    else
-                    {
-                        data.ActionProbability =
-                            Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev)
-                                     - CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev));
-                    }
-
                     data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
 
-                    data.SpeedWeight = note.DeltaPosition < note.CatcherWidth / 4.0 ? speed_stand : speed_walk;
+                    data.SpeedWeight = prev.DeltaPosition < note.CatcherWidth / 4.0 ? speed_stand : speed_walk;
 
                     data.EffectiveTime = (prev.StartTime + note.StartTime) / 2.0;
 
-                    break;
-                }
+                    double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
+                    double maximalDistance = Math.Abs(next.Position - maximalPosition);
+                    double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
+                    data.IsHyperWalk = maximalVelocity * next.DeltaTime / 2.0 >= maximalDistance - note.HalfCatcherWidth && note.IsHyper;
 
-                case PatternType.PotentialStandstill:
-                {
+                    if (data.IsHyperWalk)
+                    {
+                        if (note.IsMovingRight)
+                        {
+                            data.ActionProbability =
+                                Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
+                                         - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
+                        }
+                        else
+                        {
+                            data.ActionProbability =
+                                Math.Abs(CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev)
+                                         - CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev));
+                        }
+
+                        data.NotePattern = PatternType.HyperWalk;
+
+                        break;
+                    }
+
+                    // Temporary fix, might not be logical actually
                     if ((prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0 <= note.Position)
                     {
                         data.ActionProbability = 1 - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev);
@@ -650,13 +649,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     {
                         data.ActionProbability = CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev);
                     }
-
-                    data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
-                    data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
-
-                    data.SpeedWeight = prev.DeltaPosition < note.CatcherWidth / 4.0 ? speed_stand : speed_walk;
-
-                    data.EffectiveTime = (prev.StartTime + note.StartTime) / 2.0;
 
                     break;
                 }
