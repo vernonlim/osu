@@ -153,18 +153,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData prevData = prev.MovementData;
 
             // Breaks
+            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
+                && prevData.IsBreak)
+            {
+                return PatternType.SingleNote;
+            }
+
             if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
                 //old version: && next.DeltaTime > 150)
             {
                 return next.DeltaPosition > note.CatcherWidth
                     ? PatternType.BreakBeginningRequiringMovement
                     : PatternType.BreakBeginningWithoutMovement;
-            }
-
-            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
-                && prevData.IsBreak)
-            {
-                return PatternType.SingleNote;
             }
 
             if (prevData.IsBreak
