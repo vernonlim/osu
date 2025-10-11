@@ -314,8 +314,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             if (!prev.IsHyper
                 && !note.IsHyper
-                && prev.SignificantMovementDirection == currentDirection
-                && ((!data.IsDirectionChange
+                && ((prev.SignificantMovementDirection == currentDirection
+                     && !data.IsDirectionChange
                      && CatchPreprocessingUtils.CalculateSpeed(note) <= CatchPreprocessingUtils.CalculateSpeed(next)
                      && next.DeltaPosition > 3.0 * note.CatcherWidth / 5.0)
                     || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
