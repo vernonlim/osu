@@ -37,9 +37,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
 
-            double totalActions = DifficultyHitObjects
-                                  .Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability)
-                                  .Sum();
+            double totalMovements = DifficultyHitObjects
+                                    .Select(n => (CatchDifficultyHitObject)n)
+                                    .Select(n => n.MovementData.ActionProbability)
+                                    .Sum();
+
+            double totalAims = DifficultyHitObjects
+                               .Select(n =>
+                                   (CatchDifficultyHitObject)n)
+                               .Count(n =>
+                                   n.MovementData.ActionProbability == 0 && n.MovementData.NoteAim != null);
+
+            double totalActions = totalMovements + totalAims;
 
             int hyperWalkCount = DifficultyHitObjects.Count(n => ((CatchDifficultyHitObject)n).MovementData.IsHyperWalk);
 
