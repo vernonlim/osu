@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
@@ -14,29 +15,66 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     {
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
-            CatchDifficultyHitObject? prevGuaranteedAction = null;
-            CatchDifficultyHitObject? prevAmbiguousAction = null;
+            CatchDifficultyHitObject? prevLeftGuaranteedAction = null;
+            CatchDifficultyHitObject? prevRightGuaranteedAction = null;
+            CatchDifficultyHitObject? prevLeftAmbiguousAction = null;
+            CatchDifficultyHitObject? prevRightAmbiguousAction = null;
 
             for (int i = 1; i < hitObjects.Count - 1; i++)
             {
                 CatchDifficultyHitObject note = (CatchDifficultyHitObject)hitObjects[i];
                 CatchDifficultyHitObject prev = (CatchDifficultyHitObject)hitObjects[i - 1];
                 CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
+                CatchMovementData prevData = prev.MovementData;
 
-                if (prev.MovementData.ActionProbability > 0.97)
+                if (prevData.ActionProbability > 0.97)
                 {
-                    prevGuaranteedAction = prev;
+                    if (prevData.KeyPress == MovementKey.Left)
+                    {
+                        prevLeftGuaranteedAction = prev;
+                    }
+                    else if (prevData.KeyPress == MovementKey.Right)
+                    {
+                        prevRightGuaranteedAction = prev;
+                    }
                 }
-                else if (prev.MovementData.ActionProbability >= 0.03 && prev.MovementData.ActionProbability <= 0.97)
+                else if (prevData.ActionProbability >= 0.03 && prevData.ActionProbability <= 0.97)
                 {
-                    prevAmbiguousAction = prev;
+                    if (prevData.KeyPress == MovementKey.Left)
+                    {
+                        prevLeftAmbiguousAction = prev;
+                    }
+                    else if (prevData.KeyPress == MovementKey.Right)
+                    {
+                        prevRightAmbiguousAction = prev;
+                    }
                 }
 
                 CatchMovementData data = note.MovementData;
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.NoteAim = calculateAim(note, prev, next);
-                data.NoteSpeed = calculateSpeed(note, prevGuaranteedAction, prevAmbiguousAction) * 8;
+
+                if (data.KeyPress == MovementKey.Left)
+                {
+                    data.NoteSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction);
+                }
+                else if (data.KeyPress == MovementKey.Right)
+                {
+                    data.NoteSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction);
+                }
+                else if (data.KeyPress == MovementKey.Dash)
+                {
+                    var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
+                                           .Where(n => n is not null)
+                                           .MaxBy(n => n!.MovementData.EffectiveTime);
+
+                    var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
+                                          .Where(n => n is not null)
+                                          .MaxBy(n => n!.MovementData.EffectiveTime);
+
+                    data.NoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
+                }
 
                 double precisionStrain = AimEvaluator.EvaluateDifficultyOf(note);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
@@ -44,6 +82,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(data.ActionProbability, precisionStrain, speedStrain);
                 data.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(data.ActionProbability, precisionStrain, speedStrain, aimStrain);
+
+                data.NoteSpeed *= 20 * 50;
             }
         }
 
@@ -170,7 +210,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             CatchMovementData data = note.MovementData;
 
-            if (data.ActionProbability > 0)
+            if (data.ActionProbability >= 0.03)
             {
                 if (data.ActionProbability <= 0.97
                     && data.DisplayPattern != PatternType.StackEnd
