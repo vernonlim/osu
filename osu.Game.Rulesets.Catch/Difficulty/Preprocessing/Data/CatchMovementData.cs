@@ -38,6 +38,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double EffectiveTime;
 
         /// <summary>
+        /// The key press associated with the action for this note, if it takes place.
+        /// </summary>
+        public MovementKey KeyPress;
+
+        /// <summary>
         /// Is this note a HyperWalk?
         /// </summary>
         public bool IsHyperWalk;
@@ -220,6 +225,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             Note = note;
             NotePattern = PatternType.None;
             EffectiveTime = note.StartTime;
+            KeyPress = MovementKey.None;
             IsHyperWalk = false;
             IsBreak = false;
             IsStack = false;

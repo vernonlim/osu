@@ -17,13 +17,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     public static class CatchMovementPreprocessor
     {
         /// <summary>
-        /// The custom SpeedWeight given to difficult actions.
-        /// </summary>
-        private const double speed_stand = 1.8;
-
-        private const double speed_walk = 1.4;
-
-        /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
         /// </summary>
         /// <param name="hitObjects"></param>
@@ -160,7 +153,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
-                //old version: && next.DeltaTime > 150)
             {
                 return next.DeltaPosition > note.CatcherWidth
                     ? PatternType.BreakBeginningRequiringMovement
@@ -610,8 +602,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
-
-                    data.SpeedWeight = prev.DeltaPosition < note.CatcherWidth / 4.0 ? speed_stand : speed_walk;
 
                     data.EffectiveTime = (prev.StartTime + note.StartTime) / 2.0;
 
