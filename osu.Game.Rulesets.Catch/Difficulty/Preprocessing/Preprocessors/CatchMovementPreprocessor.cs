@@ -268,10 +268,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (prev.IsHyper && note.IsHyper)
                     return PatternType.Hyperjumps;
 
-                if (!prev.IsHyper && note.IsHyper && note.DeltaPosition > 3.0 * note.CatcherWidth / 5.0)
+                if (!prev.IsHyper && note.IsHyper)
                     return PatternType.HyperjumpAfterJump;
 
-                if (!prev.IsHyper && !note.IsHyper && note.DeltaPosition > 3.0 * note.CatcherWidth / 5.0)
+                if (!prev.IsHyper && !note.IsHyper)
                     return PatternType.Jumps;
             }
 
@@ -289,48 +289,46 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             CatchMovementData data = note.MovementData;
 
-            MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
-
-            if (!data.IsDirectionChange
-                && prev.IsHyper)
+            if (!data.IsDirectionChange)
             {
-                return PatternType.HyperStream;
-            }
+                MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
 
-            if (!prev.IsHyper
-                && note.IsHyper
-                && prev.SignificantMovementDirection == currentDirection
-                && (!data.IsDirectionChange || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
-            {
-                return PatternType.PotentialStandstill;
-            }
+                if (prev.IsHyper)
+                {
+                    return PatternType.HyperStream;
+                }
 
-            if (!prev.IsHyper
-                && prev.SignificantMovementDirection != currentDirection
-                && (!data.IsDirectionChange || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
-            {
-                return PatternType.ExtendedDirectionChange;
-            }
+                if (!prev.IsHyper
+                    && note.IsHyper
+                    && prev.SignificantMovementDirection == currentDirection)
+                {
+                    return PatternType.PotentialStandstill;
+                }
 
-            if (!prev.IsHyper
-                && !note.IsHyper
-                && prev.SignificantMovementDirection == currentDirection
-                && ((!data.IsDirectionChange
-                     && CatchPreprocessingUtils.CalculateSpeed(note) <= CatchPreprocessingUtils.CalculateSpeed(next)
-                     && next.DeltaPosition > 3.0 * note.CatcherWidth / 5.0)
-                    || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
-            {
-                return PatternType.AcceleratingStream;
-            }
+                if (!prev.IsHyper
+                    && note.IsHyper
+                    && prev.SignificantMovementDirection != currentDirection)
+                {
+                    return PatternType.ExtendedDirectionChange;
+                }
 
-            if (!prev.IsHyper
-                && !note.IsHyper
-                && !data.IsDirectionChange
-                && ((prev.SignificantMovementDirection != currentDirection)
-                    || (CatchPreprocessingUtils.CalculateSpeed(note) > CatchPreprocessingUtils.CalculateSpeed(next))
-                    || next.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0))
-            {
-                return PatternType.FreeStream;
+                if (!prev.IsHyper
+                    && !note.IsHyper
+                    && prev.SignificantMovementDirection == currentDirection
+                    && CatchPreprocessingUtils.CalculateSpeed(note) <= CatchPreprocessingUtils.CalculateSpeed(next)
+                    && next.DeltaPosition > note.HalfCatcherWidth)
+                {
+                    return PatternType.AcceleratingStream;
+                }
+
+                if (!prev.IsHyper
+                    && !note.IsHyper
+                    && ((prev.SignificantMovementDirection != currentDirection)
+                        || (CatchPreprocessingUtils.CalculateSpeed(note) > CatchPreprocessingUtils.CalculateSpeed(next))
+                        || next.DeltaPosition <= note.HalfCatcherWidth))
+                {
+                    return PatternType.FreeStream;
+                }
             }
 
             return PatternType.None;

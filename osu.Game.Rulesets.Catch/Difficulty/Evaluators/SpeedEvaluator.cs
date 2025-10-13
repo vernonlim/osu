@@ -43,7 +43,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject? prevGuaranteedAction = data.PreviousGuaranteedActionNote(0);
             CatchDifficultyHitObject? prevAmbiguousAction = data.PreviousAmbiguousActionNote(0);
 
-            if (data.ActionProbability > 0.03)
+            if (data.ActionProbability > 0)
             {
                 if (data.ActionProbability <= 0.97
                     && data.DisplayPattern != PatternType.StackEnd
