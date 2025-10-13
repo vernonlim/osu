@@ -42,6 +42,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         public MovementKey KeyPress;
 
+        public MovementKey BackwardKeyPress => Note.IsMovingRight ? MovementKey.Left : MovementKey.Right;
+        public MovementKey ForwardKeyPress => Note.IsMovingRight ? MovementKey.Right : MovementKey.Left;
+
         /// <summary>
         /// Is this note a HyperWalk?
         /// </summary>
