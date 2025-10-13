@@ -290,7 +290,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
 
             MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
-            MovementDirection oppositeDirection = note.IsMovingRight ? MovementDirection.Left : MovementDirection.Right;
 
             if (!data.IsDirectionChange
                 && prev.IsHyper)
@@ -300,15 +299,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             if (!prev.IsHyper
                 && note.IsHyper
-                && ((prev.SignificantMovementDirection == currentDirection && !data.IsDirectionChange)
-                    || (prev.SignificantMovementDirection == oppositeDirection && data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
+                && prev.SignificantMovementDirection == currentDirection
+                && (!data.IsDirectionChange || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
             {
                 return PatternType.PotentialStandstill;
             }
 
             if (!prev.IsHyper
-                && ((prev.SignificantMovementDirection != currentDirection && !data.IsDirectionChange)
-                    || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
+                && prev.SignificantMovementDirection != currentDirection
+                && (!data.IsDirectionChange || (data.IsDirectionChange && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)))
             {
                 return PatternType.ExtendedDirectionChange;
             }
