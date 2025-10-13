@@ -47,18 +47,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 updateData(note, prev, next);
 
-                if (data.ActionProbability >= 0.03 && data.ActionProbability <= 0.97)
-                {
-                    data.AmbiguousActionIndex = data.AmbiguousActionNotes.Count;
-                    data.AmbiguousActionNotes.Add(note);
-                }
-
-                if (data.ActionProbability > 0.97)
-                {
-                    data.GuaranteedActionIndex = data.GuaranteedActionNotes.Count;
-                    data.GuaranteedActionNotes.Add(note);
-                }
-
                 // Debug
                 data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
                 data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);

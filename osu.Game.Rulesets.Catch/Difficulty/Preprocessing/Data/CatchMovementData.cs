@@ -2,8 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
@@ -14,18 +12,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// The parent note object containing this data.
         /// </summary>
         public CatchDifficultyHitObject Note;
-
-        public List<CatchDifficultyHitObject> GuaranteedActionNotes;
-
-        public int GuaranteedActionIndex;
-
-        public List<CatchDifficultyHitObject> AmbiguousActionNotes;
-
-        public int AmbiguousActionIndex;
-
-        public CatchDifficultyHitObject? PreviousGuaranteedActionNote(int backwardsIndex) => GuaranteedActionNotes.ElementAtOrDefault(GuaranteedActionIndex - (backwardsIndex + 1));
-
-        public CatchDifficultyHitObject? PreviousAmbiguousActionNote(int backwardsIndex) => AmbiguousActionNotes.ElementAtOrDefault(AmbiguousActionIndex - (backwardsIndex + 1));
 
         /// <summary>
         /// The pattern type associated with this note.
@@ -218,13 +204,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// Populates the class with default values which may be overwritten in <see cref="CatchMovementPreprocessor"/>.
         /// </summary>
         /// <param name="note"></param>
-        /// <param name="guaranteedActionNoteObjects"></param>
-        /// <param name="ambiguousActionNoteObjects"></param>
-        public CatchMovementData(CatchDifficultyHitObject note, List<CatchDifficultyHitObject> guaranteedActionNoteObjects, List<CatchDifficultyHitObject> ambiguousActionNoteObjects)
+        public CatchMovementData(CatchDifficultyHitObject note)
         {
-            GuaranteedActionNotes = guaranteedActionNoteObjects;
-            AmbiguousActionNotes = ambiguousActionNoteObjects;
-
             Note = note;
             NotePattern = PatternType.None;
             EffectiveTime = note.StartTime;
