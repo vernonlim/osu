@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
         {
             CurrentStrain = PrecisionEvaluator.EvaluateDifficultyOf(current);
 
-            return CurrentStrain;
+            return CurrentStrain * 50.0;
         }
     }
 }
