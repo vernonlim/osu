@@ -332,6 +332,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
             double prevBackwardCatcherPosition = note.IsMovingRight ? prevData.LeftCatcherPosition : prevData.RightCatcherPosition;
             double perfectSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
+            double minimalSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
 
             switch (data.NotePattern)
             {
@@ -517,20 +518,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 // Direction changes
                 case PatternType.JumpAfterHyperjump:
                 {
-                    data.ActionProbability = 1;
+                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next);
                     data.KeyPress = data.BackwardKeyPress;
                     data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
 
                     if (data.Directionize(next.Position - note.Position) <= -(note.HalfCatcherWidth + next.DeltaTime))
                     {
-                        double first = data.Directionize(note.Position + next.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition + next.DeltaTime) / perfectSpeed;
+                        double first = data.Directionize(note.Position + next.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition + next.DeltaTime) / minimalSpeed;
                         double second = 2 * prev.StartTime + 2 * note.StartTime;
                         data.EffectiveTime = (first + second) / 4.0;
 
                         break;
                     }
 
-                    double third = data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / perfectSpeed;
+                    double third = data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / minimalSpeed;
                     double fourth = note.HalfCatcherWidth - next.DeltaPosition + prev.StartTime + 2 * note.StartTime + next.StartTime;
                     data.EffectiveTime = (third + fourth) / 4.0;
 
@@ -544,7 +545,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ForwardCatcherPosition =
                         next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
 
-                    double first = data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / perfectSpeed;
+                    double first = data.Directionize(note.Position - data.Directionize(note.HalfCatcherWidth) - prevForwardCatcherPosition) / minimalSpeed;
                     double second = (note.HalfCatcherWidth - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
@@ -571,7 +572,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
 
                     double first = data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth;
-                    double second = data.Directionize(data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / velocity2;
+                    double second = data.Directionize(data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
@@ -580,14 +581,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    data.ActionProbability = 1;
+                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next);
                     data.KeyPress = data.BackwardKeyPress;
-                    data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime);
+                    data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(note.HalfCatcherWidth + next.DeltaTime));
 
                     double first = data.Directionize(note.Position + next.Position - prevData.LeftCatcherPosition - prevData.RightCatcherPosition);
                     double second = 2 * prev.StartTime + note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second) / 4.0;
+
                     break;
                 }
 
@@ -605,7 +607,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.BackwardCatcherPosition = note.Position - data.Directionize(note.HalfCatcherWidth);
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
 
-                    data.EffectiveTime = (prev.StartTime + note.StartTime) / 2.0;
+                    data.EffectiveTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
                     double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
                     double maximalDistance = Math.Abs(next.Position - maximalPosition);
@@ -676,7 +678,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         note.Position - data.Directionize(note.HalfCatcherWidth));
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(note.HalfCatcherWidth));
 
-                    data.EffectiveTime = (prev.StartTime + note.StartTime) / 2.0;
+                    data.EffectiveTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + note.StartTime + next.StartTime) / 2.0;
                     data.KeyPress = MovementKey.Dash;
 
                     break;

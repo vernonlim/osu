@@ -88,13 +88,70 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         }
 
         /// <summary>
-        /// Calculates the precision value for a given note.
+        /// Calculates the precision value for a given note, and adjusts its effective time if needed.
+        /// </summary>
+        /// <param name="note"></param>
+        /// <param name="prev"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
+        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            switch (data.NotePattern)
+            {
+                case PatternType.HyperjumpAfterJump:
+                {
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump);
+
+                    if (next.DeltaPosition <= note.CatcherWidth && rawPrecision is not null)
+                    {
+                        double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
+
+                        double second = next.DeltaTime - note.DeltaPosition + note.HalfCatcherWidth;
+
+                        double standingPrecision = (first + second) / 2.0;
+
+                        rawPrecision = Math.Max(rawPrecision.Value, standingPrecision);
+                    }
+
+                    double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
+
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);
+
+                    data.EffectiveTime = standstillTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
+
+                    return precisionCorrection * rawPrecision;
+                }
+
+                case PatternType.Jumps:
+                {
+                    double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + note.StartTime + next.StartTime) / 2.0;
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
+
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);
+
+                    data.EffectiveTime = acceleratingTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
+
+                    return precisionCorrection * rawPrecision;
+                }
+
+                default:
+                {
+                    return calculateRawPrecision(note, prev, next, data.NotePattern);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the raw precision value for a given note.
         /// </summary>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <param name="next">The next note.</param>
         /// <returns>The precision value in milliseconds, or null if it is infinite.</returns>
-        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        private static double? calculateRawPrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
@@ -104,7 +161,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
             double nextToPrevDeltaTime = next.StartTime - prev.StartTime;
 
-            switch (data.NotePattern)
+            switch (type)
             {
                 case PatternType.StackContinuation:
                 {
@@ -115,7 +172,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     if (next.DeltaPosition - next.DeltaTime >= note.HalfCatcherWidth)
                     {
-                        return (note.CatcherWidth + next.DeltaTime - data.Directionize(next.DeltaPosition)) / (2.0 * minimalVelocity);
+                        return (note.CatcherWidth) / (2.0 * minimalVelocity);
                     }
 
                     double first = note.HalfCatcherWidth - next.DeltaPosition + nextToPrevDeltaTime;
@@ -157,14 +214,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.PotentialStandstill:
                 {
-                    return note.DeltaTime;
+                    if (note.DeltaPosition <= note.HalfCatcherWidth)
+                    {
+                        double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
+                        double second = next.DeltaTime + note.DeltaPosition + note.HalfCatcherWidth;
+                        return first + second;
+                    }
+
+                    double third = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder));
+                    double fourth = next.DeltaTime + note.CatcherWidth;
+
+                    return third + fourth;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
                     if (next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
                     {
-                        return Math.Abs((note.Position + data.Directionize(note.HalfCatcherWidth)) - (next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime)));
+                        return next.DeltaTime + note.CatcherWidth - next.DeltaPosition;
                     }
 
                     break;

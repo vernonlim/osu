@@ -78,6 +78,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <returns></returns>
         public static double CalculateSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / note.DeltaTime;
 
+        public static double CalculateSpeedFrom(CatchDifficultyHitObject note, double position) => Math.Abs(note.Position - position) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
+
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, assuming that the catcher is perfectly positioned.
         /// </summary>
@@ -104,6 +106,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             CalculateMaximalDistance(note, prev) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
 
         /// <summary>
+        /// Calculates the hyperdash speed between a note and the one before it, assuming the player starts from
+        /// the right catcher position of the previous.
+        /// </summary>
+        /// <param name="note">The current note.</param>
+        /// <param name="prev">The previous note.</param>
+        /// <returns></returns>
+        public static double CalculateExpectedHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev) =>
+            Math.Abs(note.Position - GetPrevForwardCatcherPosition(note, prev)) / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
+
+        /// <summary>
         /// Calculates the average hyperdash speed between two notes.
         /// </summary>
         /// <param name="note"></param>
@@ -121,6 +133,56 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double distance = Math.Abs(note.Position - average);
 
             return distance / Math.Max(note.DeltaTime - 1000.0 / 60.0, 1);
+        }
+
+        /// <summary>
+        /// Calculates the probability that a direction change should instead be considered a standstill for the previous note.
+        /// </summary>
+        /// <param name="next"></param>
+        /// <returns></returns>
+        public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next)
+        {
+            double d2 = next.DeltaPosition;
+
+            // linear for simplicity for now
+            return Math.Min(d2, next.CatcherWidth) / next.CatcherWidth;
+        }
+
+        public static double CalculatePotentialStandstillEffectiveTime(CatchDifficultyHitObject note, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+
+            if (note.DeltaPosition <= note.HalfCatcherWidth)
+            {
+                double first = (-note.DeltaPosition - note.HalfCatcherWidth
+                                + (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next)));
+
+                double second = note.StartTime + next.StartTime;
+
+                return (first + second) / 2.0;
+            }
+            else
+            {
+                double first = (-note.CatcherWidth + (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CalculateSpeedFrom(next, note.BackwardNoteBorder)));
+
+                double second = note.StartTime + next.StartTime;
+
+                return (first + second) / 2.0;
+            }
+        }
+
+        public static double CalculatePrecisionCorrection(double distance, double? precision, double catcherWidth)
+        {
+            if (precision is null)
+            {
+                return 2.0;
+            }
+
+            double cPlus = catcherWidth + 50;
+
+            double w = 2 - distance / cPlus + 2 * ((double)precision) / cPlus;
+
+            return Math.Clamp(w, 1.0, 2.0);
         }
     }
 }
