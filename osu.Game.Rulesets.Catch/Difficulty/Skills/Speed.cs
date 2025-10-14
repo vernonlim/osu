@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
@@ -25,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            CurrentStrain = SpeedEvaluator.EvaluateDifficultyOf(current) * ((CatchDifficultyHitObject)current).MovementData.SpeedWeight;
+            CurrentStrain = SpeedEvaluator.EvaluateDifficultyOf(current);
 
             return CurrentStrain * 3;
         }

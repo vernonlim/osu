@@ -159,14 +159,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public bool IsDirectionChangeOrEqual;
 
         /// <summary>
-        /// A multiplier for the object's contribution to speed difficulty.
-        /// </summary>
-        /// <remarks>
-        /// Is set to 1 by default, is >1 when there an action is considered "difficult" (at the moment, tapping the same action key.)
-        /// </remarks>
-        public double SpeedWeight;
-
-        /// <summary>
         /// The likelihood of an action being performed.
         /// </summary>
         /// <remarks>
@@ -219,7 +211,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             RightCatcherPosition = note.Position + note.HalfCatcherWidth;
             LeftStandingPosition = null;
             RightStandingPosition = null;
-            SpeedWeight = 1;
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
