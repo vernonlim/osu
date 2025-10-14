@@ -285,28 +285,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     && data.DisplayPattern != PatternType.StackEnd
                     && prevGuaranteedAction is not null)
                 {
-                    return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
+                    return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
                 }
 
                 if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
                 {
-                    return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
+                    return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
                 }
 
                 if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
                 {
-                    return prevAmbiguousAction.MovementData.ActionProbability / Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1);
+                    return prevAmbiguousAction.MovementData.ActionProbability * timeToSpeed(Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1));
                 }
 
                 if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
                 {
                     if (prevGuaranteedAction.MovementData.EffectiveTime >= prevAmbiguousAction.MovementData.EffectiveTime)
                     {
-                        return 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
+                        return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
                     }
 
-                    double ambiguousSpeed = 1.0 / Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1);
-                    double guaranteedSpeed = 1.0 / Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1);
+                    double ambiguousSpeed = timeToSpeed(Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1));
+                    double guaranteedSpeed = timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
                     double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
 
                     return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;
@@ -314,6 +314,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             return 0;
+        }
+
+        private static double timeToSpeed(double time)
+        {
+            return 1 / time;
         }
     }
 }
