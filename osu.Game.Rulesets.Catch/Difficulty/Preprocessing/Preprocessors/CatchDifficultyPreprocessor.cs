@@ -119,6 +119,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);
+                    data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = standstillTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
 
@@ -131,6 +132,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);
+                    data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = acceleratingTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
 

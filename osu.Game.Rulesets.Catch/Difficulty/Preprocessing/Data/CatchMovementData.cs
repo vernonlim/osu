@@ -188,6 +188,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         public double NoteSpeed;
 
+        public double DirectionChangeWeight;
+        public double PrecisionCorrection;
         public PatternType DisplayPattern;
         public double PartialLocalStarRating;
         public double LocalStarRating;
@@ -216,6 +218,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             NoteAim = null;
             NoteSpeed = 0;
 
+            DirectionChangeWeight = 1;
+            PrecisionCorrection = 1;
             DisplayPattern = PatternType.None;
             PartialLocalStarRating = 0;
             LocalStarRating = 0;

@@ -178,7 +178,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 return 2.0;
             }
 
-            double cPlus = catcherWidth + 50;
+            double cPlus = catcherWidth + 20;
 
             double w = 2 - distance / cPlus + 2 * ((double)precision) / cPlus;
 
