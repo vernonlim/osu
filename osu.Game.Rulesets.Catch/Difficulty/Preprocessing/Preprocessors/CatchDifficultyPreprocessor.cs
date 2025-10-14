@@ -83,7 +83,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 data.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(data.ActionProbability, precisionStrain, speedStrain);
                 data.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(data.ActionProbability, precisionStrain, speedStrain, aimStrain);
 
-                data.NoteSpeed *= 20 * 50;
+                data.NoteSpeed *= 4 * 50;
             }
         }
 
@@ -318,7 +318,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeed(double time)
         {
-            return 1 / time;
+            const double alpha = 0.68;
+
+            return Math.Pow(time, -alpha);
         }
     }
 }
