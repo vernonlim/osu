@@ -133,9 +133,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             for (int i = 0; i < precisionStrains.Count; i++)
             {
                 double actionProbability = actionProbabilities[i];
-                double precisionStrain = precisionStrains[i] / 50.0;
-                double speedStrain = speedStrains[i] / 50.0;
-                double aimStrain = aimStrains[i] / 50.0;
+                double precisionStrain = precisionStrains[i];
+                double speedStrain = speedStrains[i];
+                double aimStrain = aimStrains[i];
 
                 combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain));
             }
