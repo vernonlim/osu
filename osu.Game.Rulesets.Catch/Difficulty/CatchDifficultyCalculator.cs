@@ -64,7 +64,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
-            sr = sr < 6 ? sr : sr * (1 + Math.Max((sr - 6) / 3.0, 0) * 0.20);
+            // sr = sr < 6 ? sr : sr * (1 + Math.Max((sr - 6) / 3.0, 0) * 0.20);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
