@@ -128,7 +128,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + note.StartTime + next.StartTime) / 2.0;
+                    double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);

@@ -684,7 +684,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         note.Position - data.Directionize(note.HalfCatcherWidth));
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(note.HalfCatcherWidth));
 
-                    data.EffectiveTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + note.StartTime + next.StartTime) / 2.0;
+                    data.EffectiveTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
                     data.KeyPress = MovementKey.Dash;
 
                     break;

@@ -178,25 +178,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth)
         {
             if (standingTime == null)
-            {
                 return 2.0;
-            }
 
-            const double precision_sensitivity = 2;
-            const double time_sensitivity = 2;
+            const double precisionExponent = 2.0; // p
+            const double timeExponent = 2.0;      // q
 
-            // compute r = (d/c)^p
-            double ratio = distance / catcherWidth;
-            double r = Math.Pow(ratio, precision_sensitivity);
+            double dRatio = distance / catcherWidth;
+            double tRatio = (2.0 * standingTime.Value) / catcherWidth;
 
-            // factor = min(1, (2*Lambda / c)^q)
-            double timeRatio = (2.0 * (double)standingTime) / catcherWidth;
-            double factor = Math.Min(1.0, Math.Pow(timeRatio, time_sensitivity));
+            double timeExp = Math.Exp(-Math.Pow(tRatio, timeExponent));
 
-            double term1 = 2.0 - r;
-            double term2 = 1.0 + (1.0 - r) * factor;
+            double distanceEffect = Math.Max(0.0, 1.0 - Math.Pow(dRatio, precisionExponent));
 
-            return Math.Clamp(Math.Max(term1, term2), 1.0, 2.0);
+            // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
+            double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
+
+            return Math.Clamp(value, 1.0, 2.0);
         }
     }
 }
