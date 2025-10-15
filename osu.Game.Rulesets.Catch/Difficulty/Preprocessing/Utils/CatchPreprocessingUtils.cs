@@ -140,12 +140,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// </summary>
         /// <param name="next"></param>
         /// <returns></returns>
-        public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next)
+        public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next, double velocity)
         {
             double d2 = next.DeltaPosition;
 
-            // linear for simplicity for now
-            return Math.Min(d2, next.CatcherWidth) / next.CatcherWidth;
+            double power = 0.5; //may be replaced by any number < 1.0
+            double normalised_velocity = Math.Pow(velocity, 0.5);
+
+            return Math.Pow(Math.Min(d2, 3 / 5 * next.CatcherWidth) / (3 / 5 * next.CatcherWidth), (power / normalised_velocity));
         }
 
         public static double CalculatePotentialStandstillEffectiveTime(CatchDifficultyHitObject note, CatchDifficultyHitObject next)
