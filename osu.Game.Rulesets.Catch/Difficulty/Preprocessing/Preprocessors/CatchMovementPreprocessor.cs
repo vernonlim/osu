@@ -342,6 +342,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ActionProbability = 1;
                     data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
 
+                    if (prevData.KeyPress == data.KeyPress)
+                    {
+                        data.KeyPress = MovementKey.Dash;
+                    }
+
                     data.EffectiveTime = (note.StartTime + next.StartTime) / 2.0;
                     break;
                 }
