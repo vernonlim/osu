@@ -257,7 +257,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             return data.NotePattern switch
             {
-                PatternType.SingleNote => note.CatcherWidth,
+                PatternType.SingleNote => note.DeltaPosition > note.HalfCatcherWidth ? note.CatcherWidth : null,
                 PatternType.StackAfterBreak => note.CatcherWidth,
                 PatternType.EdgedashAfterBreak => Math.Abs(data.RightCatcherPosition - data.LeftCatcherPosition),
                 PatternType.HyperdashAfterBreak => note.CatcherWidth,

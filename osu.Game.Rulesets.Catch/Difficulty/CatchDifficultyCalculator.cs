@@ -63,6 +63,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
 
+            sr = sr < 6 ? sr : sr * (1 + (sr - 6) / 3.0 * 0.20);
+
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
                 StarRating = sr,

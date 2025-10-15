@@ -178,8 +178,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 return 2.0;
             }
 
-            const double precision_sensitivity = 1.5;
-            const double time_sensitivity = 1.5;
+            const double precision_sensitivity = 2;
+            const double time_sensitivity = 2;
 
             // compute r = (d/c)^p
             double ratio = distance / catcherWidth;
