@@ -76,7 +76,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.NoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
                 }
 
-                double precisionStrain = AimEvaluator.EvaluateDifficultyOf(note);
+                double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
                 double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(note);
 
