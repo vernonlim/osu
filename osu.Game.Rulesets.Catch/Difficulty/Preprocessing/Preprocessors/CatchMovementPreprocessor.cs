@@ -131,43 +131,45 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <returns>The <see cref="PatternType"/> corresponding to the break-related pattern, or null if none match.</returns>
         private static PatternType classifyAsBreak(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
+            CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
-            // Breaks
-            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth
-                && prevData.IsBreak)
-            {
-                return PatternType.SingleNote;
-            }
-
-            if (next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
+            if (!prevData.IsBreak
+                && next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
             {
                 return next.DeltaPosition > note.CatcherWidth
                     ? PatternType.BreakBeginningRequiringMovement
                     : PatternType.BreakBeginningWithoutMovement;
             }
 
+            // Breaks
             if (prevData.IsBreak
-                && next.DeltaPosition <= note.CatcherWidth)
+                && next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
             {
-                note.MovementData.DisplayPattern = PatternType.StackAfterBreak;
-                return PatternType.StackAfterBreak;
+                return PatternType.SingleNote;
             }
 
             if (prevData.IsBreak
-                && note.IsHyper)
+                && note.IsHyper
+                && !data.IsDirectionChangeOrEqual)
             {
                 return PatternType.HyperdashAfterBreak;
             }
 
             if (prevData.IsBreak
                 && !note.IsHyper
-                && note.DeltaPosition > 0
-                && (next.DeltaPosition > note.CatcherWidth
-                    || (next.DeltaPosition <= note.CatcherWidth
-                        && next.DeltaTime <= 2 * next.DeltaPosition)))
+                && !data.IsDirectionChangeOrEqual)
             {
                 return PatternType.EdgedashAfterBreak;
+            }
+
+            if (prevData.IsBreak
+                && !data.IsDirectionChange
+                && next.DeltaTime > 2 * next.DeltaPosition
+                && next.DeltaPosition <= note.CatcherWidth)
+            {
+                note.MovementData.DisplayPattern = PatternType.StackAfterBreak;
+                return PatternType.StackAfterBreak;
             }
 
             return PatternType.None;
