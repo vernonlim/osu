@@ -342,7 +342,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ActionProbability = 1;
                     data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
 
-                    data.EffectiveTime = (prev.StartTime + next.StartTime) / 2.0;
+                    data.EffectiveTime = (note.StartTime + next.StartTime) / 2.0;
                     break;
                 }
 
