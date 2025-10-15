@@ -57,11 +57,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (data.KeyPress == MovementKey.Left)
                 {
-                    data.NoteSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction);
+                    data.RawNoteSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
-                    data.NoteSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction);
+                    data.RawNoteSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction);
                 }
                 else if (data.KeyPress == MovementKey.Dash)
                 {
@@ -73,12 +73,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                           .Where(n => n is not null)
                                           .MaxBy(n => n!.MovementData.EffectiveTime);
 
-                    data.NoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
+                    data.RawNoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
                 }
 
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
                 double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(note);
+
+                data.NoteSpeed = speedStrain;
 
                 data.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(data.ActionProbability, precisionStrain, speedStrain);
                 data.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(data.ActionProbability, precisionStrain, speedStrain, aimStrain);

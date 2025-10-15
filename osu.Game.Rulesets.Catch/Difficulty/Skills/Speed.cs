@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
         {
             CurrentStrain = SpeedEvaluator.EvaluateDifficultyOf(current);
 
-            return CurrentStrain * 3;
+            return CurrentStrain;
         }
     }
 }

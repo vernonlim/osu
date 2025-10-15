@@ -20,9 +20,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            double speed = note.MovementData.NoteSpeed;
+            double speed = note.MovementData.RawNoteSpeed;
 
-            return speed * 4;
+            return speed * 12 * 100;
         }
     }
 }

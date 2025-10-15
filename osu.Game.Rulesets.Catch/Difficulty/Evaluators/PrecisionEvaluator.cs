@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 ? 0
                 : 32 - 7 * Math.Log((double)note.MovementData.NotePrecision);
 
-            return precision / 18;
+            return precision / 18 * 100;
         }
     }
 }
