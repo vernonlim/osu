@@ -144,10 +144,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             double d2 = next.DeltaPosition;
 
-            double power = 0.5; //may be replaced by any number < 1.0
-            double normalised_velocity = Math.Pow(velocity, 0.5);
+            const double power = 0.5; //may be replaced by any number < 1.0
+            double normalisedVelocity = Math.Pow(velocity, 0.5);
 
-            return Math.Pow(Math.Min(d2, 3 / 5 * next.CatcherWidth) / (3 / 5 * next.CatcherWidth), (power / normalised_velocity));
+            return Math.Clamp(
+                Math.Pow(Math.Min(d2, 3.0 / 5.0 * next.CatcherWidth) / (3.0 / 5.0 * next.CatcherWidth), (power / normalisedVelocity)),
+                0.0, 1.0);
         }
 
         public static double CalculatePotentialStandstillEffectiveTime(CatchDifficultyHitObject note, CatchDifficultyHitObject next)

@@ -257,7 +257,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
 
-            return data.NotePattern switch
+            double? aim = data.NotePattern switch
             {
                 PatternType.SingleNote => note.DeltaPosition > note.HalfCatcherWidth ? note.CatcherWidth : null,
                 PatternType.StackAfterBreak => note.CatcherWidth,
@@ -266,10 +266,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 PatternType.PotentialStack => data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
                 PatternType.NarrowStack => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
-                _ => null,
                 PatternType.JumpAfterHyperjump => note.CatcherWidth * (1 - next.DeltaPosition * Math.Pow(minimalVelocity, 0.5) / (note.CatcherWidth + (Math.Pow(minimalVelocity, 0.5) - 1) * next.DeltaPosition)),
-                PatternType.Jumps => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition)
+                PatternType.Jumps => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
+                _ => null,
             };
+
+            if (aim is not null)
+            {
+                aim = Math.Max((double)aim, 1.0);
+            }
+
+            return aim;
         }
 
         /// <summary>
