@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 1.39;
+        private const double difficulty_multiplier = 1.37;
 
         private float catcherWidth;
 
