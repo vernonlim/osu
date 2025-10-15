@@ -150,21 +150,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.IsBreak
-                && note.IsHyper
-                && !data.IsDirectionChangeOrEqual)
+                && note.IsHyper)
             {
                 return PatternType.HyperdashAfterBreak;
             }
 
             if (prevData.IsBreak
-                && !note.IsHyper
-                && !data.IsDirectionChangeOrEqual)
+                && !note.IsHyper)
             {
                 return PatternType.EdgedashAfterBreak;
             }
 
             if (prevData.IsBreak
-                && !data.IsDirectionChange
                 && next.DeltaTime > 2 * next.DeltaPosition
                 && next.DeltaPosition <= note.CatcherWidth)
             {
