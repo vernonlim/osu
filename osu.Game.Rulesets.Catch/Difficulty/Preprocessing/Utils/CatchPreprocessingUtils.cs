@@ -182,15 +182,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             if (standingTime == null)
                 return 2.0;
 
-            const double precisionExponent = 2.0; // p
-            const double timeExponent = 2.0;      // q
+            const double distanceExponent = 2.0;  // p
+            const double timeExponent = 1.5;      // q
+            const double distanceSensitivity = 6.0; // k
 
             double dRatio = distance / catcherWidth;
-            double tRatio = (2.0 * standingTime.Value) / catcherWidth;
+            double tRatio = 2.0 * standingTime.Value / catcherWidth;
 
             double timeExp = Math.Exp(-Math.Pow(tRatio, timeExponent));
 
-            double distanceEffect = Math.Max(0.0, 1.0 - Math.Pow(dRatio, precisionExponent));
+            // exp(-k * (d/c)^p)
+            double distanceEffect = Math.Exp(-distanceSensitivity * Math.Pow(dRatio, distanceExponent));
 
             // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
             double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
