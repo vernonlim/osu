@@ -513,9 +513,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (isWigglingBetter)
                     {
                         data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
+                        data.NotePattern = classify(note, prev, next, true);
                     }
-
-                    data.NotePattern = classify(note, prev, next, true);
 
                     break;
                 }
