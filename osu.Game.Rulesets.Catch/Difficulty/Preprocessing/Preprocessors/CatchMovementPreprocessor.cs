@@ -73,6 +73,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
             data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
             data.IsDirectionChangeOrEqual = note.IsMovingRight ? next.Position <= note.Position : next.Position >= note.Position;
+            double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
+            double maximalDistance = Math.Abs(next.Position - maximalPosition);
+            double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - note.FrameTime, 1);
+            data.IsHyperWalk = maximalVelocity * next.DeltaTime / 2.0 >= maximalDistance - note.HalfCatcherWidth && note.IsHyper;
         }
 
         /// <summary>
@@ -616,11 +620,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), note.Position + data.Directionize(note.HalfCatcherWidth));
 
                     data.EffectiveTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
-
-                    double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
-                    double maximalDistance = Math.Abs(next.Position - maximalPosition);
-                    double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - note.FrameTime, 1);
-                    data.IsHyperWalk = maximalVelocity * next.DeltaTime / 2.0 >= maximalDistance - note.HalfCatcherWidth && note.IsHyper;
 
                     if (data.IsHyperWalk)
                     {
