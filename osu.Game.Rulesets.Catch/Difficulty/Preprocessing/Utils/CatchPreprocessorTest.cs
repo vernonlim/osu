@@ -29,7 +29,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                 if (data.EffectiveTime > maxTime)
                 {
-                    maxTime = data.EffectiveTime;
+                    if (data.ActionProbability > 0)
+                    {
+                        maxTime = data.EffectiveTime;
+                    }
                 }
                 else
                 {

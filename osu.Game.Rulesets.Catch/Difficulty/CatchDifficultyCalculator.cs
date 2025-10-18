@@ -8,6 +8,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
@@ -178,7 +179,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchMovementPreprocessor.Process(objects);
             CatchDifficultyPreprocessor.Process(objects);
             CatchReadingPreprocessor.Process(objects);
-            // CatchPreprocessorTest.Process(objects, beatmap);
+            CatchPreprocessorTest.Process(objects, beatmap);
 
             return objects;
         }

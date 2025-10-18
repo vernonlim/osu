@@ -105,17 +105,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump);
 
-                    if (next.DeltaPosition <= note.CatcherWidth && rawPrecision is not null)
-                    {
-                        double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
-
-                        double second = next.DeltaTime - note.DeltaPosition + note.HalfCatcherWidth;
-
-                        double standingPrecision = (first + second) / 2.0;
-
-                        rawPrecision = Math.Max(rawPrecision.Value, standingPrecision);
-                    }
-
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, rawPrecision, note.CatcherWidth);
