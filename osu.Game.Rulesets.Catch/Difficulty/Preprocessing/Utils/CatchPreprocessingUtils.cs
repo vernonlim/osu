@@ -208,9 +208,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 {
                     if (prevData.IsHyperWalk)
                     {
-                        if ((next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth
-                             && next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
-                            || next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth)
+                        if ((data.Directionize(next.Position - note.Position) < next.DeltaTime - note.HalfCatcherWidth
+                             && data.Directionize(next.Position - note.Position) > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
+                            || data.Directionize(next.Position - note.Position) < next.DeltaTime - note.HalfCatcherWidth)
                         {
                             return 1.0;
                         }
@@ -218,7 +218,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                         return 0.0;
                     }
 
-                    if (next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth)
+                    if (data.Directionize(next.Position - note.Position) < next.DeltaTime - note.HalfCatcherWidth)
                     {
                         return 1.0;
                     }

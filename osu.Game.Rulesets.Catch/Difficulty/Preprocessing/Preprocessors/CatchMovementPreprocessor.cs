@@ -443,9 +443,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (curvedStackProbability is not null)
                     {
-                        data.ActionProbability = curvedStackProbability.Value;
+                        bool nextInBelt = CatchPreprocessingUtils.NoteWithinBelt(next, note);
 
-                        data.BeltBeginning = note;
+                        if (nextInBelt)
+                        {
+                            data.BeltBeginning = note;
+                            data.ActionProbability = curvedStackProbability.Value;
+                            data.NoteAim = null;
+                        }
                     }
 
                     break;
