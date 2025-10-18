@@ -197,12 +197,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             return Math.Clamp(value, 1.0, 2.0);
         }
 
-        public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
-            switch (data.NotePattern)
+            switch (type)
             {
                 case PatternType.JumpAfterHyperjump:
                 {
@@ -243,11 +243,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                     if (distinct)
                     {
-                        return 1 - NormalCdfForNote(max1, prev) + NormalCdfForNote(min1, prev)
-                            - NormalCdfForNote(max2, prev) + NormalCdfForNote(min2, prev);
+                        return Math.Max(1 - NormalCdfForNote(max1, prev) + NormalCdfForNote(min1, prev)
+                            - NormalCdfForNote(max2, prev) + NormalCdfForNote(min2, prev), 0);
                     }
 
-                    return 1 - NormalCdfForNote(Math.Max(max1, max2), prev) + NormalCdfForNote(Math.Min(min1, min2), prev);
+                    return Math.Max(1 - NormalCdfForNote(Math.Max(max1, max2), prev) + NormalCdfForNote(Math.Min(min1, min2), prev), 0);
                 }
 
                 default:
@@ -257,7 +257,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static bool NoteWithinBelt(CatchDifficultyHitObject note, CatchDifficultyHitObject belt)
+        public static bool NoteWithinBelt(CatchDifficultyHitObject note, CatchDifficultyHitObject belt, PatternType type)
         {
             CatchDifficultyHitObject? beltPrevOrNull = belt.PreviousNote(0);
             Debug.Assert(beltPrevOrNull != null);
@@ -266,7 +266,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
             CatchMovementData beltData = belt.MovementData;
 
-            switch (beltData.NotePattern)
+            switch (type)
             {
                 case PatternType.JumpAfterHyperjump:
                 {

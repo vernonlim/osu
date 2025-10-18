@@ -246,6 +246,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
 
+            if (data.BeltBeginning is not null)
+            {
+                return null;
+            }
+
             double? aim = data.NotePattern switch
             {
                 PatternType.SingleNote => note.DeltaPosition > note.HalfCatcherWidth ? note.CatcherWidth : null,

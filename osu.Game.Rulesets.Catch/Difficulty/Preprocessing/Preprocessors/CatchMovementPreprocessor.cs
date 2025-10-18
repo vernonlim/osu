@@ -47,23 +47,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 updateData(note, prev, next);
 
-                // If the previous note was a hyperdash, old curved stack calculations don't matter
-                if (!prev.IsHyper)
-                {
-                    CatchDifficultyHitObject? belt = prev.MovementData.BeltBeginning;
-
-                    if (belt is not null)
-                    {
-                        bool inBelt = CatchPreprocessingUtils.NoteWithinBelt(note, belt);
-
-                        if (inBelt)
-                        {
-                            data.ActionProbability *= belt.MovementData.ActionProbability;
-
-                            data.BeltBeginning ??= belt;
-                        }
-                    }
-                }
+                // Handling curved stack
+                handleCurvedStack(note, prev, next);
 
                 // Debug
                 data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
@@ -438,21 +423,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.NotePattern = classify(note, prev, next, true);
                     updateData(note, prev, next);
 
-                    // Handling curved stack
-                    double? curvedStackProbability = CatchPreprocessingUtils.CalculateCurvedStackProbability(note, prev, next);
-
-                    if (curvedStackProbability is not null)
-                    {
-                        bool nextInBelt = CatchPreprocessingUtils.NoteWithinBelt(next, note);
-
-                        if (nextInBelt)
-                        {
-                            data.BeltBeginning = note;
-                            data.ActionProbability = curvedStackProbability.Value;
-                            data.NoteAim = null;
-                        }
-                    }
-
                     break;
                 }
 
@@ -743,9 +713,38 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static void handleCurvedStack(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
 
-            data.BeltBeginning = prevData.BeltBeginning;
+            CatchDifficultyHitObject? belt = prev.MovementData.BeltBeginning;
+
+            bool inBelt = belt is not null && CatchPreprocessingUtils.NoteWithinBelt(note, belt, belt.MovementData.NotePattern);
+
+            bool prevHasBelt = belt is not null;
+
+            PatternType type = classifyAsDirectionChange(note, prev);
+
+            double? curvedStackProbability = CatchPreprocessingUtils.CalculateCurvedStackProbability(note, prev, next, type);
+
+            bool nextInBelt = CatchPreprocessingUtils.NoteWithinBelt(next, note, type);
+
+            bool isPotentialBeltBeginning = curvedStackProbability is not null && nextInBelt;
+
+            if (!inBelt && isPotentialBeltBeginning)
+            {
+                data.BeltBeginning = note;
+                data.ActionProbability = curvedStackProbability!.Value;
+                data.NotePattern = type;
+            }
+            else if (prevHasBelt && prev.IsHyper && isPotentialBeltBeginning)
+            {
+                data.ActionProbability *= belt!.MovementData.ActionProbability;
+                data.BeltBeginning = note;
+                data.NotePattern = type;
+            }
+            else if (inBelt)
+            {
+                data.ActionProbability *= belt!.MovementData.ActionProbability;
+                data.BeltBeginning = belt;
+            }
         }
     }
 }
