@@ -14,6 +14,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
+        private readonly double clockRate;
+
         public new PalpableCatchHitObject BaseObject => (PalpableCatchHitObject)base.BaseObject;
 
         public new PalpableCatchHitObject LastObject => (PalpableCatchHitObject)base.LastObject;
@@ -23,6 +25,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public readonly int NoteIndex;
 
         /// <summary>
+        /// The minimum frame time the game is assumed to have.
+        /// </summary>
+        public double FrameTime;
+
+        /// <summary>
         /// Whether this note is a Hyperdash.
         /// </summary>
         public bool IsHyper => BaseObject.HyperDash;
@@ -30,7 +37,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <summary>
         /// The position of this note.
         /// </summary>
-        public double Position => BaseObject.EffectiveX;
+        public double Position;
 
         /// <summary>
         /// The width of the catcher.
@@ -46,12 +53,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <remarks>
         /// Equivalent to the radius of each note.
         /// </remarks>
-        public double HalfCatcherWidth => CatcherWidth / 2;
+        public double HalfCatcherWidth => CatcherWidth / 2.0;
 
         /// <summary>
         /// The distance between this note and the previous note.
         /// </summary>
-        public double DeltaPosition => Math.Abs(Position - LastObject.EffectiveX);
+        public double DeltaPosition => Math.Abs(Position - LastObject.EffectiveX / clockRate);
 
         /// <summary>
         /// The left border of the note.
@@ -79,7 +86,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <remarks>
         /// Difficulty calculation for each pattern is symmetric, with values having to be inverted depending on this property.
         /// </remarks>
-        public bool IsMovingRight => Position >= LastObject.EffectiveX;
+        public bool IsMovingRight => Position >= LastObject.EffectiveX / clockRate;
 
         /// <summary>
         /// The direction of movement between this note and the previous note.
@@ -88,9 +95,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// If the distance is not deemed 'significant' enough (allowing for the catcher to catch both notes without any), this is set to None.
         /// </remarks>
         public MovementDirection SignificantMovementDirection =>
-            (Position - LastObject.EffectiveX > HalfCatcherWidth || (Position > LastObject.EffectiveX && LastObject.HyperDash))
+            (Position - LastObject.EffectiveX / clockRate > HalfCatcherWidth || (Position > LastObject.EffectiveX / clockRate && LastObject.HyperDash))
                 ? MovementDirection.Right
-                : ((LastObject.EffectiveX - Position > HalfCatcherWidth || (LastObject.EffectiveX > Position && LastObject.HyperDash))
+                : ((LastObject.EffectiveX / clockRate - Position > HalfCatcherWidth || (LastObject.EffectiveX / clockRate > Position && LastObject.HyperDash))
                     ? MovementDirection.Left
                     : MovementDirection.None);
 
@@ -107,7 +114,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                                         int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            CatcherWidth = catcherWidth;
+            this.clockRate = clockRate;
+
+            Position = BaseObject.EffectiveX / clockRate;
+
+            CatcherWidth = catcherWidth / clockRate;
+
+            FrameTime = 1000.0 / 60.0 / clockRate;
 
             noteDifficultyHitObjects = noteObjects;
             noteObjects.Add(this);

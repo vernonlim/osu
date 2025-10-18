@@ -564,9 +564,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     data.ActionProbability = 1;
                     data.KeyPress = data.BackwardKeyPress;
-                    double velocity2 = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next) / Math.Max(1, next.DeltaTime - 1000.0 / 60.0);
+                    double velocity2 = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next) / Math.Max(1, next.DeltaTime - note.FrameTime);
 
-                    // data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / (next.DeltaTime - 1000.0 / 60.0) * next.DeltaTime);
+                    // data.ForwardCatcherPosition = next.Position + data.Directionize(note.HalfCatcherWidth + calculatePrevToNextDistance(note, prev, next) / (next.DeltaTime - note.FrameTime) * next.DeltaTime);
                     data.ForwardCatcherPosition =
                         next.Position + data.Directionize(note.HalfCatcherWidth
                                                           + velocity2 * next.DeltaTime);
@@ -619,7 +619,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
                     double maximalDistance = Math.Abs(next.Position - maximalPosition);
-                    double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
+                    double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - note.FrameTime, 1);
                     data.IsHyperWalk = maximalVelocity * next.DeltaTime / 2.0 >= maximalDistance - note.HalfCatcherWidth && note.IsHyper;
 
                     if (data.IsHyperWalk)

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
@@ -65,15 +64,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
                 else if (data.KeyPress == MovementKey.Dash)
                 {
-                    var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
-                                           .Where(n => n is not null)
-                                           .MaxBy(n => n!.MovementData.EffectiveTime);
-
-                    var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
-                                          .Where(n => n is not null)
-                                          .MaxBy(n => n!.MovementData.EffectiveTime);
-
-                    data.RawNoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
+                    // var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
+                    //                        .Where(n => n is not null)
+                    //                        .MaxBy(n => n!.MovementData.EffectiveTime);
+                    //
+                    // var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
+                    //                       .Where(n => n is not null)
+                    //                       .MaxBy(n => n!.MovementData.EffectiveTime);
+                    //
+                    // data.RawNoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
                 }
 
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
@@ -141,6 +140,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <param name="next">The next note.</param>
+        /// <param name="type"></param>
         /// <returns>The precision value in milliseconds, or null if it is infinite.</returns>
         private static double? calculateRawPrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
         {
@@ -183,7 +183,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - 1000.0 / 60.0, 1);
+                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - note.FrameTime, 1);
 
                     if (data.Directionize(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - note.HalfCatcherWidth)
                     {

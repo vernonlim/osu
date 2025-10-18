@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 {
@@ -199,7 +198,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double LocalStarRating;
 
         /// <summary>
-        /// Populates the class with default values which may be overwritten in <see cref="CatchMovementPreprocessor"/>.
+        /// Populates the class with default values which may be overwritten.
         /// </summary>
         /// <param name="note"></param>
         public CatchMovementData(CatchDifficultyHitObject note)
