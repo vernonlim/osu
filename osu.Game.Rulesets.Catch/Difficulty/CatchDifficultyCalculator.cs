@@ -46,7 +46,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                                .Select(n =>
                                    (CatchDifficultyHitObject)n)
                                .Count(n =>
-                                   n.MovementData.ActionProbability == 0 && n.MovementData.NoteAim != null);
+                                   n.MovementData.ActionProbability < 0.03 && n.MovementData.NoteAim != null);
 
             double totalActions = totalMovements + totalAims;
 
@@ -64,7 +64,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
-            // sr = sr < 6 ? sr : sr * (1 + Math.Max((sr - 6) / 3.0, 0) * 0.20);
+            const double scaling_point = 5.8;
+            sr = sr < scaling_point ? sr : sr * Math.Min(1 + Math.Max((sr - scaling_point) / 3.0, 0) * 0.25, 1.20);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
