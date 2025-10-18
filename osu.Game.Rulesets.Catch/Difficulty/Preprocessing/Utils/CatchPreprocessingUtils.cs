@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Diagnostics;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Difficulty.Utils;
 
@@ -194,6 +195,139 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
 
             return Math.Clamp(value, 1.0, 2.0);
+        }
+
+        public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            switch (data.NotePattern)
+            {
+                case PatternType.JumpAfterHyperjump:
+                {
+                    if (prevData.IsHyperWalk)
+                    {
+                        if ((next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth
+                             && next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
+                            || next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth)
+                        {
+                            return 1.0;
+                        }
+
+                        return 0.0;
+                    }
+
+                    if (next.DeltaPosition < next.DeltaTime - note.HalfCatcherWidth)
+                    {
+                        return 1.0;
+                    }
+
+                    return 0.0;
+                }
+
+                case PatternType.Jumps:
+                {
+                    double val1 = note.Position - data.Directionize(note.HalfCatcherWidth + note.DeltaTime);
+                    double val2 = next.Position + data.Directionize(note.HalfCatcherWidth - note.DeltaTime - next.DeltaTime);
+                    double val3 = note.Position - data.Directionize(note.HalfCatcherWidth + note.DeltaTime / 2.0);
+                    double val4 = next.Position + data.Directionize(note.HalfCatcherWidth - (note.DeltaTime + next.DeltaTime) / 2.0);
+
+                    // As these are symmetric (min and max for both) we don't need FurthestBackward/FurthestForward
+                    double min1 = Math.Min(val1, val2);
+                    double min2 = Math.Min(val3, val4);
+                    double max1 = Math.Max(val1, val2);
+                    double max2 = Math.Max(val3, val4);
+
+                    bool distinct = Math.Max(min1, min2) < Math.Min(max1, max2);
+
+                    if (distinct)
+                    {
+                        return 1 - NormalCdfForNote(max1, prev) + NormalCdfForNote(min1, prev)
+                            - NormalCdfForNote(max2, prev) + NormalCdfForNote(min2, prev);
+                    }
+
+                    return 1 - NormalCdfForNote(Math.Max(max1, max2), prev) + NormalCdfForNote(Math.Min(min1, min2), prev);
+                }
+
+                default:
+                {
+                    return null;
+                }
+            }
+        }
+
+        public static bool NoteWithinBelt(CatchDifficultyHitObject note, CatchDifficultyHitObject belt)
+        {
+            CatchDifficultyHitObject? beltPrevOrNull = belt.PreviousNote(0);
+            Debug.Assert(beltPrevOrNull != null);
+
+            CatchDifficultyHitObject beltPrev = beltPrevOrNull;
+
+            CatchMovementData beltData = belt.MovementData;
+
+            switch (beltData.NotePattern)
+            {
+                case PatternType.JumpAfterHyperjump:
+                {
+                    // I believe these are symmetric outside the gradient of x, i.e note.Position
+                    double val1 = beltData.Directionize(note.Position - (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
+                    double val2 = beltData.Directionize(note.Position - (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
+
+                    double lower1 = Math.Min(val1, val2);
+                    double higher1 = Math.Max(val1, val2);
+
+                    bool bound1 = note.StartTime >= lower1 && note.StartTime <= higher1;
+
+                    if (beltPrev.MovementData.IsHyperWalk)
+                    {
+                        double val3 = beltData.Directionize(2.0 * note.Position - 2.0 * (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
+                        double val4 = beltData.Directionize(2.0 * note.Position - 2.0 * (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
+
+                        double lower2 = Math.Min(val3, val4);
+                        double higher2 = Math.Max(val3, val4);
+
+                        bool bound2 = note.StartTime >= lower2 && note.StartTime <= higher2;
+
+                        return bound1 || bound2;
+                    }
+
+                    return bound1;
+                }
+
+                case PatternType.Jumps:
+                {
+                    double prevBeltForward = GetPrevForwardCatcherPosition(belt, beltPrev);
+                    double prevBeltBackward = GetPrevBackwardCatcherPosition(belt, beltPrev);
+
+                    double val1 = beltData.Directionize(note.Position - (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
+                                  + belt.StartTime;
+                    double val2 = beltData.Directionize(
+                                      note.Position - (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
+                                  + belt.StartTime;
+                    double val3 = beltData.Directionize(2.0 * note.Position - 2.0 * (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
+                                  + belt.StartTime;
+                    double val4 = beltData.Directionize(
+                                      2.0 * note.Position - 2.0 * (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
+                                  + belt.StartTime;
+
+                    double lower1 = Math.Min(val1, val2);
+                    double higher1 = Math.Max(val1, val2);
+
+                    double lower2 = Math.Max(val3, val4);
+                    double higher2 = Math.Min(val3, val4);
+
+                    bool bound1 = note.StartTime >= lower1 && note.StartTime <= higher1;
+                    bool bound2 = note.StartTime >= lower2 && note.StartTime <= higher2;
+
+                    return bound1 || bound2;
+                }
+
+                default:
+                {
+                    return false;
+                }
+            }
         }
     }
 }

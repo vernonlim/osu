@@ -47,6 +47,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 updateData(note, prev, next);
 
+                // If the previous note was a hyperdash, old curved stack calculations don't matter
+                if (!prev.IsHyper)
+                {
+                    CatchDifficultyHitObject? belt = prev.MovementData.BeltBeginning;
+
+                    if (belt is not null)
+                    {
+                        bool inBelt = CatchPreprocessingUtils.NoteWithinBelt(note, belt);
+
+                        if (inBelt)
+                        {
+                            data.ActionProbability *= belt.MovementData.ActionProbability;
+
+                            data.BeltBeginning ??= belt;
+                        }
+                    }
+                }
+
                 // Debug
                 data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
                 data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
@@ -420,6 +438,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.NotePattern = classify(note, prev, next, true);
                     updateData(note, prev, next);
 
+                    // Handling curved stack
+                    double? curvedStackProbability = CatchPreprocessingUtils.CalculateCurvedStackProbability(note, prev, next);
+
+                    if (curvedStackProbability is not null)
+                    {
+                        data.ActionProbability = curvedStackProbability.Value;
+
+                        data.BeltBeginning = note;
+                    }
+
                     break;
                 }
 
@@ -706,6 +734,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     break;
                 }
             }
+        }
+
+        private static void handleCurvedStack(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        {
+            CatchMovementData data = note.MovementData;
+            CatchMovementData prevData = prev.MovementData;
+
+            data.BeltBeginning = prevData.BeltBeginning;
         }
     }
 }
