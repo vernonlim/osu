@@ -65,7 +65,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
-            double multiplier = Math.Max(Math.Min(1 + Math.Max((sr - scaling_point) / 2.5, 0) * 0.4, 1.35), Math.Min(1 + Math.Max((sr - 3.0) / 3.0, 0) * 0.15, 1.05));
+            double multiplier = Math.Max(Math.Min(1 + Math.Max((sr - scaling_point) / 2.5, 0) * 0.4, 1.35), Math.Min(1 + Math.Max((sr - 3.0) / 3.0, 0) * 0.15, 1.04));
             sr = sr * multiplier;
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
