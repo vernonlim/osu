@@ -15,9 +15,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 
             double aim = note.MovementData.NoteAim is null
                 ? 0
-                : 32 - 7 * Math.Log((double)note.MovementData.NoteAim + 15.0);
+                : 3 + 58 / (1 + Math.Exp(((double)note.MovementData.NoteAim + 15.0) / 29.0));
 
-            return aim / 18 * 100;
+            return aim / 18 * 43;
         }
     }
 }
