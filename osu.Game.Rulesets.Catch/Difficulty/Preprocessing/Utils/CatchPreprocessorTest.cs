@@ -21,28 +21,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         private static bool testEffectiveTime(List<CatchDifficultyHitObject> catchHitObjects, IBeatmap beatmap)
         {
-            double maxTime = 0;
+            double maxTime = 1;
 
             foreach (CatchDifficultyHitObject catchHitObject in catchHitObjects)
             {
                 CatchMovementData data = catchHitObject.MovementData;
 
-                if (data.EffectiveTime > maxTime)
+                if (data.ActionProbability > 0.01)
                 {
-                    if (data.ActionProbability > 0)
+                    if (data.EffectiveTime > maxTime)
                     {
                         maxTime = data.EffectiveTime;
                     }
-                }
-                else
-                {
-                    string? artist = beatmap.Metadata.Artist;
-                    string? title = beatmap.Metadata.Title;
-                    string? difficulty = beatmap.BeatmapInfo?.DifficultyName;
-                    Console.WriteLine($"Map: {artist} - {title} [{difficulty}]");
-                    Console.WriteLine($"Effective Time at t={catchHitObject.StartTime:0.0} is {data.EffectiveTime:0.0}, which is lower than {maxTime:0.0}");
-                    Console.WriteLine();
-                    return false;
+                    else
+                    {
+                        string? artist = beatmap.Metadata.Artist;
+                        string? title = beatmap.Metadata.Title;
+                        string? difficulty = beatmap.BeatmapInfo?.DifficultyName;
+                        Console.WriteLine($"Map: {artist} - {title} [{difficulty}]");
+                        Console.WriteLine($"Effective Time at t={catchHitObject.StartTime:0.0} is {data.EffectiveTime:0.0}, which is lower than {maxTime:0.0}");
+                        Console.WriteLine();
+                        return false;
+                    }
                 }
             }
 

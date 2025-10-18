@@ -742,8 +742,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
             else if (inBelt)
             {
-                data.ActionProbability *= belt!.MovementData.ActionProbability;
-                data.BeltBeginning = belt;
+                if ((note.IsHyper && (next.Position - note.Position >= 0 ? belt!.IsMovingRight : !belt!.IsMovingRight)) || CatchPreprocessingUtils.NoteWithinBelt(next, belt!, belt!.MovementData.NotePattern))
+                {
+                    data.ActionProbability *= belt!.MovementData.ActionProbability;
+                    data.BeltBeginning = belt;
+                }
             }
         }
     }
