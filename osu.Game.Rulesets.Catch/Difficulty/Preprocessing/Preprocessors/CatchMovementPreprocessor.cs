@@ -636,7 +636,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                             - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev));
                         }
 
-                        data.NotePattern = PatternType.HyperWalk;
                         data.KeyPress = data.ForwardKeyPress;
 
                         break;
