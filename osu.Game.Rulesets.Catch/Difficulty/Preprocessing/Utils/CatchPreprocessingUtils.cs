@@ -251,6 +251,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                     return Math.Max(1 - NormalCdfForNote(Math.Max(max1, max2), prev) + NormalCdfForNote(Math.Min(min1, min2), prev), 0);
                 }
 
+                case PatternType.HyperStream:
+                {
+                    return 0.0;
+                }
+
                 default:
                 {
                     return null;

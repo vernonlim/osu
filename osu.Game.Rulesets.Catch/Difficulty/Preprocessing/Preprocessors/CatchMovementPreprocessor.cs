@@ -720,7 +720,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             bool prevHasBelt = belt is not null;
 
-            PatternType type = classifyAsDirectionChange(note, prev);
+            PatternType type = PatternType.None;
+
+            if (data.IsDirectionChangeOrEqual)
+            {
+                if (prev.IsHyper && !note.IsHyper)
+                    type = PatternType.JumpAfterHyperjump;
+                else if (!prev.IsHyper && !note.IsHyper)
+                    type = PatternType.Jumps;
+            }
 
             double? curvedStackProbability = CatchPreprocessingUtils.CalculateCurvedStackProbability(note, prev, next, type);
 
