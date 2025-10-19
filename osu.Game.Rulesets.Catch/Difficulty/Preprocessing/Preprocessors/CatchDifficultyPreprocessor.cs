@@ -77,9 +77,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
 
-                sameDirectionSpeed *= 2;
-                alternatingSpeed *= 11;
-                data.RawNoteSpeed = Math.Sqrt(Math.Pow(sameDirectionSpeed, 2) + Math.Pow(alternatingSpeed, 2));
+                data.SameDirectionSpeed = sameDirectionSpeed * 2 * 12 * 120;
+                data.AlternatingSpeed = alternatingSpeed * 11 * 12 * 120;
 
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);

@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
             double speed = SpeedEvaluator.EvaluateDifficultyOf(current);
             double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
 
-            return CatchDifficultyCalculator.CalculatePartialLocalStarRating(actionProbability, precision, speed);
+            return CatchDifficultyCalculator.CalculatePartialLocalStarRating(actionProbability, precision, speed) / 3.0;
         }
     }
 }

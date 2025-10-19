@@ -185,9 +185,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 
         // For debug
         /// <summary>
-        /// 1 divided by the time interval between this note and the last expected action.
+        /// 1 divided by the time interval between this note and the last expected action in the same direction.
         /// </summary>
-        public double RawNoteSpeed;
+        public double SameDirectionSpeed;
+
+        public double AlternatingSpeed;
 
         public double NoteSpeed;
 
@@ -220,7 +222,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
-            RawNoteSpeed = 0;
             NoteSpeed = 0;
 
             DirectionChangeWeight = 1;
