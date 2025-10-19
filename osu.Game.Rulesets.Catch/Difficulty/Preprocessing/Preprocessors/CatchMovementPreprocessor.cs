@@ -16,6 +16,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     /// </summary>
     public static class CatchMovementPreprocessor
     {
+        private const double lower_q_bound = 0.03;
+        private const double upper_q_bound = 0.85;
+
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
         /// </summary>
@@ -49,6 +52,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 // Handling curved stack
                 handleCurvedStack(note, prev, next);
+
+                if (data.ActionProbability < lower_q_bound)
+                {
+                    data.ActionProbability = 0;
+                }
+                else if (data.ActionProbability > upper_q_bound)
+                {
+                    data.ActionProbability = 1;
+                }
+                else
+                {
+                    data.ActionProbability = (data.ActionProbability - lower_q_bound) / upper_q_bound;
+                }
 
                 // Debug
                 data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);

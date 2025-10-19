@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
                 CatchMovementData prevData = prev.MovementData;
 
-                if (prevData.ActionProbability > 0.97)
+                if (prevData.ActionProbability == 1)
                 {
                     if (prevData.KeyPress == MovementKey.Left)
                     {
@@ -38,7 +38,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         prevRightGuaranteedAction = prev;
                     }
                 }
-                else if (prevData.ActionProbability >= 0.03 && prevData.ActionProbability <= 0.97)
+                else if (prevData.ActionProbability > 0.0)
                 {
                     if (prevData.KeyPress == MovementKey.Left)
                     {
