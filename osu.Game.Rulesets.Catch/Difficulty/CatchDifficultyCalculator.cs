@@ -63,11 +63,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains);
 
-            double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
+            double sr = calculateDifficultyValue(combinedStrains) * difficulty_multiplier;
 
-            double precision = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes)) * difficulty_multiplier;
-            double speed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes)) * difficulty_multiplier;
-            double aim = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains)) * difficulty_multiplier;
+            double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes)) * difficulty_multiplier;
+            double speed = calculateDifficultyValue(combineStrains(actionProbabilities, speedStrains, zeroes, zeroes)) * difficulty_multiplier;
+            double aim = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, zeroes, aimStrains)) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
@@ -91,43 +91,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
         /// </summary>
-        /// <param name="startTimes"></param>
-        /// <param name="combinedStrains"></param>
+        /// <param name="strains"></param>
+        /// <param name="accuracy"></param>
         /// <returns></returns>
-        private double calculateDifficultyValue(List<double> startTimes, List<double> combinedStrains)
+        private double calculateDifficultyValue(List<double> strains, double accuracy = 1.0)
         {
-            List<double> strainPeaks = new List<double>();
-
             const double decay_weight = 0.9;
-            double currentSectionPeak = 0;
-            double currentSectionEnd = 0;
-            const double section_length = 400;
 
-            for (int i = 0; i < combinedStrains.Count; i++)
-            {
-                double strain = combinedStrains[i];
-                double startTime = startTimes[i];
+            double missPercentage = 3.0 / 2.0 * (1.0 - accuracy);
 
-                while (startTime > currentSectionEnd)
-                {
-                    strainPeaks.Add(currentSectionPeak);
-                    currentSectionPeak = strain;
-                    currentSectionEnd += section_length;
-                }
+            int missCount = Math.Max((int)Math.Round((missPercentage) * strains.Count), 0);
 
-                currentSectionPeak = Math.Max(strain, currentSectionPeak);
-            }
+            // Missing one note can allow you to hit another with much less difficulty, this is a very rough estimate for that
+            missCount = (int)(missCount);
 
-            double difficulty = 0;
-            double weight = 1;
+            List<double> sorted = strains.OrderByDescending(x => x).ToList();
 
-            // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
-            // These sections will not contribute to the difficulty.
-            var peaks = strainPeaks.Where(p => p > 0);
+            List<double> remaining = sorted.Skip(missCount).ToList();
 
-            // Difficulty is the weighted sum of the highest strains from every section.
-            // We're sorting from highest to lowest strain.
-            foreach (double strain in peaks.OrderDescending())
+            double difficulty = 0.0;
+            double weight = 1.0;
+
+            foreach (double strain in remaining)
             {
                 difficulty += strain * weight;
                 weight *= decay_weight;
