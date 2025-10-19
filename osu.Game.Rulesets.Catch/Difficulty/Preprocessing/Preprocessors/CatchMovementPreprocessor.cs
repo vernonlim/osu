@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
                 else
                 {
-                    data.ActionProbability = (data.ActionProbability - lower_q_bound) / upper_q_bound;
+                    data.ActionProbability = (data.ActionProbability - lower_q_bound) / (upper_q_bound - lower_q_bound);
                 }
 
                 // Debug
