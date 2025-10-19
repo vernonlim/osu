@@ -19,8 +19,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// Temporary debug property.
         /// </summary>
-        [JsonProperty("hyperwalks")]
-        public int HyperWalkCount { get; set; }
+        [JsonProperty("precision_sr")]
+        public double PrecisionSR { get; set; }
+
+        /// <summary>
+        /// Temporary debug property.
+        /// </summary>
+        [JsonProperty("speed_sr")]
+        public double SpeedSR { get; set; }
+
+        /// <summary>
+        /// Temporary debug property.
+        /// </summary>
+        [JsonProperty("aim_sr")]
+        public double AimSR { get; set; }
 
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
@@ -54,26 +55,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.NoteAim = calculateAim(note, prev, next);
 
+                double sameDirectionSpeed = 0;
+                double alternatingSpeed = 0;
+
+                var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
+                                       .Where(n => n is not null)
+                                       .MaxBy(n => n!.MovementData.EffectiveTime);
+
+                var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
+                                      .Where(n => n is not null)
+                                      .MaxBy(n => n!.MovementData.EffectiveTime);
+
                 if (data.KeyPress == MovementKey.Left)
                 {
-                    data.RawNoteSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction);
+                    sameDirectionSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction, timeToSpeedSameDirection);
+                    alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
-                    data.RawNoteSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction);
+                    sameDirectionSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction, timeToSpeedSameDirection);
+                    alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
-                else if (data.KeyPress == MovementKey.Dash)
-                {
-                    // var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
-                    //                        .Where(n => n is not null)
-                    //                        .MaxBy(n => n!.MovementData.EffectiveTime);
-                    //
-                    // var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
-                    //                       .Where(n => n is not null)
-                    //                       .MaxBy(n => n!.MovementData.EffectiveTime);
-                    //
-                    // data.RawNoteSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous);
-                }
+
+                sameDirectionSpeed *= 2;
+                alternatingSpeed *= 11;
+                data.RawNoteSpeed = Math.Sqrt(Math.Pow(sameDirectionSpeed, 2) + Math.Pow(alternatingSpeed, 2));
 
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
@@ -279,8 +285,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="note"></param>
         /// <param name="prevGuaranteedAction"></param>
         /// <param name="prevAmbiguousAction"></param>
+        /// <param name="timeToSpeed"></param>
         /// <returns></returns>
-        private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction)
+        private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
 
@@ -321,11 +328,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return 0;
         }
 
-        private static double timeToSpeed(double time)
+        private static double timeToSpeedSameDirection(double time)
         {
-            const double alpha = 0.68;
+            const double alpha = 1.0;
 
             return Math.Pow(time, -alpha);
+        }
+
+        private static double timeToSpeedAlternating(double time)
+        {
+            const double alpha = 1.5;
+
+            return Math.Pow(time * 2.0, -alpha);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 0.0141;
+        private const double difficulty_multiplier = 0.015;
 
         private float catcherWidth;
 
@@ -59,14 +59,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             // List<double> readingStrains = skills.OfType<Reading>().Single().GetObjectStrains().ToList();
 
+            List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
+
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains);
 
             double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
 
+            double precision = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes)) * difficulty_multiplier;
+            double speed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes)) * difficulty_multiplier;
+            double aim = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains)) * difficulty_multiplier;
+
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
-            double multiplier = Math.Max(Math.Min(1 + Math.Max((sr - scaling_point) / 2.5, 0) * 0.4, 1.3), Math.Min(1 + Math.Max((sr - 3.0) / 3.0, 0) * 0.15, 1.04));
-            sr = sr * multiplier;
+            Func<double, double> srScaler = d => d * Math.Max(Math.Min(1 + Math.Max((d - scaling_point) / 2.5, 0) * 0.4, 1.3), Math.Min(1 + Math.Max((d - 3.0) / 3.0, 0) * 0.15, 1.04));
+            sr = srScaler(sr);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
@@ -74,7 +80,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
-                HyperWalkCount = hyperWalkCount,
+                PrecisionSR = srScaler(precision),
+                SpeedSR = srScaler(speed),
+                AimSR = srScaler(aim),
             };
 
             return attributes;
