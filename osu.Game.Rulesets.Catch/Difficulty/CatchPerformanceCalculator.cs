@@ -43,8 +43,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions;
 
             double lengthBonus =
-                0.95 + 0.3 * Math.Min(1.0, totalActions / 1250.0) +
-                (totalActions > 1250 ? Math.Log10(totalActions / 1250.0) * 0.475 : 0.0);
+                0.95 + 0.3 * Math.Min(1.0, totalActions / 1200.0) +
+                (totalActions > 1200 ? Math.Log10(totalActions / 1200.0) * 0.45 : 0.0);
             value *= lengthBonus;
 
             value *= Math.Pow(0.97, numMiss);
