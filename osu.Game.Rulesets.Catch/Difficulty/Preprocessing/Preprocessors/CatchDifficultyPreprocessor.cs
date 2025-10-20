@@ -311,13 +311,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
                 {
+                    double maxTime = Math.Max(note.StartTime, data.EffectiveTime);
+                    double minGuaranteedTime = Math.Min(prevGuaranteedAction.StartTime, prevGuaranteedAction.MovementData.EffectiveTime);
+                    double minAmbiguousTime = Math.Min(prevAmbiguousAction.StartTime, prevAmbiguousAction.MovementData.EffectiveTime);
+
                     if (prevGuaranteedAction.MovementData.EffectiveTime >= prevAmbiguousAction.MovementData.EffectiveTime)
                     {
-                        return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
+                        return timeToSpeed(Math.Max(maxTime - minGuaranteedTime, 1));
                     }
 
-                    double ambiguousSpeed = timeToSpeed(Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1));
-                    double guaranteedSpeed = timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
+                    double ambiguousSpeed = timeToSpeed(Math.Max(maxTime - minAmbiguousTime, 1));
+                    double guaranteedSpeed = timeToSpeed(Math.Max(maxTime - minGuaranteedTime, 1));
                     double prevActionProbability = prevAmbiguousAction.MovementData.ActionProbability;
 
                     return prevActionProbability * ambiguousSpeed + (1 - prevActionProbability) * guaranteedSpeed;
