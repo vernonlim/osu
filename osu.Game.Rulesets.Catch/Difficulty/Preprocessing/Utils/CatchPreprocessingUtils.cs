@@ -184,7 +184,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
             const double distanceExponent = 2.0;  // p
             const double timeExponent = 1.5;      // q
-            const double distanceSensitivity = 6.0; // k
+            const double distanceSensitivity = 10.0; // k
 
             double dRatio = distance / catcherWidth;
             double tRatio = 2.0 * standingTime.Value / catcherWidth;

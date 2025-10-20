@@ -265,7 +265,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 PatternType.PotentialStack => data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
                 PatternType.NarrowStack => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
                 PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
-                PatternType.JumpAfterHyperjump => note.CatcherWidth * (1 - next.DeltaPosition * Math.Pow(minimalVelocity, 0.5) / (note.CatcherWidth + (Math.Pow(minimalVelocity, 0.5) - 1) * next.DeltaPosition)),
+                //PatternType.JumpAfterHyperjump => note.CatcherWidth * (1 - next.DeltaPosition * Math.Pow(minimalVelocity, 0.5) / (note.CatcherWidth + (Math.Pow(minimalVelocity, 0.5) - 1) * next.DeltaPosition)),
                 //PatternType.Jumps => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
                 _ => null,
             };

@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
     {
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
-            return Math.Sqrt(Math.Pow(EvaluateAlternatingSpeedDifficultyOf(current), 2) + Math.Pow(EvaluateSameDirectionSpeedDifficultyOf(current), 2));
+            return Math.Sqrt(3.5 * Math.Pow(EvaluateAlternatingSpeedDifficultyOf(current), 2) + 2 * Math.Pow(EvaluateSameDirectionSpeedDifficultyOf(current), 2));
         }
 
         public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
