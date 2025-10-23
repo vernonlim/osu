@@ -705,6 +705,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.LeftCatcherPosition = note.LeftNoteBorder;
                     data.RightCatcherPosition = note.RightNoteBorder;
 
+                    if (note.DeltaPosition == 0
+                        && prev.SignificantMovementDirection != MovementDirection.None)
+                    {
+                        data.ActionProbability = 1;
+                    }
+
                     break;
                 }
 
