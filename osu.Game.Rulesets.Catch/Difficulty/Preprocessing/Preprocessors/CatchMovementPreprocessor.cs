@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using osu.Game.Overlays.Profile.Header.Components;
 using osu.Game.Rulesets.Catch.Difficulty.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
@@ -480,7 +481,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     data.IsStack = true;
 
-                    if (next.DeltaPosition / note.CatcherWidth >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime))
+                    double scale = 1.0;
+
+                    if (prevData.NotePattern == PatternType.JumpAfterHyperjump)
+                    {
+                        CatchDifficultyHitObject? prevPrev = prev.PreviousNote(0);
+
+                        if (prevPrev is not null)
+                        {
+                            scale = Math.Sqrt(CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(prev, prevPrev));
+                        }
+                    }
+
+                    if (next.DeltaPosition / note.CatcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime))
                     {
                         // wiggle
                         data.NotePattern = classify(note, prev, next, true);
@@ -490,6 +503,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     {
                         // stand
                         data.ActionProbability = 0;
+
+                        if (scale != 1.0)
+                        {
+                            data.NotePattern = PatternType.JumpAfterHyperjump;
+                        }
                     }
 
                     break;
