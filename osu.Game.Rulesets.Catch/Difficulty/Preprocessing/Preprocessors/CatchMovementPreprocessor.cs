@@ -413,10 +413,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 case PatternType.EdgedashAfterBreak:
                 {
                     data.ActionProbability = 0;
-                    data.BackwardCatcherPosition = data.FurthestForward(
-                        note.Position - data.Directionize(note.HalfCatcherWidth),
-                        next.Position - data.Directionize(note.HalfCatcherWidth + next.DeltaTime));
-                    data.ForwardCatcherPosition = note.Position + data.Directionize(note.HalfCatcherWidth);
+                    bool isNextRight = next.Position > note.Position;
+
+                    double backwardPosition =
+                        isNextRight
+                            ? Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth - next.DeltaTime)
+                            : Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth + next.DeltaTime);
+                    double forwardPosition =
+                        isNextRight
+                            ? note.Position + note.HalfCatcherWidth
+                            : note.Position - note.HalfCatcherWidth;
+
+                    data.LeftCatcherPosition = isNextRight ? backwardPosition : forwardPosition;
+                    data.RightCatcherPosition = isNextRight ? forwardPosition : backwardPosition;
 
                     data.EffectiveTime = (prev.StartTime + next.StartTime) / 2.0;
                     break;
