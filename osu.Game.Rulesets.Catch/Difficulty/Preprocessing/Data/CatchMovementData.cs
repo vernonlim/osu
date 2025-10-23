@@ -183,6 +183,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </remarks>
         public double? NoteAim;
 
+        /// <summary>
+        /// Temporary parameter to implement aim adjustment in stacks.
+        /// </summary>
+        public double AimModifier;
+
         // For debug
         /// <summary>
         /// 1 divided by the time interval between this note and the last expected action in the same direction.
@@ -222,6 +227,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             ActionProbability = 1;
             NotePrecision = null;
             NoteAim = null;
+            AimModifier = 1.0;
             NoteSpeed = 0;
 
             DirectionChangeWeight = 1;
