@@ -705,10 +705,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.LeftCatcherPosition = note.LeftNoteBorder;
                     data.RightCatcherPosition = note.RightNoteBorder;
 
+                    MovementDirection nextDirection = next.SignificantMovementDirection;
+
                     if (note.DeltaPosition == 0
-                        && prev.SignificantMovementDirection != MovementDirection.None)
+                        && nextDirection != MovementDirection.None)
                     {
-                        data.ActionProbability = 1;
+                        if ((prev.SignificantMovementDirection == MovementDirection.Left && nextDirection == MovementDirection.Right)
+                            || (prev.SignificantMovementDirection == MovementDirection.Right && nextDirection == MovementDirection.Left))
+                        {
+                            data.ActionProbability = 1;
+                        }
                     }
 
                     break;
