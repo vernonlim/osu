@@ -107,6 +107,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// </summary>
         public CatchMovementData MovementData;
 
+        /// <summary>
+        /// Reading data used in difficulty calculation.
+        /// </summary>
+        public CatchReadingData ReadingData;
+
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
                                         float catcherWidth,
                                         List<DifficultyHitObject> objects,
