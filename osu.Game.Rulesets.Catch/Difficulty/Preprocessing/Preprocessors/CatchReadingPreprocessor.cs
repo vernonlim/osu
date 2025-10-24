@@ -21,6 +21,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
+        private const double similar_distance_penalty = 1.0;
+        private const uint similar_distance_note_count = 4;
+        private const double similar_distance_leniency = 0.05;
+
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -29,6 +33,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             localRhythmPenalty(cdhos);
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
+            similarDistancePenalty(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -100,6 +105,33 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / implicit_rhythm_note_count, 1);
+                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                }
+                else
+                {
+                    counter = 0;
+                }
+            }
+        }
+
+        private static void similarDistancePenalty(List<CatchDifficultyHitObject> cdhos)
+        {
+            double counter = 0;
+            const double raw_penalty = (1.0 - similar_distance_penalty);
+
+            // doesn't count first note
+            for (int i = 2; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject prev = cdhos[i - 1];
+
+                double lower = prev.DeltaPosition * (1.0 - similar_distance_leniency);
+                double higher = prev.DeltaPosition * (1.0 + similar_distance_leniency);
+
+                if (note.DeltaPosition > lower && note.DeltaPosition < higher)
+                {
+                    counter++;
+                    double penalty = raw_penalty * Math.Min(counter / similar_distance_note_count, 1);
                     note.ReadingData.ReadingFactors.Add(1.0 - penalty);
                 }
                 else
