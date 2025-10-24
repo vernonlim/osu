@@ -66,6 +66,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
                     note.ReadingData.ReadingFactors.Add(1.0 - penalty);
                 }
+                else
+                {
+                    counter = 0;
+                }
             }
         }
     }
