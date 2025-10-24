@@ -17,6 +17,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_leniency = 0.05;
 
+        private const double implicit_rhythm_penalty = 1.0;
+        private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
+        private const double implicit_rhythm_leniency = 0.05;
+
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -24,6 +28,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             localRhythmPenalty(cdhos);
             explicitRhythmPenalty(actionNotes);
+            implicitRhythmPenalty(actionNotes);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -64,6 +69,37 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
+                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                }
+                else
+                {
+                    counter = 0;
+                }
+            }
+        }
+
+        private static void implicitRhythmPenalty(List<CatchDifficultyHitObject> actionNotes)
+        {
+            double counter = 0;
+            const double raw_penalty = (1.0 - implicit_rhythm_penalty);
+
+            // doesn't count first note
+            for (int i = 3; i < actionNotes.Count; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
+                CatchDifficultyHitObject prevPrev = actionNotes[i - 2];
+
+                double prevDelta = prev.MovementData.EffectiveTime - prevPrev.MovementData.EffectiveTime;
+                double delta = note.MovementData.EffectiveTime - prev.MovementData.EffectiveTime;
+
+                double lower = prevDelta * (1.0 - implicit_rhythm_leniency);
+                double higher = prevDelta * (1.0 + implicit_rhythm_leniency);
+
+                if (delta > lower && delta < higher)
+                {
+                    counter++;
+                    double penalty = raw_penalty * Math.Min(counter / implicit_rhythm_note_count, 1);
                     note.ReadingData.ReadingFactors.Add(1.0 - penalty);
                 }
                 else
