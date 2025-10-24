@@ -290,29 +290,32 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
+            double maxTime = Math.Max(note.StartTime, data.EffectiveTime);
 
-            if (data.ActionProbability >= 0.03)
+            if (data.ActionProbability > 0)
             {
-                if (data.ActionProbability <= 0.97
+                if (data.ActionProbability < 1
                     && data.DisplayPattern != PatternType.StackEnd
                     && prevGuaranteedAction is not null)
                 {
-                    return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
+                    double minGuaranteedTime = Math.Min(prevGuaranteedAction.StartTime, prevGuaranteedAction.MovementData.EffectiveTime);
+                    return timeToSpeed(Math.Max(maxTime - minGuaranteedTime, 1));
                 }
 
                 if (prevAmbiguousAction is null && prevGuaranteedAction is not null)
                 {
-                    return timeToSpeed(Math.Max(data.EffectiveTime - prevGuaranteedAction.MovementData.EffectiveTime, 1));
+                    double minGuaranteedTime = Math.Min(prevGuaranteedAction.StartTime, prevGuaranteedAction.MovementData.EffectiveTime);
+                    return timeToSpeed(Math.Max(maxTime - minGuaranteedTime, 1));
                 }
 
                 if (prevGuaranteedAction is null && prevAmbiguousAction is not null)
                 {
-                    return prevAmbiguousAction.MovementData.ActionProbability * timeToSpeed(Math.Max(data.EffectiveTime - prevAmbiguousAction.MovementData.EffectiveTime, 1));
+                    double minAmbiguousTime = Math.Min(prevAmbiguousAction.StartTime, prevAmbiguousAction.MovementData.EffectiveTime);
+                    return prevAmbiguousAction.MovementData.ActionProbability * timeToSpeed(Math.Max(maxTime - minAmbiguousTime, 1));
                 }
 
                 if (prevAmbiguousAction is not null && prevGuaranteedAction is not null)
                 {
-                    double maxTime = Math.Max(note.StartTime, data.EffectiveTime);
                     double minGuaranteedTime = Math.Min(prevGuaranteedAction.StartTime, prevGuaranteedAction.MovementData.EffectiveTime);
                     double minAmbiguousTime = Math.Min(prevAmbiguousAction.StartTime, prevAmbiguousAction.MovementData.EffectiveTime);
 
