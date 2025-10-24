@@ -24,6 +24,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             foreach (var note in cdhos)
             {
+                if (note.MovementData.ActionProbability == 0) continue;
+
                 double timeDifference = Math.Abs(note.MovementData.EffectiveTime - note.StartTime);
 
                 double multiplier = Math.Min(timeDifference / rhythm_range, 1.0);
