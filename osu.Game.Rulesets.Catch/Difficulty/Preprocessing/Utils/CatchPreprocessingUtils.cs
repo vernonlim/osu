@@ -322,8 +322,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                     double lower1 = Math.Min(val1, val2);
                     double higher1 = Math.Max(val1, val2);
 
-                    double lower2 = Math.Max(val3, val4);
-                    double higher2 = Math.Min(val3, val4);
+                    double lower2 = Math.Min(val3, val4);
+                    double higher2 = Math.Max(val3, val4);
 
                     bool bound1 = note.StartTime >= lower1 && note.StartTime <= higher1;
                     bool bound2 = note.StartTime >= lower2 && note.StartTime <= higher2;
