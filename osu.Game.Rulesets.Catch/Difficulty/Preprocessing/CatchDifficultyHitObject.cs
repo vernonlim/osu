@@ -133,6 +133,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             NoteIndex = index;
 
             MovementData = new CatchMovementData(this);
+            ReadingData = new CatchReadingData();
         }
 
         public CatchDifficultyHitObject? PreviousNote(int backwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex - (backwardsIndex + 1));
