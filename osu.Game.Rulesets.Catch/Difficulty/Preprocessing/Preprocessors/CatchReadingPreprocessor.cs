@@ -48,15 +48,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             const double raw_penalty = (1.0 - explicit_rhythm_penalty);
 
             // doesn't count first note
-            for (int i = 2; i < actionNotes.Count; i++)
+            for (int i = 3; i < actionNotes.Count; i++)
             {
                 CatchDifficultyHitObject note = actionNotes[i];
                 CatchDifficultyHitObject prev = actionNotes[i - 1];
+                CatchDifficultyHitObject prevPrev = actionNotes[i - 2];
 
-                double lower = prev.DeltaTime * (1.0 - explicit_rhythm_leniency);
-                double higher = prev.DeltaTime * (1.0 + explicit_rhythm_leniency);
+                double prevDelta = prev.StartTime - prevPrev.StartTime;
+                double delta = note.StartTime - prev.StartTime;
 
-                if (note.DeltaTime > lower && note.DeltaTime < higher)
+                double lower = prevDelta * (1.0 - explicit_rhythm_leniency);
+                double higher = prevDelta * (1.0 + explicit_rhythm_leniency);
+
+                if (delta > lower && delta < higher)
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
