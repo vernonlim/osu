@@ -25,6 +25,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint similar_distance_note_count = 4;
         private const double similar_distance_leniency = 0.05;
 
+        private const double hyperchain_penalty = 1.0;
+        private const uint hyperchain_note_count = 4;
+
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -34,6 +37,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
             similarDistancePenalty(cdhos);
+            hyperchainPenalty(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -132,6 +136,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / similar_distance_note_count, 1);
+                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                }
+                else
+                {
+                    counter = 0;
+                }
+            }
+        }
+
+        private static void hyperchainPenalty(List<CatchDifficultyHitObject> cdhos)
+        {
+            double counter = 0;
+            const double raw_penalty = (1.0 - hyperchain_penalty);
+
+            // doesn't count first note
+            for (int i = 3; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject prev = cdhos[i - 1];
+                CatchDifficultyHitObject prevPrev = cdhos[i - 2];
+
+                if (note.IsHyper && prev.IsHyper && prevPrev.IsHyper)
+                {
+                    counter++;
+                    double penalty = raw_penalty * Math.Min(counter / hyperchain_note_count, 1);
                     note.ReadingData.ReadingFactors.Add(1.0 - penalty);
                 }
                 else
