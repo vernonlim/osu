@@ -13,11 +13,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double rhythm_penalty = 1.0;
         private const double rhythm_range = 20.0;
 
+        private const double explicit_rhythm_penalty = 1.0;
+        private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
+        private const double explicit_rhythm_leniency = 0.05;
+
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
+            List<CatchDifficultyHitObject> actionNotes = cdhos.Where(n => n.MovementData.ActionProbability > 0).ToList();
 
             localRhythmPenalty(cdhos);
+            explicitRhythmPenalty(actionNotes);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -33,6 +39,29 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double penalty = (1.0 - rhythm_penalty) * (1.0 - multiplier);
 
                 note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+            }
+        }
+
+        private static void explicitRhythmPenalty(List<CatchDifficultyHitObject> actionNotes)
+        {
+            double counter = 0;
+            const double raw_penalty = (1.0 - explicit_rhythm_penalty);
+
+            // doesn't count first note
+            for (int i = 2; i < actionNotes.Count; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
+
+                double lower = prev.DeltaTime * (1.0 - explicit_rhythm_leniency);
+                double higher = prev.DeltaTime * (1.0 + explicit_rhythm_leniency);
+
+                if (note.DeltaTime > lower && note.DeltaTime < higher)
+                {
+                    counter++;
+                    double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
+                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                }
             }
         }
     }
