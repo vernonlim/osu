@@ -769,7 +769,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             CatchDifficultyHitObject? belt = prev.MovementData.BeltBeginning;
 
-            bool inBelt = belt is not null && CatchPreprocessingUtils.NoteWithinBelt(note, belt, belt.MovementData.NotePattern);
+            bool inExistingBelt = belt is not null && CatchPreprocessingUtils.NoteWithinBelt(note, belt, belt.MovementData.NotePattern);
 
             bool prevHasBelt = belt is not null;
 
@@ -786,10 +786,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double? curvedStackProbability = CatchPreprocessingUtils.CalculateCurvedStackProbability(note, prev, next, type);
 
             bool nextInBelt = CatchPreprocessingUtils.NoteWithinBelt(next, note, type);
+            bool inBelt = CatchPreprocessingUtils.NoteWithinBelt(note, note, type);
 
             bool isPotentialBeltBeginning = curvedStackProbability is not null && nextInBelt;
 
-            if (!inBelt && isPotentialBeltBeginning)
+            if (!inExistingBelt && isPotentialBeltBeginning && inBelt)
             {
                 data.BeltBeginning = note;
                 data.ActionProbability = curvedStackProbability!.Value;
@@ -801,7 +802,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 data.BeltBeginning = note;
                 data.NotePattern = type;
             }
-            else if (inBelt)
+            else if (inExistingBelt)
             {
                 if ((note.IsHyper && (next.Position - note.Position >= 0 ? belt!.IsMovingRight : !belt!.IsMovingRight)) || CatchPreprocessingUtils.NoteWithinBelt(next, belt!, belt!.MovementData.NotePattern))
                 {
