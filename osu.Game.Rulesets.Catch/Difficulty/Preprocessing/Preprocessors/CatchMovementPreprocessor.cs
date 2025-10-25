@@ -515,6 +515,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.StackContinuation:
                 {
+                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime);
+                    bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
+
+                    if (isWigglingBetter)
+                    {
+                        data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
+                        data.NotePattern = classify(note, prev, next, true);
+                        updateData(note, prev, next);
+                    }
+                    else
+                    {
+                        data.ActionProbability = 0;
+                    }
+
                     data.IsStack = true;
 
                     Debug.Assert(prevData.LeftStandingPosition != null, "prevData.LeftStandingPosition != null");
@@ -526,17 +540,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     data.LeftStandingPosition = prevData.LeftStandingPosition;
                     data.RightStandingPosition = prevData.RightStandingPosition;
-
-                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime);
-                    bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
-
-                    data.ActionProbability = isWigglingBetter ? 1 : 0;
-
-                    if (isWigglingBetter)
-                    {
-                        data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
-                        data.NotePattern = classify(note, prev, next, true);
-                    }
 
                     break;
                 }
