@@ -271,12 +271,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             Debug.Assert(beltPrevOrNull != null);
 
             // Temporary hotfix for a single map (Future Raver)
-            bool leftInBelt = positionWithinBelt(note.Position - 3.0, note, belt, type);
-            bool rightInBelt = positionWithinBelt(note.Position + 3.0, note, belt, type);
-            // bool inBelt = positionWithinBelt(note.Position, note, belt, type);
+            // bool leftInBelt = positionWithinBelt(note.Position - 3.0, note, belt, type);
+            // bool rightInBelt = positionWithinBelt(note.Position + 3.0, note, belt, type);
+            bool inBelt = positionWithinBelt(note.Position, note, belt, type);
 
-            return leftInBelt || rightInBelt;
-            // return inBelt;
+            // return leftInBelt || rightInBelt;
+            return inBelt;
         }
 
         private static bool positionWithinBelt(double position, CatchDifficultyHitObject note, CatchDifficultyHitObject belt, PatternType type)

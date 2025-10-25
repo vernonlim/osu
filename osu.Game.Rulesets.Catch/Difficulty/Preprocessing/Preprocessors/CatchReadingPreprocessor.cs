@@ -28,6 +28,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 1.0;
         private const uint hyperchain_note_count = 4;
 
+        private const double velocity_buff = 1.0;
+        private const double velocity_distance_threshold = 256;
+
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -166,6 +169,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else
                 {
                     counter = 0;
+                }
+            }
+        }
+
+        private static void highVelocityBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            for (int i = 1; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+
+                if (note.IsHyper)
+                {
+
                 }
             }
         }
