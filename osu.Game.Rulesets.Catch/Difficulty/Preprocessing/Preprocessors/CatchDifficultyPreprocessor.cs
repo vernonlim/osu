@@ -337,14 +337,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedSameDirection(double time)
         {
-            const double alpha = 1.0;
+            const double alpha = 1.3;
 
             return Math.Pow(time, -alpha);
         }
 
         private static double timeToSpeedAlternating(double time)
         {
-            const double alpha = 1.5;
+            const double alpha = 2.0;
 
             return Math.Pow(time * 2.0, -alpha);
         }

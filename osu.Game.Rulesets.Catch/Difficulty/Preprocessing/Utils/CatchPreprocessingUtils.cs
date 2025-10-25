@@ -146,7 +146,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             double d2 = next.DeltaPosition;
 
-            const double power = 0.5; //may be replaced by any number < 1.0
+            const double power = 1.1;
             double normalisedVelocity = Math.Pow(velocity, 0.5);
 
             return Math.Clamp(

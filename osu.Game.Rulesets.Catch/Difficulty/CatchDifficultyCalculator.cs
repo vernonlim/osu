@@ -151,7 +151,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double actionProbability, double precisionStrain, double speedStrain)
         {
-            return actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2));
+            return actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) + 0.2 * precisionStrain * speedStrain);
         }
 
         public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double aimStrain)
