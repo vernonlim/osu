@@ -629,7 +629,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
 
                     double first = data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth;
-                    double second = data.Directionize(data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
+                    double second = (data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
