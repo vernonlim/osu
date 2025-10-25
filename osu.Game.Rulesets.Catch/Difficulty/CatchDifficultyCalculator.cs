@@ -66,7 +66,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // 2B Hotfix
             for (int i = 1; i < combinedStrains.Count - 1; i++)
             {
-                if (startTimes[i] - startTimes[i - 1] < 1)
+                if (startTimes[i] - startTimes[i - 1] <= 2)
                 {
                     combinedStrains[i + 1] = 0;
                     combinedStrains[i] = 0;
