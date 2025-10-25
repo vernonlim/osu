@@ -2,7 +2,9 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Difficulty.Utils;
 
@@ -10,6 +12,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 {
     public static class CatchPreprocessingUtils
     {
+        public static void PopulateDifficultyData(List<CatchDifficultyHitObject> cdhos)
+        {
+            foreach (CatchDifficultyHitObject cdho in cdhos)
+            {
+                double actionProbability = cdho.MovementData.ActionProbability;
+                double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(cdho);
+                double aimStrain = AimEvaluator.EvaluateDifficultyOf(cdho);
+                double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(cdho);
+                double readingFactor = cdho.ReadingData.CombinedReadingFactor;
+
+                cdho.MovementData.NoteSpeed = speedStrain;
+                cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(actionProbability, precisionStrain, speedStrain);
+                cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
+            }
+        }
+
         public static double MillisecondsToCatcherStandingWidth(double ms) => ms <= 188 ? 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35 : 0.567;
 
         /// <summary>

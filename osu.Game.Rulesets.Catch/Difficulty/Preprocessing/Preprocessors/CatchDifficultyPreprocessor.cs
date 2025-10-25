@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -79,15 +78,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.SameDirectionSpeed = sameDirectionSpeed * 2 * 12 * 120;
                 data.AlternatingSpeed = alternatingSpeed * 11 * 12 * 120;
-
-                double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(note);
-                double aimStrain = AimEvaluator.EvaluateDifficultyOf(note);
-                double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(note);
-
-                data.NoteSpeed = speedStrain;
-
-                data.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(data.ActionProbability, precisionStrain, speedStrain);
-                data.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(data.ActionProbability, precisionStrain, speedStrain, aimStrain);
             }
         }
 
