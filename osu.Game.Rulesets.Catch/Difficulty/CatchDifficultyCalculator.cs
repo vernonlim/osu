@@ -63,6 +63,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains);
 
+            // 2B Hotfix
+            for (int i = 1; i < combinedStrains.Count - 1; i++)
+            {
+                if (startTimes[i] - startTimes[i - 1] < 1)
+                {
+                    combinedStrains[i + 1] = 0;
+                    combinedStrains[i] = 0;
+                    combinedStrains[i - 1] = 0;
+                }
+            }
+
             double sr = calculateDifficultyValue(combinedStrains) * difficulty_multiplier;
 
             double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes)) * difficulty_multiplier;
