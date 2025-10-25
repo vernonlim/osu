@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
@@ -28,8 +29,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 1.0;
         private const uint hyperchain_note_count = 4;
 
-        private const double velocity_buff = 1.0;
-        private const double velocity_distance_threshold = 256;
+        private const double high_velocity_buff = 1.0;
+        private const double high_velocity_distance_threshold = 256.0;
+        private const double high_velocity_threshold = 3.0;
+        private const double high_velocity_threshold_multiplier = 2.0;
 
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
@@ -41,6 +44,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             implicitRhythmPenalty(actionNotes);
             similarDistancePenalty(cdhos);
             hyperchainPenalty(cdhos);
+            highVelocityBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -175,13 +179,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static void highVelocityBuff(List<CatchDifficultyHitObject> cdhos)
         {
+            const double raw_buff = high_velocity_buff - 1.0;
+
             for (int i = 1; i < cdhos.Count; i++)
             {
                 CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject prev = cdhos[i - 1];
+                double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
-                if (note.IsHyper)
+                if (prev.IsHyper
+                    && speed > high_velocity_threshold
+                    && note.DeltaPosition < high_velocity_distance_threshold)
                 {
+                    double distanceFactor = 1.0 - note.DeltaPosition / high_velocity_distance_threshold;
+                    double velocityFactor = Math.Min((speed - high_velocity_threshold) / (high_velocity_threshold * high_velocity_threshold_multiplier - high_velocity_threshold), 1.0);
 
+                    note.ReadingData.ReadingFactors.Add(1.0 + distanceFactor * velocityFactor * raw_buff);
                 }
             }
         }
