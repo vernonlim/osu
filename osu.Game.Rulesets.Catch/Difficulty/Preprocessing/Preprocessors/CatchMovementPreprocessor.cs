@@ -88,7 +88,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             CatchMovementData data = note.MovementData;
             data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
-            data.IsDirectionChangeOrEqual = note.IsMovingRight ? next.Position <= note.Position : next.Position >= note.Position;
             double maximalPosition = next.Position - note.Position < 0 ? note.RightNoteBorder : note.LeftNoteBorder;
             double maximalDistance = Math.Abs(next.Position - maximalPosition);
             double maximalVelocity = maximalDistance / Math.Max(next.DeltaTime - note.FrameTime, 1);
@@ -239,7 +238,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             // direction change check to exclude streams
-            if ((data.IsDirectionChangeOrEqual)
+            if ((data.IsDirectionChange)
                 && next.DeltaPosition <= note.CatcherWidth)
             {
                 // There should be other cases covering this
@@ -362,7 +361,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     data.IsBreak = true;
                     data.ActionProbability = 1;
-                    data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
+                    data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
 
                     if (prevData.KeyPress == data.KeyPress)
                     {
@@ -520,7 +519,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (isWigglingBetter)
                     {
-                        data.KeyPress = next.Position >= note.Position ? MovementKey.Right : MovementKey.Left;
+                        data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);
                     }
@@ -629,7 +628,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
 
                     double first = data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth;
-                    double second = data.Directionize(data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
+                    double second = (data.Directionize(next.Position - prevBackwardCatcherPosition) + note.HalfCatcherWidth - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
@@ -778,7 +777,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             PatternType type = PatternType.None;
 
-            if (data.IsDirectionChangeOrEqual)
+            if (data.IsDirectionChange)
             {
                 if (prev.IsHyper && !note.IsHyper)
                     type = PatternType.JumpAfterHyperjump;

@@ -155,11 +155,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public bool IsDirectionChange;
 
         /// <summary>
-        /// IsDirectionChange but including the case where the next note is at the same position of the current
-        /// </summary>
-        public bool IsDirectionChangeOrEqual;
-
-        /// <summary>
         /// The likelihood of an action being performed.
         /// </summary>
         /// <remarks>
@@ -219,7 +214,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             IsBreak = false;
             IsStack = false;
             IsDirectionChange = false;
-            IsDirectionChangeOrEqual = false;
             LeftCatcherPosition = note.Position - note.HalfCatcherWidth;
             RightCatcherPosition = note.Position + note.HalfCatcherWidth;
             LeftStandingPosition = null;

@@ -86,7 +86,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <remarks>
         /// Difficulty calculation for each pattern is symmetric, with values having to be inverted depending on this property.
         /// </remarks>
-        public bool IsMovingRight => Position >= LastObject.EffectiveX / clockRate;
+        public bool IsMovingRight;
 
         /// <summary>
         /// The direction of movement between this note and the previous note.
@@ -142,6 +142,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                         Position -= 0.01;
                     }
                 }
+            }
+
+            if (noteObjects.Count >= 1)
+            {
+                CatchDifficultyHitObject prev = noteObjects[^1];
+                IsMovingRight = Position > prev.Position;
+            }
+            else
+            {
+                IsMovingRight = Position >= LastObject.EffectiveX / clockRate;
             }
 
             CatcherWidth = catcherWidth / clockRate;

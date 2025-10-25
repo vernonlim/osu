@@ -22,7 +22,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 43 * note.ReadingData.CombinedReadingFactor;
+            return precision / 18 * 43;
         }
     }
 }

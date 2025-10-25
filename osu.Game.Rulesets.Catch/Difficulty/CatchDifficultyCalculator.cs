@@ -8,6 +8,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
@@ -57,11 +58,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
-            // List<double> readingStrains = skills.OfType<Reading>().Single().GetObjectStrains().ToList();
+            List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
-            List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains);
+            List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains, readingFactors);
 
             // 2B Hotfix
             for (int i = 1; i < combinedStrains.Count - 1; i++)
@@ -76,9 +77,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double sr = calculateDifficultyValue(combinedStrains) * difficulty_multiplier;
 
-            double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes)) * difficulty_multiplier;
-            double speed = calculateDifficultyValue(combineStrains(actionProbabilities, speedStrains, zeroes, zeroes)) * difficulty_multiplier;
-            double aim = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, zeroes, aimStrains)) * difficulty_multiplier;
+            double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
+            double speed = calculateDifficultyValue(combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
+            double aim = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors)) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
@@ -132,7 +133,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return difficulty;
         }
 
-        private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains)
+        private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains, List<double> readingFactors)
         {
             List<double> combinedStrains = new List<double>();
 
@@ -142,8 +143,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double precisionStrain = precisionStrains[i];
                 double speedStrain = speedStrains[i];
                 double aimStrain = aimStrains[i];
+                double readingFactor = readingFactors[i];
 
-                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain));
+                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor));
             }
 
             return combinedStrains;
@@ -154,11 +156,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return actionProbability * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) + 0.2 * precisionStrain * speedStrain);
         }
 
-        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double aimStrain)
+        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double aimStrain, double readingFactor)
         {
             double plsr = CalculatePartialLocalStarRating(actionProbability, precisionStrain, speedStrain);
 
-            return Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2));
+            return Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2)) * readingFactor;
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
@@ -184,6 +186,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchMovementPreprocessor.Process(objects);
             CatchDifficultyPreprocessor.Process(objects);
             CatchReadingPreprocessor.Process(objects);
+            CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
             // CatchPreprocessorTest.Process(objects, beatmap);
 
             return objects;
