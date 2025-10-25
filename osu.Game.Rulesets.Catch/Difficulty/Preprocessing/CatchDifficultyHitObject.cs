@@ -123,6 +123,27 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             Position = BaseObject.EffectiveX / clockRate;
 
+            // Temporary hack to ensure DeltaPosition > 0
+            if (noteObjects.Count >= 2)
+            {
+                CatchDifficultyHitObject prev = noteObjects[^1];
+                CatchDifficultyHitObject prevPrev = noteObjects[^2];
+
+                if (Position - prev.Position == 0)
+                {
+                    bool isMovingRight = prev.Position - prevPrev.Position > 0;
+
+                    if (isMovingRight)
+                    {
+                        Position += 0.01;
+                    }
+                    else
+                    {
+                        Position -= 0.01;
+                    }
+                }
+            }
+
             CatcherWidth = catcherWidth / clockRate;
 
             FrameTime = 1000.0 / 60.0 / clockRate;
