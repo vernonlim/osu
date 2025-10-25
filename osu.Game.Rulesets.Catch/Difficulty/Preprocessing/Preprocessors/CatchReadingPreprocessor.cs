@@ -11,8 +11,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
     public static class CatchReadingPreprocessor
     {
-        private const double rhythm_penalty = 1.0;
-        private const double rhythm_range = 20.0;
+        private const double local_rhythm_penalty = 0.8;
+        private const double local_rhythm_range = 25.0;
+        private const double local_rhythm_sensitivity = 2.0;
 
         private const double explicit_rhythm_penalty = 1.0;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
@@ -55,9 +56,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 double timeDifference = Math.Abs(note.MovementData.EffectiveTime - note.StartTime);
 
-                double multiplier = Math.Min(timeDifference / rhythm_range, 1.0);
+                double multiplier = Math.Min(timeDifference / local_rhythm_range, 1.0);
 
-                double penalty = (1.0 - rhythm_penalty) * (1.0 - multiplier);
+                double penalty = (1.0 - local_rhythm_penalty) * Math.Pow(1.0 - multiplier, local_rhythm_sensitivity);
 
                 note.ReadingData.ReadingFactors.Add(1.0 - penalty);
             }
