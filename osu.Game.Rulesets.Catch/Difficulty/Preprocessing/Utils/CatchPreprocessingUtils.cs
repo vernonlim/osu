@@ -270,6 +270,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             CatchDifficultyHitObject? beltPrevOrNull = belt.PreviousNote(0);
             Debug.Assert(beltPrevOrNull != null);
 
+            bool leftInBelt = positionWithinBelt(note.LeftNoteBorder, note, belt, type);
+            bool rightInBelt = positionWithinBelt(note.RightNoteBorder, note, belt, type);
+            // bool inBelt = positionWithinBelt(note.Position, note, belt, type);
+
+            return leftInBelt || rightInBelt;
+        }
+
+        private static bool positionWithinBelt(double position, CatchDifficultyHitObject note, CatchDifficultyHitObject belt, PatternType type)
+        {
+            CatchDifficultyHitObject? beltPrevOrNull = belt.PreviousNote(0);
+            Debug.Assert(beltPrevOrNull != null);
+
             CatchDifficultyHitObject beltPrev = beltPrevOrNull;
 
             CatchMovementData beltData = belt.MovementData;
@@ -278,9 +290,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             {
                 case PatternType.JumpAfterHyperjump:
                 {
-                    // I believe these are symmetric outside the gradient of x, i.e note.Position
-                    double val1 = beltData.Directionize(note.Position - (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
-                    double val2 = beltData.Directionize(note.Position - (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
+                    // I believe these are symmetric outside the gradient of x, i.e position
+                    double val1 = beltData.Directionize(position - (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
+                    double val2 = beltData.Directionize(position - (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
 
                     double lower1 = Math.Min(val1, val2);
                     double higher1 = Math.Max(val1, val2);
@@ -289,8 +301,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                     if (beltPrev.MovementData.IsHyperWalk)
                     {
-                        double val3 = beltData.Directionize(2.0 * note.Position - 2.0 * (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
-                        double val4 = beltData.Directionize(2.0 * note.Position - 2.0 * (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
+                        double val3 = beltData.Directionize(2.0 * position - 2.0 * (belt.Position + note.HalfCatcherWidth)) + belt.StartTime;
+                        double val4 = beltData.Directionize(2.0 * position - 2.0 * (belt.Position - note.HalfCatcherWidth)) + belt.StartTime;
 
                         double lower2 = Math.Min(val3, val4);
                         double higher2 = Math.Max(val3, val4);
@@ -308,15 +320,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                     double prevBeltForward = GetPrevForwardCatcherPosition(belt, beltPrev);
                     double prevBeltBackward = GetPrevBackwardCatcherPosition(belt, beltPrev);
 
-                    double val1 = beltData.Directionize(note.Position - (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
+                    double val1 = beltData.Directionize(position - (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
                                   + belt.StartTime;
                     double val2 = beltData.Directionize(
-                                      note.Position - (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
+                                      position - (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
                                   + belt.StartTime;
-                    double val3 = beltData.Directionize(2.0 * note.Position - 2.0 * (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
+                    double val3 = beltData.Directionize(2.0 * position - 2.0 * (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(note.HalfCatcherWidth)))
                                   + belt.StartTime;
                     double val4 = beltData.Directionize(
-                                      2.0 * note.Position - 2.0 * (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
+                                      2.0 * position - 2.0 * (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(note.HalfCatcherWidth)))
                                   + belt.StartTime;
 
                     double lower1 = Math.Min(val1, val2);
