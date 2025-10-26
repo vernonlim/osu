@@ -53,6 +53,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 // Handling curved stack
                 handleCurvedStack(note, prev, next);
 
+                PatternType type = classify(note, prev, next);
+
+                // Hack for akarui taiyo
+                if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
+                {
+                    data.ActionProbability = 0;
+                    data.NotePattern = PatternType.None;
+                }
+
                 if (data.ActionProbability < lower_q_bound)
                 {
                     data.ActionProbability = 0;
