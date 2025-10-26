@@ -9,10 +9,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 {
     public class SpeedEvaluator
     {
+        private const double speed_decay = 0.5;
+
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
             return Math.Sqrt(850.0 * Math.Pow(EvaluateAlternatingSpeedDifficultyOf(current), 2) + 65.0 * Math.Pow(EvaluateSameDirectionSpeedDifficultyOf(current), 2)
-            - 80 * EvaluateAlternatingSpeedDifficultyOf(current) * EvaluateSameDirectionSpeedDifficultyOf(current));
+                             - 80 * EvaluateAlternatingSpeedDifficultyOf(current) * EvaluateSameDirectionSpeedDifficultyOf(current));
         }
 
         public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
@@ -27,7 +29,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.SameDirectionSpeed;
+            return note.MovementData.SameDirectionSpeed + note.MovementData.DelayedSameDirectionSpeed * speed_decay;
         }
 
         public static double EvaluateAlternatingSpeedDifficultyOf(DifficultyHitObject current)

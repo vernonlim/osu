@@ -183,12 +183,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         public double AimModifier;
 
-        // For debug
         /// <summary>
-        /// 1 divided by the time interval between this note and the last expected action in the same direction.
+        /// Speed value for actions with the same direction.
         /// </summary>
         public double SameDirectionSpeed;
 
+        /// <summary>
+        /// Speed value for actions with the same direction, but for the second previous action.
+        /// </summary>
+        public double DelayedSameDirectionSpeed;
+
+        /// <summary>
+        /// Speed value for actions with any direction.
+        /// </summary>
         public double AlternatingSpeed;
 
         public double NoteSpeed;

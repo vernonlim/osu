@@ -14,10 +14,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     {
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
-            CatchDifficultyHitObject? prevLeftGuaranteedAction = null;
-            CatchDifficultyHitObject? prevRightGuaranteedAction = null;
-            CatchDifficultyHitObject? prevLeftAmbiguousAction = null;
-            CatchDifficultyHitObject? prevRightAmbiguousAction = null;
+            List<CatchDifficultyHitObject> leftGuaranteedActions = new List<CatchDifficultyHitObject>();
+            List<CatchDifficultyHitObject> rightGuaranteedActions = new List<CatchDifficultyHitObject>();
+            List<CatchDifficultyHitObject> leftAmbiguousActions = new List<CatchDifficultyHitObject>();
+            List<CatchDifficultyHitObject> rightAmbiguousActions = new List<CatchDifficultyHitObject>();
 
             for (int i = 1; i < hitObjects.Count - 1; i++)
             {
@@ -30,22 +30,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     if (prevData.KeyPress == MovementKey.Left)
                     {
-                        prevLeftGuaranteedAction = prev;
+                        leftGuaranteedActions.Add(prev);
                     }
                     else if (prevData.KeyPress == MovementKey.Right)
                     {
-                        prevRightGuaranteedAction = prev;
+                        rightGuaranteedActions.Add(prev);
                     }
                 }
                 else if (prevData.ActionProbability > 0.0)
                 {
                     if (prevData.KeyPress == MovementKey.Left)
                     {
-                        prevLeftAmbiguousAction = prev;
+                        leftAmbiguousActions.Add(prev);
                     }
                     else if (prevData.KeyPress == MovementKey.Right)
                     {
-                        prevRightAmbiguousAction = prev;
+                        rightAmbiguousActions.Add(prev);
                     }
                 }
 
@@ -54,29 +54,33 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.NoteAim = calculateAim(note, prev, next);
 
-                double sameDirectionSpeed = 0;
-                double alternatingSpeed = 0;
-
-                var recentGuaranteed = new[] { prevLeftGuaranteedAction, prevRightGuaranteedAction }
+                var recentGuaranteed = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
                                        .Where(n => n is not null)
                                        .MaxBy(n => n!.MovementData.EffectiveTime);
 
-                var recentAmbiguous = new[] { prevLeftAmbiguousAction, prevRightAmbiguousAction }
+                var recentAmbiguous = new[] { leftAmbiguousActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault() }
                                       .Where(n => n is not null)
                                       .MaxBy(n => n!.MovementData.EffectiveTime);
 
+                double sameDirectionSpeed = 0;
+                double delayedSameDirectionSpeed = 0;
+                double alternatingSpeed = 0;
+
                 if (data.KeyPress == MovementKey.Left)
                 {
-                    sameDirectionSpeed = calculateSpeed(note, prevLeftGuaranteedAction, prevLeftAmbiguousAction, timeToSpeedSameDirection);
+                    sameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
+                    delayedSameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedSameDirection);
                     alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
-                    sameDirectionSpeed = calculateSpeed(note, prevRightGuaranteedAction, prevRightAmbiguousAction, timeToSpeedSameDirection);
+                    sameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
+                    delayedSameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedSameDirection);
                     alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
 
                 data.SameDirectionSpeed = sameDirectionSpeed * 2 * 12 * 120;
+                data.DelayedSameDirectionSpeed = delayedSameDirectionSpeed * 2 * 12 * 120;
                 data.AlternatingSpeed = alternatingSpeed * 11 * 12 * 120;
             }
         }
