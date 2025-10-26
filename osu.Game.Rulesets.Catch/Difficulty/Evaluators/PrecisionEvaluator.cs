@@ -13,10 +13,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         {
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
-            double amplitude = 135.0; //governs how much very low precision values are worth
+            double amplitude = 145.0; //governs how much very low precision values are worth
             double limit = 2.0; //precision strain for very high precision values (easy jumps)
-            double pace = 55.0; //measures how fast strain decreases between easy and hard jumps
-            double shift = 70.0; //shifts the curve
+            double shift = 45.0; //measures how fast strain decreases between easy and hard jumps (shifts the curve)
+            double pace = 35.0; //normalises shift
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0

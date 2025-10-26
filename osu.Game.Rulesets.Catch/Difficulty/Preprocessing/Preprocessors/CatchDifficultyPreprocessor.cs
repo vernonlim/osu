@@ -69,13 +69,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (data.KeyPress == MovementKey.Left)
                 {
                     sameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
-                    delayedSameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedSameDirection);
+                    delayedSameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedDelayedSameDirection);
                     alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
                     sameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
-                    delayedSameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedSameDirection);
+                    delayedSameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedDelayedSameDirection);
                     alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
                 }
 
@@ -329,18 +329,40 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return 0;
         }
 
-        private static double timeToSpeedSameDirection(double time)
-        {
-            const double alpha = 1.3;
-
-            return Math.Pow(time, -alpha);
-        }
-
         private static double timeToSpeedAlternating(double time)
         {
-            const double alpha = 2.0;
+            double amplitude = 18.0; //governs how much very low precision values are worth
+            double limit = 0.8; //speed strain for very high speed values (easy jumps)
+            double shift = 5; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            double pace = 40.0; //normalises shift
 
-            return Math.Pow(time * 2.0, -alpha);
+            double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
+
+            return speed / 10000;
+        }
+
+        private static double timeToSpeedSameDirection(double time)
+        {
+            double amplitude = 18.0; //governs how much very low precision values are worth
+            double limit = 0.8; //speed strain for very high speed values (easy jumps)
+            double shift = 5; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            double pace = 40.0; //normalises shift
+
+            double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
+
+            return speed / 10000;
+        }
+
+        private static double timeToSpeedDelayedSameDirection(double time)
+        {
+            double amplitude = 18.0; //governs how much very low precision values are worth
+            double limit = 0.8; //speed strain for very high speed values (easy jumps)
+            double shift = 0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            double pace = 40.0; //normalises shift
+
+            double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
+
+            return speed / 10000;
         }
     }
 }
