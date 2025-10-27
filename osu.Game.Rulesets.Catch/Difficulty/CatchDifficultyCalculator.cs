@@ -60,6 +60,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
+            List<double> sameSpeedStrains = skills.OfType<SameDirectionSpeed>().Single().GetObjectStrains().ToList();
+            List<double> alternatingSpeedStrains = skills.OfType<AlternatingSpeed>().Single().GetObjectStrains().ToList();
+
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains, readingFactors);
@@ -80,6 +83,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
             double speed = calculateDifficultyValue(combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
             double aim = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors)) * difficulty_multiplier;
+            double sameSpeed = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
+            double alternatingSpeed = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
@@ -94,6 +99,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 TotalActions = totalActions,
                 PrecisionSR = srScaler(precision),
                 SpeedSR = srScaler(speed),
+                SameDirectionSpeedSR = srScaler(sameSpeed),
+                AlternatingSpeedSR = srScaler(alternatingSpeed),
                 AimSR = srScaler(aim),
             };
 

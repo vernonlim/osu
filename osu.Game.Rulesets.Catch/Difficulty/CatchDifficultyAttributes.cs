@@ -28,6 +28,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("speed_sr")]
         public double SpeedSR { get; set; }
 
+        [JsonProperty("same_direction_speed_sr")]
+        public double SameDirectionSpeedSR { get; set; }
+
+        [JsonProperty("alternating_speed_sr")]
+        public double AlternatingSpeedSR { get; set; }
+
         /// <summary>
         /// Temporary debug property.
         /// </summary>
