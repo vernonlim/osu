@@ -333,8 +333,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             double amplitude = 18.0; //governs how much very low precision values are worth
             double limit = 0.8; //speed strain for very high speed values (easy jumps)
-            double shift = 5; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 40.0; //normalises shift
+            double shift = -30.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            double pace = 35.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
@@ -357,8 +357,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             double amplitude = 18.0; //governs how much very low precision values are worth
             double limit = 0.8; //speed strain for very high speed values (easy jumps)
-            double shift = 0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 40.0; //normalises shift
+            double shift = -30.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            double pace = 35.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
