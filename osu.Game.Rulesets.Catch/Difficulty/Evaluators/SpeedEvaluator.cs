@@ -13,9 +13,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         {
             double alternatingSpeed = EvaluateAlternatingSpeedDifficultyOf(current);
             double sameDirectionSpeed = EvaluateSameDirectionSpeedDifficultyOf(current);
+            double delayedSameDirectionSpeed = EvaluateDelayedSameDirectionSpeedDifficultyOf(current);
+            double combinedSpeed = sameDirectionSpeed + 1.2 * delayedSameDirectionSpeed;
 
-            return 4.5 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + 15.0 * Math.Pow(sameDirectionSpeed, 2)
-                                   - 1.3 * alternatingSpeed * sameDirectionSpeed);
+            return 4.5 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + 15.0 * Math.Pow(combinedSpeed, 2)
+                                   - 1.3 * alternatingSpeed * combinedSpeed);
         }
 
         public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
@@ -30,7 +32,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.SameDirectionSpeed + 1.2 * note.MovementData.DelayedSameDirectionSpeed;
+            return note.MovementData.SameDirectionSpeed;
+        }
+
+        public static double EvaluateDelayedSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
+        {
+            CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
+
+            CatchDifficultyHitObject? prev = note.PreviousNote(0);
+            CatchDifficultyHitObject? next = note.PreviousNote(0);
+
+            if (prev is null)
+            {
+                return 0;
+            }
+
+            return note.MovementData.DelayedSameDirectionSpeed;
         }
 
         public static double EvaluateAlternatingSpeedDifficultyOf(DifficultyHitObject current)
