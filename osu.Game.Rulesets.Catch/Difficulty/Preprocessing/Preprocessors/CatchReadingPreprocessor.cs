@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double explicit_rhythm_penalty = 1.0;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
-        private const double explicit_rhythm_leniency = 0.05;
+        private const double explicit_rhythm_leniency = 0.1;
 
         private const double implicit_rhythm_penalty = 1.0;
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
