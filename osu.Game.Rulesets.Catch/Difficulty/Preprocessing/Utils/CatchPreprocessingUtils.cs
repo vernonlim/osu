@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 double readingFactor = cdho.ReadingData.CombinedReadingFactor;
 
                 cdho.MovementData.NoteSpeed = speedStrain;
-                cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(actionProbability, precisionStrain, speedStrain);
+                cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
                 cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
             }
         }
