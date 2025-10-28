@@ -34,11 +34,11 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         {
         }
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain * StrainDecay(time - current.Previous(0).StartTime);
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            CurrentStrain *= strainDecay(current.DeltaTime);
+            CurrentStrain *= StrainDecay(current.DeltaTime);
             CurrentStrain += StrainValueOf(current) * SkillMultiplier;
 
             return CurrentStrain;
@@ -49,6 +49,6 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected abstract double StrainValueOf(DifficultyHitObject current);
 
-        private double strainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
+        protected virtual double StrainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
     }
 }

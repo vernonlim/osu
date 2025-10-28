@@ -27,5 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
             return SpeedEvaluator.EvaluateDifficultyOf(current) * Math.Pow(actionProbability, 2);
         }
+
+        protected override double StrainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
     }
 }
