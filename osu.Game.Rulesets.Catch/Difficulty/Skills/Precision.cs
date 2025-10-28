@@ -12,9 +12,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
     public class Precision : StrainDecaySkill
     {
-        protected override double SkillMultiplier => 1;
+        protected override double SkillMultiplier => 0.3;
 
-        protected override double StrainDecayBase => 0.00;
+        protected override double StrainDecayBase => 0.10;
 
         public Precision(Mod[] mods)
             : base(mods)
