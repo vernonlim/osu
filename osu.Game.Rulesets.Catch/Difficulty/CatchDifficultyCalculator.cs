@@ -212,7 +212,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 new Aim(mods),
                 new Precision(mods),
                 new Speed(mods),
-                new RealSpeed(mods),
                 new AlternatingSpeed(mods),
                 new SameDirectionSpeed(mods),
                 new DelayedSameDirectionSpeed(mods),
