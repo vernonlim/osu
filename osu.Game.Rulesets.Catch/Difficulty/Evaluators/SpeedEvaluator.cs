@@ -14,10 +14,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             double alternatingSpeed = EvaluateAlternatingSpeedDifficultyOf(current);
             double sameDirectionSpeed = EvaluateSameDirectionSpeedDifficultyOf(current);
             double delayedSameDirectionSpeed = EvaluateDelayedSameDirectionSpeedDifficultyOf(current);
-            double combinedSpeed = sameDirectionSpeed + 1.2 * delayedSameDirectionSpeed;
+            double combinedSpeed = sameDirectionSpeed + 1.0 * delayedSameDirectionSpeed;
 
-            return 4.5 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + 15.0 * Math.Pow(combinedSpeed, 2)
-                                   - 1.3 * alternatingSpeed * combinedSpeed);
+            return 4.0 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + Math.Pow(combinedSpeed, 2)
+                                   - 0.1 * alternatingSpeed * combinedSpeed);
         }
 
         public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)

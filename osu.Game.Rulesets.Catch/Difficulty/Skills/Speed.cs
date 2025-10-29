@@ -12,9 +12,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
     public class Speed : StrainDecaySkill
     {
-        protected override double SkillMultiplier => 0.3;
+        protected override double SkillMultiplier => 1.0;
 
-        protected override double StrainDecayBase => 0.10;
+        protected override double StrainDecayBase => 0.0;
 
         public Speed(Mod[] mods)
             : base(mods)

@@ -15,7 +15,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double local_rhythm_range = 25.0;
         private const double local_rhythm_sensitivity = 2.0;
 
-        private const double explicit_rhythm_penalty = 1.0;
+        private const double explicit_rhythm_penalty = 0.9;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_leniency = 0.1;
 
@@ -82,7 +82,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double lower = prevDelta * (1.0 - explicit_rhythm_leniency);
                 double higher = prevDelta * (1.0 + explicit_rhythm_leniency);
 
-                if (delta > lower && delta < higher)
+                if ((delta > lower && delta < higher) || (delta / 2 > lower && delta / 2 < higher) || (delta * 2 > lower && delta * 2 < higher))
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
