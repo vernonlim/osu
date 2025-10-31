@@ -3,7 +3,6 @@
 
 using System;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
@@ -23,9 +22,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
-            double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
-
-            return SpeedEvaluator.EvaluateDifficultyOf(current) * Math.Pow(actionProbability, 2);
+            return SpeedEvaluator.EvaluateDifficultyOf(current);
         }
 
         protected override double StrainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
