@@ -675,25 +675,25 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     data.EffectiveTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
-                    if (data.IsHyperWalk)
-                    {
-                        if (note.IsMovingRight)
-                        {
-                            data.ActionProbability =
-                                Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
-                                            - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
-                        }
-                        else
-                        {
-                            data.ActionProbability =
-                                Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev)
-                                            - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev));
-                        }
+                    // if (data.IsHyperWalk)
+                    // {
+                    //     if (note.IsMovingRight)
+                    //     {
+                    //         data.ActionProbability =
+                    //             Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth - note.DeltaTime / 2.0, prev)
+                    //                         - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth - note.DeltaTime, prev));
+                    //     }
+                    //     else
+                    //     {
+                    //         data.ActionProbability =
+                    //             Math.Max(0, CatchPreprocessingUtils.NormalCdfForNote(note.Position - note.HalfCatcherWidth + note.DeltaTime, prev)
+                    //                         - CatchPreprocessingUtils.NormalCdfForNote(note.Position + note.HalfCatcherWidth + note.DeltaTime / 2.0, prev));
+                    //     }
 
-                        data.KeyPress = data.ForwardKeyPress;
+                    //     data.KeyPress = data.ForwardKeyPress;
 
-                        break;
-                    }
+                    //     break;
+                    // }
 
                     // Temporary fix, might not be logical actually
                     if ((prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0 <= note.Position)
