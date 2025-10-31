@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
     {
         protected override double SkillMultiplier => 1.0;
 
-        protected override double StrainDecayBase => 0.0;
+        protected override double StrainDecayBase => 0.001;
 
         public Speed(Mod[] mods)
             : base(mods)
