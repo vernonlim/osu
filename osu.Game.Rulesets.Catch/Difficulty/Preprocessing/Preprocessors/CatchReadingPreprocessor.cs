@@ -50,7 +50,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             similarDistancePenalty(cdhos);
             hyperchainPenalty(cdhos);
             highVelocityBuff(cdhos);
-            //highDistanceBuff(cdhos);
+            // highDistanceBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -205,20 +205,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
+        private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            for (int i = 0; i < cdhos.Count - 1; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject next = cdhos[i + 1];
+                double distance = next.DeltaPosition;
 
-        // private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos)
-        // {
-        //     for (int i = 1; i < cdhos.Count; i++)
-        //     {
-        //         CatchDifficultyHitObject note = cdhos[i];
-        //         CatchDifficultyHitObject next = cdhos[i+1];
-        //         double distance = next.DeltaPosition;
-
-        //         if (distance > high_distance_threshold)
-        //         {
-        //             note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * (512.0 - distance) / (512.0 - high_distance_threshold));//Math.Pow((512.0 - distance) / (512.0 - high_distance_threshold), high_distance_power));
-        //         }
-        //     }
-        // }
+                if (distance > high_distance_threshold)
+                {
+                    note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * (distance - high_distance_threshold) / (512.0 - high_distance_threshold)); // Math.Pow((512.0 - distance) / (512.0 - high_distance_threshold), high_distance_power));
+                }
+            }
+        }
     }
 }
