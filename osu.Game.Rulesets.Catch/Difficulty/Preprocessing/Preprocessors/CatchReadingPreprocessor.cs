@@ -31,9 +31,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint hyperchain_note_count = 4;
 
         private const double high_velocity_buff = 1.0;
-        private const double high_velocity_distance_threshold = 256.0;
-        private const double high_velocity_threshold = 3.0;
+        private const double high_velocity_distance_threshold = 512.0;
+        private const double high_velocity_threshold = 2.5;
         private const double high_velocity_threshold_multiplier = 2.0;
+
+        private const double high_distance_buff = 0.2;
+        private const double high_distance_threshold = 200.0;
+        private const double high_distance_power = 1.0;
 
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
@@ -46,6 +50,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             similarDistancePenalty(cdhos);
             hyperchainPenalty(cdhos);
             highVelocityBuff(cdhos);
+            highDistanceBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -82,7 +87,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double lower = prevDelta * (1.0 - explicit_rhythm_leniency);
                 double higher = prevDelta * (1.0 + explicit_rhythm_leniency);
 
-                if ((delta > lower && delta < higher) || (delta / 2 > lower && delta / 2 < higher) || (delta * 2 > lower && delta * 2 < higher))
+                if ((delta > lower && delta < higher)) //|| (delta / 2 > lower && delta / 2 < higher) || (delta * 2 > lower && delta * 2 < higher))
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
@@ -196,6 +201,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double velocityFactor = Math.Min((speed - high_velocity_threshold) / (high_velocity_threshold * high_velocity_threshold_multiplier - high_velocity_threshold), 1.0);
 
                     note.ReadingData.ReadingFactors.Add(1.0 + distanceFactor * velocityFactor * raw_buff);
+                }
+            }
+        }
+
+
+        private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            for (int i = 1; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject next = cdhos[i+1];
+                double distance = note.DeltaPosition;
+
+                if (distance > high_distance_threshold)
+                {
+                    note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * (512.0 - distance) / (512.0 - high_distance_threshold));//Math.Pow((512.0 - distance) / (512.0 - high_distance_threshold), high_distance_power));
                 }
             }
         }
