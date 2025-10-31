@@ -140,7 +140,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 weight *= decay_weight;
             }
 
-            return difficulty;
+            return 1.9 * Math.Pow(difficulty, 0.9);
         }
 
         private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains, List<double> readingFactors)
