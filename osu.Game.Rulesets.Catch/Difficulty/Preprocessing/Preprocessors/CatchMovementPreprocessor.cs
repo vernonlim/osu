@@ -119,12 +119,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
 
             // Breaks
-            PatternType breakType = classifyAsBreak(note, prev, next);
-
-            if (breakType != PatternType.None && !skipToDirectionChange)
-            {
-                return breakType;
-            }
+            // PatternType breakType = classifyAsBreak(note, prev, next);
+            //
+            // if (breakType != PatternType.None && !skipToDirectionChange)
+            // {
+            //     return breakType;
+            // }
 
             // Stacks
             PatternType stackType = classifyAsStack(note, prev, next);
