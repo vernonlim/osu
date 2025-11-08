@@ -120,7 +120,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         {
             const double decay_weight = 0.9;
             const double region = 500.0;
-            const int limit = 10;
+            const int limit = 15;
 
             List<(double, double)> notes = startTimes.Zip(strains).ToList();
 

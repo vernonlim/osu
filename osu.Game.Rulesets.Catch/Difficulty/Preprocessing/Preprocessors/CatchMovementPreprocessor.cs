@@ -324,7 +324,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (!prev.IsHyper
                     && !note.IsHyper
-                    && prev.SignificantMovementDirection == currentDirection
+                    //&& prev.SignificantMovementDirection == currentDirection
                     && CatchPreprocessingUtils.CalculateSpeed(note) <= CatchPreprocessingUtils.CalculateSpeed(next)
                     && next.DeltaPosition > note.HalfCatcherWidth)
                 {
@@ -333,8 +333,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (!prev.IsHyper
                     && !note.IsHyper
-                    && ((prev.SignificantMovementDirection != currentDirection)
-                        || (CatchPreprocessingUtils.CalculateSpeed(note) > CatchPreprocessingUtils.CalculateSpeed(next))
+                    && (//(prev.SignificantMovementDirection != currentDirection)
+                        (CatchPreprocessingUtils.CalculateSpeed(note) > CatchPreprocessingUtils.CalculateSpeed(next))
                         || next.DeltaPosition <= note.HalfCatcherWidth))
                 {
                     return PatternType.FreeStream;
