@@ -124,7 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> notes = startTimes.Zip(strains).ToList();
 
-            List<(double, double)> sorted = notes.OrderByDescending(x => x).ToList();
+            List<(double, double)> sorted = notes.OrderByDescending(x => x.Item2).ToList();
 
             double difficulty = 0.0;
             double weight = 1.0;
