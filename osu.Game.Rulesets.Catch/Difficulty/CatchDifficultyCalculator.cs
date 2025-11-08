@@ -79,14 +79,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 }
             }
 
-            double sr = calculateDifficultyValue(combinedStrains) * difficulty_multiplier;
+            double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
 
-            double precision = calculateDifficultyValue(combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
-            double speed = calculateDifficultyValue(combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
-            double aim = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors)) * difficulty_multiplier;
-            double sameSpeed = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
-            double delayedSameSpeed = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
-            double alternatingSpeed = calculateDifficultyValue(combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
+            double precision = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
+            double speed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
+            double aim = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors)) * difficulty_multiplier;
+            double sameSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
+            double delayedSameSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
+            double alternatingSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
 
             // temporary rescaling to help with testing
             const double scaling_point = 5.8;
@@ -116,31 +116,68 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <param name="strains"></param>
         /// <param name="accuracy"></param>
         /// <returns></returns>
-        private double calculateDifficultyValue(List<double> strains, double accuracy = 1.0)
+        private double calculateDifficultyValue(List<double> startTimes, List<double> strains, double accuracy = 1.0)
         {
             const double decay_weight = 0.9;
+            const double region = 500.0;
+            const int limit = 10;
 
-            double missPercentage = 3.0 / 2.0 * (1.0 - accuracy);
+            List<(double, double)> notes = startTimes.Zip(strains).ToList();
 
-            int missCount = Math.Max((int)Math.Round((missPercentage) * strains.Count), 0);
-
-            // Missing one note can allow you to hit another with much less difficulty, this is a very rough estimate for that
-            missCount = (int)(missCount);
-
-            List<double> sorted = strains.OrderByDescending(x => x).ToList();
-
-            List<double> remaining = sorted.Skip(missCount).ToList();
+            List<(double, double)> sorted = notes.OrderByDescending(x => x).ToList();
 
             double difficulty = 0.0;
             double weight = 1.0;
 
-            foreach (double strain in remaining)
+            Stack<double> stack = new Stack<double>();
+            List<(double, double)> sets = new List<(double, double)>();
+
+            foreach ((double time, double strain) in sorted)
             {
+                if (sets.Count < limit)
+                {
+                    if (isTimeInSets(sets, time))
+                    {
+                        stack.Push(strain);
+                        continue;
+                    }
+
+                    sets.Add((time - region, time + region));
+                }
+
+                if (sets.Count >= limit && stack.Count != 0)
+                {
+                    while (stack.Count != 0)
+                    {
+                        difficulty += stack.Pop() * weight;
+                        weight *= decay_weight;
+                    }
+                }
+
                 difficulty += strain * weight;
                 weight *= decay_weight;
             }
 
+            while (stack.Count != 0)
+            {
+                difficulty += stack.Pop() * weight;
+                weight *= decay_weight;
+            }
+
             return 1.9 * Math.Pow(difficulty, 0.9);
+        }
+
+        private bool isTimeInSets(List<(double, double)> sets, double time)
+        {
+            foreach ((double start, double end) set in sets)
+            {
+                if (time >= set.start && time <= set.end)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains, List<double> readingFactors)
