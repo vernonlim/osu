@@ -15,7 +15,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double local_rhythm_range = 20.0;
         private const double local_rhythm_sensitivity = 2.0;
 
-        private const double explicit_rhythm_penalty = 0.95;
+        private const double explicit_rhythm_penalty = 0.93;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_leniency = 0.1;
 
@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint similar_distance_note_count = 4;
         private const double similar_distance_leniency = 0.05;
 
-        private const double hyperchain_penalty = 0.86;
+        private const double hyperchain_penalty = 0.89;
         private const uint hyperchain_note_count = 8;
 
         private const double high_velocity_buff = 1.0;
@@ -35,9 +35,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_velocity_threshold = 2.5;
         private const double high_velocity_threshold_multiplier = 2.0;
 
-        private const double high_distance_buff = 0.2;
-        private const double high_distance_threshold = 200.0;
-        private const double high_distance_power = 1.0;
+        private const double high_distance_buff = 0.18;
+        private const double high_distance_threshold = 256.0;
+        private const double high_distance_power = 1.4;
 
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
@@ -50,7 +50,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             similarDistancePenalty(cdhos);
             hyperchainPenalty(cdhos);
             highVelocityBuff(cdhos);
-            // highDistanceBuff(cdhos);
+            highDistanceBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -61,7 +61,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 double timeDifference = Math.Abs(note.MovementData.EffectiveTime - note.StartTime);
 
-                double multiplier = Math.Min(timeDifference / local_rhythm_range, 1.0);
+                double filteredTimeDifference = Math.Max(timeDifference - 2.0, 0);
+
+                double multiplier = Math.Min(filteredTimeDifference / local_rhythm_range, 1.0);
 
                 double penalty = (1.0 - local_rhythm_penalty) * Math.Pow(1.0 - multiplier, local_rhythm_sensitivity);
 
@@ -211,11 +213,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             {
                 CatchDifficultyHitObject note = cdhos[i];
                 CatchDifficultyHitObject next = cdhos[i + 1];
-                double distance = next.DeltaPosition;
+                double average_distance = (note.DeltaPosition + next.DeltaPosition) / 2;
 
-                if (distance > high_distance_threshold)
+                if (average_distance > high_distance_threshold)
                 {
-                    note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * (distance - high_distance_threshold) / (512.0 - high_distance_threshold)); // Math.Pow((512.0 - distance) / (512.0 - high_distance_threshold), high_distance_power));
+                    note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * Math.Pow((average_distance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power));
                 }
             }
         }

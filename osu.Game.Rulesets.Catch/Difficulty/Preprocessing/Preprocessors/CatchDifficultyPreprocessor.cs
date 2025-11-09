@@ -332,10 +332,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         //Functions below are identical, but splitting them may be useful in future.
         private static double timeToSpeedAlternating(double time)
         {
-            double amplitude = 16.5; //governs how much very low precision values are worth
-            double limit = 1.2; //speed strain for very high speed values (easy jumps)
+            double amplitude = 20.5; //governs how much very low precision values are worth
+            double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            double pace = 40.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
@@ -344,10 +344,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedSameDirection(double time)
         {
-            double amplitude = 16.5; //governs how much very low precision values are worth
-            double limit = 1.2; //speed strain for very high speed values (easy jumps)
+            double amplitude = 20.5; //governs how much very low precision values are worth
+            double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            double pace = 40.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
@@ -356,10 +356,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedDelayedSameDirection(double time)
         {
-            double amplitude = 16.5; //governs how much very low precision values are worth
-            double limit = 1.2; //speed strain for very high speed values (easy jumps)
+            double amplitude = 20.5; //governs how much very low precision values are worth
+            double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            double pace = 40.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 

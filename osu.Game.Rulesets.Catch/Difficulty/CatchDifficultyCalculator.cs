@@ -164,7 +164,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 weight *= decay_weight;
             }
 
-            return 1.9 * Math.Pow(difficulty, 0.9);
+            return 3.52 * Math.Pow(difficulty, 0.8);
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
@@ -200,7 +200,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            return 0.3 * Math.Max(precisionStrain, speedStrain) + 0.6 * (precisionStrain + speedStrain);
+            return 0.9 * Math.Max(precisionStrain, speedStrain) + 0.7 * Math.Min(precisionStrain, speedStrain);
             //return Math.Pow(Math.Pow(precisionStrain, alpha) + Math.Pow(speedStrain, alpha), 1 / alpha);
             //return precisionStrain + speedStrain;
             //return 1.1 * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) - 0.2 * precisionStrain * speedStrain);
