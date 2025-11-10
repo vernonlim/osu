@@ -79,19 +79,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 }
             }
 
-            double sr = calculateDifficultyValue(startTimes, combinedStrains) * difficulty_multiplier;
+            double sr = calculateSr(startTimes, combinedStrains);
 
-            double precision = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
-            double speed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors)) * difficulty_multiplier;
-            double aim = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors)) * difficulty_multiplier;
-            double sameSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
-            double delayedSameSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
-            double alternatingSpeed = calculateDifficultyValue(startTimes, combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors)) * difficulty_multiplier;
-
-            // temporary rescaling to help with testing
-            const double scaling_point = 5.8;
-            Func<double, double> srScaler = d => d * Math.Max(Math.Min(1 + Math.Max((d - scaling_point) / 2.5, 0) * 0.4, 1.3), Math.Min(1 + Math.Max((d - 3.0) / 3.0, 0) * 0.15, 1.04));
-            sr = srScaler(sr);
+            double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
+            double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
+            double aim = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors));
+            double sameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors));
+            double delayedSameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors));
+            double alternatingSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors));
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
@@ -99,16 +94,48 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
-                PrecisionSR = srScaler(precision),
-                SpeedSR = srScaler(speed),
-                SameDirectionSpeedSR = srScaler(sameSpeed),
-                DelayedSameDirectionSpeedSR = srScaler(delayedSameSpeed),
-                AlternatingSpeedSR = srScaler(alternatingSpeed),
-                AimSR = srScaler(aim),
+                PrecisionSR = precision,
+                SpeedSR = speed,
+                SameDirectionSpeedSR = sameSpeed,
+                DelayedSameDirectionSpeedSR = delayedSameSpeed,
+                AlternatingSpeedSR = alternatingSpeed,
+                AimSR = aim,
             };
 
             return attributes;
         }
+
+        private double calculateSr(List<double> startTimes, List<double> strains)
+        {
+            double sr = calculateDifficultyValue(startTimes, strains);
+            sr = 3.52 * Math.Pow(sr, 0.8);
+
+            sr *= difficulty_multiplier;
+
+            sr = srScaler(sr);
+
+            return sr;
+        }
+
+        private double srScaler(double sr)
+        {
+            const double x0 = 3.0;
+            const double y0 = 3.0;
+
+            const double x1 = 5.8;
+            const double y1 = 6.2;
+
+            const double x2 = 7.7;
+            const double y2 = 10.0;
+
+            if (sr <= x0) return sr;
+            if (sr <= x1) return lerp(sr, x0, y0, x1, y1);
+
+            return lerp(sr, x1, y1, x2, y2);
+        }
+
+        private static double lerp(double x, double x0, double y0, double x1, double y1)
+            => y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
@@ -186,7 +213,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 weight *= decay_weight;
             }
 
-            return 3.52 * Math.Pow(difficulty, 0.8);
+            return difficulty;
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
