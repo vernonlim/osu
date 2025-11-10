@@ -53,7 +53,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             int hyperWalkCount = DifficultyHitObjects.Count(n => ((CatchDifficultyHitObject)n).MovementData.IsHyperWalk);
 
-            List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.EffectiveTime).ToList();
+            List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).StartTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
@@ -108,7 +108,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private double calculateSr(List<double> startTimes, List<double> strains)
         {
             double sr = calculateDifficultyValue(startTimes, strains);
-            sr = 3.52 * Math.Pow(sr, 0.8);
+            // sr = 3.52 * Math.Pow(sr, 0.8);
 
             sr *= difficulty_multiplier;
 
@@ -119,16 +119,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         private double srScaler(double sr)
         {
-            const double x0 = 3.0;
-            const double y0 = 3.0;
+            const double x0 = 1.1;
+            const double y0 = 2.0;
 
-            const double x1 = 5.8;
-            const double y1 = 6.2;
+            const double x1 = 4.1;
+            const double y1 = 4.25;
 
-            const double x2 = 7.7;
-            const double y2 = 10.0;
+            const double x2 = 6.55;
+            const double y2 = 8.0;
 
-            if (sr <= x0) return sr;
+            if (sr <= x0) return lerp(sr, 0.0, 0.0, x0, y0);
             if (sr <= x1) return lerp(sr, x0, y0, x1, y1);
 
             return lerp(sr, x1, y1, x2, y2);
@@ -155,11 +155,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> notes = startTimes.Zip(strains).ToList();
 
-            double first_note_start_time = notes[0].Item1;
+            double firstNoteStartTime = notes[0].Item1;
 
             for (int i = 0; i < notes.Count; i++)
             {
-                notes[i] = (notes[i].Item1 - first_note_start_time, notes[i].Item2);
+                notes[i] = (notes[i].Item1 - firstNoteStartTime, notes[i].Item2);
             }
 
             for (int i = 0; i < notes.Count; i++)
