@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint similar_distance_note_count = 4;
         private const double similar_distance_leniency = 0.05;
 
-        private const double hyperchain_penalty = 0.89;
+        private const double hyperchain_penalty = 0.87;
         private const uint hyperchain_note_count = 8;
 
         private const double high_velocity_buff = 1.0;

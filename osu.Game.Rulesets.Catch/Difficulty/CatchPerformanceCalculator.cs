@@ -44,8 +44,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.1 * catchAttributes.MaxCombo;
 
             double lengthBonus =
-                0.95 + 0.35 * Math.Min(1.0, totalActions / 1500.0) +
-                (totalActions > 1500 ? Math.Log10(totalActions / 1500.0) * 0.35 : 0.0);
+                0.95 + 0.35 * Math.Min(1.0, totalActions / 1200.0) +
+                (totalActions > 1200 ? Math.Log10(totalActions / 1200.0) * 0.25 : 0.0);
             value *= lengthBonus;
 
             value *= Math.Pow(0.97, numMiss);
@@ -74,6 +74,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 approachRateFactor += 0.1 * (approachRate - 9.0); // 10% for each AR above 9
             if (approachRate > 10.2)
                 approachRateFactor += 0.25 * (approachRate - 10.2); // Additional 20% at AR 11, 40% total
+            if (approachRate > 11)
+                approachRateFactor += 0.1 * (approachRate - 11.0); // Additional bonus for FL (starting at around AR8)
 
             value *= approachRateFactor;
 
@@ -88,6 +90,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             if (score.Mods.Any(m => m is ModFlashlight))
                 value *= 1.1 * lengthBonus;
+
+            double circleSize = difficulty.CircleSize;
+            double circleSizePower = 1.5;
+            double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circleSizePower) * 0.32;
+
+            value *= 1 + circleSizeBonus;
 
             value *= Math.Pow(accuracy(), 5.5);
 
