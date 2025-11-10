@@ -60,18 +60,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double clockRate = ModUtils.CalculateRateWithMods(score.Mods);
 
-            // this is the same as osu!, so there's potential to share the implementation... maybe
             double preempt = IBeatmapDifficultyInfo.DifficultyRange(difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+
+            double flashlight_visibility_time = 203.125 * 0.77 / 440.0; //203.125 pixels above are visible at 200 combo; 440 pixels is the height of the visible playfield
+
+            if (score.Mods.Any(m => m is ModFlashlight))
+                preempt *= flashlight_visibility_time;
 
             double approachRate = preempt > 1200.0 ? -(preempt - 1800.0) / 120.0 : -(preempt - 1200.0) / 150.0 + 5.0;
 
             double approachRateFactor = 1.0;
             if (approachRate > 9.0)
                 approachRateFactor += 0.1 * (approachRate - 9.0); // 10% for each AR above 9
-            if (approachRate > 10.0)
-                approachRateFactor += 0.1 * (approachRate - 10.0); // Additional 10% at AR 11, 30% total
-            else if (approachRate < 8.0)
-                approachRateFactor += 0.025 * (8.0 - approachRate); // 2.5% for each AR below 8
+            if (approachRate > 10.2)
+                approachRateFactor += 0.25 * (approachRate - 10.2); // Additional 20% at AR 11, 40% total
 
             value *= approachRateFactor;
 
@@ -79,13 +81,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hiddens gives almost nothing on max approach rate, and more the lower it is
                 if (approachRate <= 10.0)
-                    value *= 1.05 + 0.075 * (10.0 - approachRate); // 7.5% for each AR below 10
+                    value *= 1.04 + 0.12 * (10.0 - approachRate); // 7.5% for each AR below 10
                 else if (approachRate > 10.0)
                     value *= 1.01 + 0.04 * (11.0 - Math.Min(11.0, approachRate)); // 5% at AR 10, 1% at AR 11
             }
 
             if (score.Mods.Any(m => m is ModFlashlight))
-                value *= 1.35 * lengthBonus;
+                value *= 1.1 * lengthBonus;
 
             value *= Math.Pow(accuracy(), 5.5);
 
