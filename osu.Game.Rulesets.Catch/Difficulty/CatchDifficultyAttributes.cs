@@ -43,6 +43,23 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("aim_sr")]
         public double AimSR { get; set; }
 
+        public IReadOnlyList<double> StarRatingWithMisses { get; set; } = new List<double> { 0, 0, 0, 0, 0 };
+
+        [JsonProperty("1_miss_sr")]
+        public double SROneMiss => StarRatingWithMisses[0];
+
+        [JsonProperty("2_miss_sr")]
+        public double SRTwoMiss => StarRatingWithMisses[1];
+
+        [JsonProperty("3_miss_sr")]
+        public double SRThreeMiss => StarRatingWithMisses[2];
+
+        [JsonProperty("4_miss_sr")]
+        public double SRFourMiss => StarRatingWithMisses[3];
+
+        [JsonProperty("5_miss_sr")]
+        public double SRFiveMiss => StarRatingWithMisses[4];
+
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())

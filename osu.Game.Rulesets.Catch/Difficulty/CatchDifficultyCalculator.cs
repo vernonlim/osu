@@ -80,6 +80,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double sr = calculateSr(startTimes, combinedStrains);
+            List<double> srWithMisses = Enumerable.Range(1, 5).Select(m => calculateSr(startTimes, combinedStrains, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
             double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
@@ -100,14 +101,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 DelayedSameDirectionSpeedSR = delayedSameSpeed,
                 AlternatingSpeedSR = alternatingSpeed,
                 AimSR = aim,
+                StarRatingWithMisses = srWithMisses,
             };
 
             return attributes;
         }
 
-        private double calculateSr(List<double> startTimes, List<double> strains)
+        private double calculateSr(List<double> startTimes, List<double> strains, int missCount = 0)
         {
-            double sr = calculateDifficultyValue(startTimes, strains);
+            double sr = calculateDifficultyValue(startTimes, strains, missCount);
             // sr = 3.52 * Math.Pow(sr, 0.8);
 
             sr *= difficulty_multiplier;
@@ -146,10 +148,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
         /// </summary>
+        /// <param name="startTimes"></param>
         /// <param name="strains"></param>
-        /// <param name="accuracy"></param>
+        /// <param name="missCount"></param>
         /// <returns></returns>
-        private double calculateDifficultyValue(List<double> startTimes, List<double> strains, double accuracy = 1.0)
+        private double calculateDifficultyValue(List<double> startTimes, List<double> strains, int missCount = 0)
         {
             const double decay_weight = 0.9;
 
@@ -198,6 +201,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     }
 
                     sets.Add((time - region, time + region));
+                }
+
+                if (missCount > 0 && sets.Count <= missCount + 1)
+                {
+                    if (sets.Count <= missCount)
+                        continue;
+
+                    stack.Clear();
                 }
 
                 if (sets.Count >= limit && stack.Count != 0)
