@@ -119,10 +119,32 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private double calculateDifficultyValue(List<double> startTimes, List<double> strains, double accuracy = 1.0)
         {
             const double decay_weight = 0.9;
+
             const double region = 500.0;
             const int limit = 15;
 
+            const double time_penalty_cutoff = 45000;
+            const double time_penalty_power = 0.2;
+
             List<(double, double)> notes = startTimes.Zip(strains).ToList();
+
+            double first_note_start_time = notes[0].Item1;
+
+            for (int i = 0; i < notes.Count; i++)
+            {
+                notes[i] = (notes[i].Item1 - first_note_start_time, notes[i].Item2);
+            }
+
+            for (int i = 0; i < notes.Count; i++)
+            {
+                double time = notes[i].Item1;
+                double strain = notes[i].Item2;
+
+                if (time < time_penalty_cutoff)
+                    strain *= Math.Pow(time / time_penalty_cutoff, time_penalty_power);
+
+                notes[i] = (time, strain);
+            }
 
             List<(double, double)> sorted = notes.OrderByDescending(x => x.Item2).ToList();
 

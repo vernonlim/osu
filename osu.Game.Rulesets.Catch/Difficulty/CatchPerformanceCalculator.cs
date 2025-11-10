@@ -39,12 +39,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // We are heavily relying on aim in catch the beat
             double value = Math.Pow(5.0 * Math.Max(1.0, catchAttributes.StarRating / 0.0049) - 4.0, 2.0) / 100000.0;
 
-            // Longer maps are worth more. "Longer" means how many hits there are which can contribute to combo
-            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions;
+            // Longer maps are worth more. "Longer" means how many hits there are approximately
+            // We add some undetected actions approximated with 10% of the maximum combo
+            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.1 * catchAttributes.MaxCombo;
 
             double lengthBonus =
-                0.95 + 0.4 * Math.Min(1.0, totalActions / 1300.0) +
-                (totalActions > 1300 ? Math.Log10(totalActions / 1300.0) * 0.5 : 0.0);
+                0.95 + 0.35 * Math.Min(1.0, totalActions / 1500.0) +
+                (totalActions > 1500 ? Math.Log10(totalActions / 1500.0) * 0.35 : 0.0);
             value *= lengthBonus;
 
             value *= Math.Pow(0.97, numMiss);
