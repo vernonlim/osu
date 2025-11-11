@@ -36,8 +36,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             numKatu = score.GetCountKatu() ?? 0; // HitResult.SmallTickMiss
             numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
 
+            double starRating = numMiss == 0 ? catchAttributes.StarRating : catchAttributes.StarRatingWithMisses[Math.Min(numMiss - 1, 4)];
+
             // We are heavily relying on aim in catch the beat
-            double value = Math.Pow(5.0 * Math.Max(1.0, catchAttributes.StarRating / 0.0049) - 4.0, 2.0) / 100000.0;
+            double value = Math.Pow(5.0 * Math.Max(1.0, starRating / 0.0049) - 4.0, 2.0) / 100000.0;
 
             // Longer maps are worth more. "Longer" means how many hits there are approximately
             // We add some undetected actions approximated with 10% of the maximum combo
@@ -48,7 +50,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 (totalActions > 1200 ? Math.Log10(totalActions / 1200.0) * 0.25 : 0.0);
             value *= lengthBonus;
 
-            value *= Math.Pow(0.97, numMiss);
+            value *= Math.Pow(0.98, Math.Max(0, numMiss - 5));
 
             // Combo scaling
             if (catchAttributes.MaxCombo > 0)
