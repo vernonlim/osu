@@ -25,6 +25,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="hitObjects"></param>
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
+            if (hitObjects.Count <= 1)
+                return;
+
             // TODO: Special handling for the first and last objects of the map, as they lack a previous or future object
             CatchDifficultyHitObject first = (CatchDifficultyHitObject)hitObjects[0];
             first.MovementData.NotePattern = PatternType.FirstNote;
