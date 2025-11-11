@@ -114,26 +114,30 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             sr = srScaler(sr);
 
-            sr *= 1.01;
+            sr *= 1.015;
 
             return sr;
         }
 
         private double srScaler(double sr)
         {
-            const double x0 = 1.1;
-            const double y0 = 2.0;
+            const double x0 = 1.0;
+            const double y0 = 1.9;
 
-            const double x1 = 4.1;
-            const double y1 = 4.25;
+            const double x1 = 4.05;
+            const double y1 = 4.5;
 
-            const double x2 = 6.55;
-            const double y2 = 8.0;
+            const double x2 = 6.0;
+            const double y2 = 7.1;
+
+            const double x3 = 8.0;
+            const double y3 = 10.0;
 
             if (sr <= x0) return lerp(sr, 0.0, 0.0, x0, y0);
             if (sr <= x1) return lerp(sr, x0, y0, x1, y1);
+            if (sr <= x2) return lerp(sr, x1, y1, x2, y2);
 
-            return lerp(sr, x1, y1, x2, y2);
+            return lerp(sr, x2, y2, x3, y3);
         }
 
         private static double lerp(double x, double x0, double y0, double x1, double y1)
