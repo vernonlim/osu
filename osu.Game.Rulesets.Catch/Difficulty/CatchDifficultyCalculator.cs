@@ -114,7 +114,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             sr = srScaler(sr);
 
-            return 1.01 * sr;
+            sr *= 1.01;
+
+            return sr;
         }
 
         private double srScaler(double sr)
