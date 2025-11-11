@@ -131,6 +131,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <returns></returns>
         private double calculateDifficultyValue(List<double> startTimes, List<double> strains, double accuracy = 1.0)
         {
+            if (startTimes.Count <= 1) return 0;
+
             const double decay_weight = 0.9;
 
             const double region = 500.0;
