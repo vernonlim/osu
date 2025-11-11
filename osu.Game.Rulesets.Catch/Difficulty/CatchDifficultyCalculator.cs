@@ -8,7 +8,6 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
 using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
@@ -60,12 +59,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
-            List<double> sameSpeedStrains = skills.OfType<SameDirectionSpeed>().Single().GetObjectStrains().ToList();
-            List<double> delayedSameSpeedStrains = skills.OfType<DelayedSameDirectionSpeed>().Single().GetObjectStrains().ToList();
-            List<double> alternatingSpeedStrains = skills.OfType<AlternatingSpeed>().Single().GetObjectStrains().ToList();
-
-            List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
-
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains, readingFactors);
 
             // 2B Hotfix
@@ -81,25 +74,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double sr = calculateSr(startTimes, combinedStrains);
 
-            double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
-            double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
-            double aim = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors));
-            double sameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors));
-            double delayedSameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors));
-            double alternatingSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors));
-
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
                 StarRating = sr,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
-                PrecisionSR = precision,
-                SpeedSR = speed,
-                SameDirectionSpeedSR = sameSpeed,
-                DelayedSameDirectionSpeedSR = delayedSameSpeed,
-                AlternatingSpeedSR = alternatingSpeed,
-                AimSR = aim,
             };
 
             return attributes;
@@ -292,7 +272,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchMovementPreprocessor.Process(objects);
             CatchDifficultyPreprocessor.Process(objects);
             CatchReadingPreprocessor.Process(objects);
-            CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
+            // CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
             // CatchPreprocessorTest.Process(objects, beatmap);
 
             return objects;
@@ -307,11 +287,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 new Aim(mods),
                 new Precision(mods),
                 new Speed(mods),
-                new AlternatingSpeed(mods),
-                new SameDirectionSpeed(mods),
-                new DelayedSameDirectionSpeed(mods),
-                new PartialLocalStarRating(mods),
-                new LocalStarRating(mods),
             };
         }
 

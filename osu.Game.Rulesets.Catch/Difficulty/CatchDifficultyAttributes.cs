@@ -16,33 +16,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("total_actions")]
         public double TotalActions { get; set; }
 
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("precision_sr")]
-        public double PrecisionSR { get; set; }
-
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("speed_sr")]
-        public double SpeedSR { get; set; }
-
-        [JsonProperty("same_direction_speed_sr")]
-        public double SameDirectionSpeedSR { get; set; }
-
-        [JsonProperty("delayed_same_direction_speed_sr")]
-        public double DelayedSameDirectionSpeedSR { get; set; }
-
-        [JsonProperty("alternating_speed_sr")]
-        public double AlternatingSpeedSR { get; set; }
-
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("aim_sr")]
-        public double AimSR { get; set; }
-
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())
