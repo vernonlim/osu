@@ -52,6 +52,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchMovementData data = note.MovementData;
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
+                data.RawPrecisionStrain = calculatePrecisionStrain(note);
+                data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+
                 data.NoteAim = calculateAim(note, prev, next);
 
                 var recentGuaranteed = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
@@ -83,6 +86,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 data.ConsistencySpeed = consistency * 2 * 12 * 120;
                 data.SnapSpeed = snap * 2 * 12 * 120;
             }
+        }
+
+        private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
+        {
+            double amplitude = 44.7; //governs how much very low precision values are worth
+            double limit = 1.0; //precision strain for very high precision values (easy jumps)
+            double shift = -10.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double pace = 36.0; //measures how fast strain decreases between easy and hard jumps
+
+            double precision = note.MovementData.NotePrecision is null
+                ? 0
+                : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
+
+            return precision / 18 * 42;
         }
 
         /// <summary>

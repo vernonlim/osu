@@ -171,6 +171,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double? NotePrecision;
 
         /// <summary>
+        /// Precision Strain of the note
+        /// </summary>
+        public double RawPrecisionStrain;
+
+        /// <summary>
+        /// Precision Strain of the note + previous note
+        /// </summary>
+        public double PrecisionStrain;
+
+        /// <summary>
         /// The width in pixels of the range allowing the catching of both the previous note and the next note.
         /// </summary>
         /// <remarks>
@@ -199,7 +209,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double SnapSpeed;
 
         public double NoteSpeed;
-        public double PrecisionStrain;
 
         public SpeedType SpeedType;
 
@@ -230,10 +239,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             RightStandingPosition = null;
             ActionProbability = 1;
             NotePrecision = null;
+            RawPrecisionStrain = 0;
+            PrecisionStrain = 0;
             NoteAim = null;
             AimModifier = 1.0;
             NoteSpeed = 0;
-            PrecisionStrain = 0;
 
             DirectionChangeWeight = 1;
             PrecisionCorrection = 1;

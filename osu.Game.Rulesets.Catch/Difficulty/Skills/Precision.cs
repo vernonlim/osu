@@ -23,11 +23,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             double strain = PrecisionEvaluator.EvaluateDifficultyOf(current);
-            double combined = 0.9 * strain + 0.1 * CurrentStrain;
 
             CurrentStrain = strain;
 
-            return combined;
+            return strain;
         }
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain;
