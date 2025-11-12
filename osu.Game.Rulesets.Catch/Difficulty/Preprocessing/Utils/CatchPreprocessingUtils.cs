@@ -26,6 +26,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                 cdho.MovementData.SpeedType = speedType;
                 cdho.MovementData.NoteSpeed = speedStrain;
+                cdho.MovementData.PrecisionStrain = precisionStrain;
                 cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
                 cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
             }

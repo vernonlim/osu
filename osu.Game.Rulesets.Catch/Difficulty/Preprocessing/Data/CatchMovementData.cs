@@ -199,6 +199,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double SnapSpeed;
 
         public double NoteSpeed;
+        public double PrecisionStrain;
 
         public SpeedType SpeedType;
 
@@ -232,6 +233,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             NoteAim = null;
             AimModifier = 1.0;
             NoteSpeed = 0;
+            PrecisionStrain = 0;
 
             DirectionChangeWeight = 1;
             PrecisionCorrection = 1;
