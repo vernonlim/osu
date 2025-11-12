@@ -60,9 +60,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
-            List<double> sameSpeedStrains = skills.OfType<SameDirectionSpeed>().Single().GetObjectStrains().ToList();
-            List<double> delayedSameSpeedStrains = skills.OfType<DelayedSameDirectionSpeed>().Single().GetObjectStrains().ToList();
-            List<double> alternatingSpeedStrains = skills.OfType<AlternatingSpeed>().Single().GetObjectStrains().ToList();
+            List<double> sameSpeedStrains = skills.OfType<BurstSpeed>().Single().GetObjectStrains().ToList();
+            List<double> delayedSameSpeedStrains = skills.OfType<ConsistencySpeed>().Single().GetObjectStrains().ToList();
+            List<double> alternatingSpeedStrains = skills.OfType<SnapSpeed>().Single().GetObjectStrains().ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
@@ -318,9 +318,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 new Aim(mods),
                 new Precision(mods),
                 new Speed(mods),
-                new AlternatingSpeed(mods),
-                new SameDirectionSpeed(mods),
-                new DelayedSameDirectionSpeed(mods),
+                new SnapSpeed(mods),
+                new BurstSpeed(mods),
+                new ConsistencySpeed(mods),
                 new PartialLocalStarRating(mods),
                 new LocalStarRating(mods),
             };

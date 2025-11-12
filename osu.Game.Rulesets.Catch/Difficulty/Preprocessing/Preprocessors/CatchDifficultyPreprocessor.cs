@@ -62,26 +62,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                       .Where(n => n is not null)
                                       .MaxBy(n => n!.MovementData.EffectiveTime);
 
-                double sameDirectionSpeed = 0;
-                double delayedSameDirectionSpeed = 0;
-                double alternatingSpeed = 0;
+                double burst = 0;
+                double consistency = 0;
+                double snap = 0;
 
                 if (data.KeyPress == MovementKey.Left)
                 {
-                    sameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
-                    delayedSameDirectionSpeed = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedDelayedSameDirection);
-                    alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
+                    burst = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
+                    consistency = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
+                    snap = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedSnap);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
-                    sameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedSameDirection);
-                    delayedSameDirectionSpeed = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedDelayedSameDirection);
-                    alternatingSpeed = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedAlternating);
+                    burst = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
+                    consistency = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
+                    snap = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedSnap);
                 }
 
-                data.SameDirectionSpeed = sameDirectionSpeed * 2 * 12 * 120;
-                data.DelayedSameDirectionSpeed = delayedSameDirectionSpeed * 2 * 12 * 120;
-                data.AlternatingSpeed = alternatingSpeed * 2 * 12 * 120;
+                data.BurstSpeed = burst * 2 * 12 * 120;
+                data.ConsistencySpeed = consistency * 2 * 12 * 120;
+                data.SnapSpeed = snap * 2 * 12 * 120;
             }
         }
 
@@ -330,7 +330,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         }
 
         //Functions below are identical, but splitting them may be useful in future.
-        private static double timeToSpeedAlternating(double time)
+        private static double timeToSpeedSnap(double time)
         {
             double amplitude = 20.5; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
@@ -342,7 +342,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return speed / 10000;
         }
 
-        private static double timeToSpeedSameDirection(double time)
+        private static double timeToSpeedBurst(double time)
         {
             double amplitude = 20.5; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
@@ -354,7 +354,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return speed / 10000;
         }
 
-        private static double timeToSpeedDelayedSameDirection(double time)
+        private static double timeToSpeedConsistency(double time)
         {
             double amplitude = 20.5; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)

@@ -8,14 +8,14 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class SameDirectionSpeed : StrainSkill
+    public class BurstSpeed : StrainSkill
     {
         /// <summary>
         /// The current strain level.
         /// </summary>
         protected double CurrentStrain { get; private set; }
 
-        public SameDirectionSpeed(Mod[] mods)
+        public BurstSpeed(Mod[] mods)
             : base(mods)
         {
         }
@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            CurrentStrain = SpeedEvaluator.EvaluateSameDirectionSpeedDifficultyOf(current);
+            CurrentStrain = SpeedEvaluator.EvaluateBurstDifficultyOf(current);
 
             return CurrentStrain;
         }

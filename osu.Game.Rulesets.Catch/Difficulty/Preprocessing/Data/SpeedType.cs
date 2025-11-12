@@ -5,8 +5,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 {
     public enum SpeedType
     {
-        SameDirectionSpeed,
-        AlternatingSpeed,
-        DelayedSameDirectionSpeed,
+        Burst,
+        Snap,
+        Consistency,
     }
 }

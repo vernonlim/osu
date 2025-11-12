@@ -22,23 +22,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
 
         public static (double, SpeedType) EvaluateMaxSpeed(DifficultyHitObject current)
         {
-            double alternatingSpeed = EvaluateAlternatingSpeedDifficultyOf(current);
-            double sameDirectionSpeed = EvaluateSameDirectionSpeedDifficultyOf(current);
-            double delayedSameDirectionSpeed = EvaluateDelayedSameDirectionSpeedDifficultyOf(current);
+            double snap = EvaluateSnapDifficultyOf(current);
+            double burst = EvaluateBurstDifficultyOf(current);
+            double consistency = EvaluateConsistencyDifficultyOf(current);
 
-            double alternatingSpeedValue = 0.9 * alternatingSpeed;
-            double sameDirectionSpeedValue = 1.1 * sameDirectionSpeed;
-            double delayedSameDirectionSpeedValue = 1.28 * delayedSameDirectionSpeed;
+            double maxAltSame = Math.Max(snap, burst);
 
-            double maxAltSame = Math.Max(alternatingSpeedValue, sameDirectionSpeedValue);
+            SpeedType speedType1 = snap >= burst ? SpeedType.Snap : SpeedType.Burst;
+            SpeedType speedType = maxAltSame >= consistency ? speedType1 : SpeedType.Consistency;
 
-            SpeedType speedType1 = alternatingSpeedValue >= sameDirectionSpeedValue ? SpeedType.AlternatingSpeed : SpeedType.SameDirectionSpeed;
-            SpeedType speedType = maxAltSame >= delayedSameDirectionSpeedValue ? speedType1 : SpeedType.DelayedSameDirectionSpeed;
-
-            return (Math.Max(maxAltSame, delayedSameDirectionSpeedValue), speedType);
+            return (Math.Max(maxAltSame, consistency), speedType);
         }
 
-        public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateBurstDifficultyOf(DifficultyHitObject current)
         {
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
@@ -50,10 +46,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.SameDirectionSpeed;
+            return note.MovementData.BurstSpeed * 1.1;
         }
 
-        public static double EvaluateDelayedSameDirectionSpeedDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateConsistencyDifficultyOf(DifficultyHitObject current)
         {
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
@@ -65,10 +61,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.DelayedSameDirectionSpeed;
+            return note.MovementData.ConsistencySpeed * 1.28;
         }
 
-        public static double EvaluateAlternatingSpeedDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateSnapDifficultyOf(DifficultyHitObject current)
         {
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
@@ -80,7 +76,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.AlternatingSpeed;
+            return note.MovementData.SnapSpeed * 0.9;
         }
     }
 }

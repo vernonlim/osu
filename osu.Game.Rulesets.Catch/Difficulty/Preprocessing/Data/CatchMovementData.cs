@@ -186,17 +186,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// <summary>
         /// Speed value for actions with the same direction.
         /// </summary>
-        public double SameDirectionSpeed;
+        public double BurstSpeed;
 
         /// <summary>
         /// Speed value for actions with the same direction, but for the second previous action.
         /// </summary>
-        public double DelayedSameDirectionSpeed;
+        public double ConsistencySpeed;
 
         /// <summary>
         /// Speed value for actions with any direction.
         /// </summary>
-        public double AlternatingSpeed;
+        public double SnapSpeed;
 
         public double NoteSpeed;
 

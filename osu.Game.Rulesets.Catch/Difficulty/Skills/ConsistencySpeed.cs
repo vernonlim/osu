@@ -8,14 +8,14 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class DelayedSameDirectionSpeed : StrainSkill
+    public class ConsistencySpeed : StrainSkill
     {
         /// <summary>
         /// The current strain level.
         /// </summary>
         protected double CurrentStrain { get; private set; }
 
-        public DelayedSameDirectionSpeed(Mod[] mods)
+        public ConsistencySpeed(Mod[] mods)
             : base(mods)
         {
         }
@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            CurrentStrain = SpeedEvaluator.EvaluateDelayedSameDirectionSpeedDifficultyOf(current);
+            CurrentStrain = SpeedEvaluator.EvaluateConsistencyDifficultyOf(current);
 
             return CurrentStrain;
         }

@@ -8,14 +8,14 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class AlternatingSpeed : StrainSkill
+    public class SnapSpeed : StrainSkill
     {
         /// <summary>
         /// The current strain level.
         /// </summary>
         protected double CurrentStrain { get; private set; }
 
-        public AlternatingSpeed(Mod[] mods)
+        public SnapSpeed(Mod[] mods)
             : base(mods)
         {
         }
@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            CurrentStrain = SpeedEvaluator.EvaluateAlternatingSpeedDifficultyOf(current);
+            CurrentStrain = SpeedEvaluator.EvaluateSnapDifficultyOf(current);
 
             return CurrentStrain;
         }
