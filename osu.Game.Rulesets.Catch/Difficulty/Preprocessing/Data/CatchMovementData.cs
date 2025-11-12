@@ -200,6 +200,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 
         public double NoteSpeed;
 
+        public SpeedType SpeedType;
+
         public double DirectionChangeWeight;
         public double PrecisionCorrection;
         public PatternType DisplayPattern;

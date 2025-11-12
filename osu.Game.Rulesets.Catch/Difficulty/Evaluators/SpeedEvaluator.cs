@@ -3,6 +3,7 @@
 
 using System;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
@@ -11,14 +12,30 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
     {
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
+            (double maxSpeed, _) = EvaluateMaxSpeed(current);
+
+            return 11.5 * maxSpeed * ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
+
+            //return 4.0 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + Math.Pow(combinedSpeed, 2)
+            //                       - 0.1 * alternatingSpeed * combinedSpeed);
+        }
+
+        public static (double, SpeedType) EvaluateMaxSpeed(DifficultyHitObject current)
+        {
             double alternatingSpeed = EvaluateAlternatingSpeedDifficultyOf(current);
             double sameDirectionSpeed = EvaluateSameDirectionSpeedDifficultyOf(current);
             double delayedSameDirectionSpeed = EvaluateDelayedSameDirectionSpeedDifficultyOf(current);
 
-            return 11.5 * Math.Max(0.9 * alternatingSpeed, Math.Max(1.1 * sameDirectionSpeed, 1.28 * delayedSameDirectionSpeed)) * ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
+            double alternatingSpeedValue = 0.9 * alternatingSpeed;
+            double sameDirectionSpeedValue = 1.1 * sameDirectionSpeed;
+            double delayedSameDirectionSpeedValue = 1.28 * delayedSameDirectionSpeed;
 
-            //return 4.0 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + Math.Pow(combinedSpeed, 2)
-            //                       - 0.1 * alternatingSpeed * combinedSpeed);
+            double maxAltSame = Math.Max(alternatingSpeedValue, sameDirectionSpeedValue);
+
+            SpeedType speedType1 = alternatingSpeedValue >= sameDirectionSpeedValue ? SpeedType.AlternatingSpeed : SpeedType.SameDirectionSpeed;
+            SpeedType speedType = maxAltSame >= delayedSameDirectionSpeedValue ? speedType1 : SpeedType.DelayedSameDirectionSpeed;
+
+            return (Math.Max(maxAltSame, delayedSameDirectionSpeedValue), speedType);
         }
 
         public static double EvaluateSameDirectionSpeedDifficultyOf(DifficultyHitObject current)

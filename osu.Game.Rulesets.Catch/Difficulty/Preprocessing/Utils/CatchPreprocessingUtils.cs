@@ -22,6 +22,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(cdho);
                 double readingFactor = cdho.ReadingData.CombinedReadingFactor;
 
+                (_, SpeedType speedType) = SpeedEvaluator.EvaluateMaxSpeed(cdho);
+
+                cdho.MovementData.SpeedType = speedType;
                 cdho.MovementData.NoteSpeed = speedStrain;
                 cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
                 cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
