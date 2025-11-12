@@ -182,7 +182,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 notes[i] = (time, strain);
             }
 
-            List<(double, double)> sorted = notes.OrderByDescending(x => x.Item2).ToList();
+            List<(double, double)> filteredNotes = new List<(double, double)>();
+            List<double> peakSeparateStrainTimes = new List<double>();
+
+            foreach ((double time, double strain) note in notes.OrderByDescending(n => n.Item2))
+            {
+                if (peakSeparateStrainTimes.Any(t => Math.Abs(t - note.time) <= region))
+                    continue;
+
+                if (peakSeparateStrainTimes.Count < missCount)
+                {
+                    peakSeparateStrainTimes.Add(note.time);
+                    continue;
+                }
+
+                filteredNotes.Add(note);
+            }
 
             double difficulty = 0.0;
             double weight = 1.0;
@@ -190,7 +205,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             Stack<double> stack = new Stack<double>();
             List<(double, double)> sets = new List<(double, double)>();
 
-            foreach ((double time, double strain) in sorted)
+            foreach ((double time, double strain) in filteredNotes)
             {
                 if (sets.Count < limit)
                 {
@@ -201,14 +216,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     }
 
                     sets.Add((time - region, time + region));
-                }
-
-                if (missCount > 0 && sets.Count <= missCount + 1)
-                {
-                    if (sets.Count <= missCount)
-                        continue;
-
-                    stack.Clear();
                 }
 
                 if (sets.Count >= limit && stack.Count != 0)
