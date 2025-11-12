@@ -801,9 +801,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             bool isPotentialBeltBeginning = curvedStackProbability is not null && nextInBelt;
 
-            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)))
+            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && prev.MovementData.ActionProbability == 0)
             {
-                note.Position = prev.Position + (next.Position - note.Position >= 0 ? -0.01 : 0.01);
+                prev.Position = note.Position - (next.Position - note.Position >= 0 ? -0.01 : 0.01);
                 note.IsMovingRight = note.Position >= prev.Position;
                 data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
                 note.MovementData.NotePattern = classify(note, prev, next);
