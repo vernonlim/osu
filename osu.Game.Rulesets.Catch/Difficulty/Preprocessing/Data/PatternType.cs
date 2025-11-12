@@ -46,5 +46,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 
         LastNote,
         None,
+
+        // Intentional variant of None
+        Ignored,
     }
 }

@@ -59,7 +59,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
                 {
                     data.ActionProbability = 0;
-                    data.NotePattern = PatternType.None;
+                    data.NotePattern = PatternType.Ignored;
                 }
 
                 if (data.ActionProbability < lower_q_bound)
