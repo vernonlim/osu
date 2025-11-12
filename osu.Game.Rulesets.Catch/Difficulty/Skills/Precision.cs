@@ -1,7 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -9,22 +8,28 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class Precision : StrainDecaySkill
+    public class Precision : StrainSkill
     {
-        protected override double SkillMultiplier => 1.0;
-
-        protected override double StrainDecayBase => 0.0;
+        /// <summary>
+        /// The current strain level.
+        /// </summary>
+        protected double CurrentStrain { get; private set; }
 
         public Precision(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
-            return PrecisionEvaluator.EvaluateDifficultyOf(current);
+            double strain = PrecisionEvaluator.EvaluateDifficultyOf(current);
+            double combined = 0.9 * strain + 0.1 * CurrentStrain;
+
+            CurrentStrain = strain;
+
+            return combined;
         }
 
-        protected override double StrainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain;
     }
 }
