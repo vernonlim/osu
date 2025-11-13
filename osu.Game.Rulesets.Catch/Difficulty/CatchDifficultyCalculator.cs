@@ -97,9 +97,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 TotalActions = totalActions,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                SameDirectionSpeedSR = sameSpeed,
-                DelayedSameDirectionSpeedSR = delayedSameSpeed,
-                AlternatingSpeedSR = alternatingSpeed,
+                BurstSR = sameSpeed,
+                ConsistencySR = delayedSameSpeed,
+                SnapSR = alternatingSpeed,
                 AimSR = aim,
                 StarRatingWithMisses = srWithMisses,
             };
