@@ -534,12 +534,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.StackContinuation:
                 {
+                    double rawCatcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0);
+                    bool isWigglingRawBetter = next.DeltaPosition / note.CatcherWidth >= rawCatcherStandingWidthBoundary;
+
+                    if (isWigglingRawBetter)
+                    {
+                        data.StackWiggleCount = prevData.StackWiggleCount + 1;
+                    }
+
                     double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount);
                     bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
 
                     if (isWigglingBetter)
                     {
-                        data.StackWiggleCount = prevData.StackWiggleCount + 1;
                         data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);

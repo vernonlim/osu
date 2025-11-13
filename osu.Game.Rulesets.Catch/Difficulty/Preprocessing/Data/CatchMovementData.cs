@@ -154,7 +154,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// <summary>
         /// Number of wiggle notes in the stack in a row.
         /// </summary>
-        public uint StackWiggleCount;
+        public int StackWiggleCount;
 
         /// <summary>
         /// Whether the next note is in the opposite direction of the movement between this note and the previous.
@@ -168,6 +168,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// An action is defined as a direction change or the independent releasing or pressing of the dash or movement keys.
         /// </remarks>
         public double ActionProbability;
+
+        /// <summary>
+        /// Is this a real action or one applied by the 0* pattern fix?
+        /// </summary>
+        public bool IsRealAction;
 
         /// <summary>
         /// The time interval in which a chosen action leads to catching the next pattern.
@@ -247,6 +252,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;
+            IsRealAction = true;
             NotePrecision = null;
             RawPrecisionStrain = 0;
             PrecisionStrain = 0;

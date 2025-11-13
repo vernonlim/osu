@@ -27,6 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchDifficultyHitObject note = (CatchDifficultyHitObject)hitObjects[i];
                 CatchDifficultyHitObject prev = (CatchDifficultyHitObject)hitObjects[i - 1];
                 CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
+                CatchMovementData data = note.MovementData;
                 CatchMovementData prevData = prev.MovementData;
 
                 if (prevData.ActionProbability == 1)
@@ -69,35 +70,39 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                 }
 
-                if (note.IsHyper && lastActionNote != null)
+                if (note.IsHyper)
                 {
+                    double lastActionTime = lastActionNote is not null ? (lastActionNote.MovementData.IsRealAction ? lastActionNote.StartTime : lastActionNote.MovementData.EffectiveTime) : -1;
+
                     if (next.Position - note.Position >= 0)
                     {
                         if (lastLeftHyper != null
-                            && lastActionNote.StartTime < lastLeftHyper.StartTime
+                            && (lastActionNote is null || lastActionTime < lastLeftHyper.StartTime)
                             && (!lastLeftHyper.MovementData.IsStack)
-                            && note.MovementData.ActionProbability == 0)
+                            && data.ActionProbability == 0
+                            && Math.Abs(lastLeftHyper.Position - note.Position) > note.HalfCatcherWidth)
                         {
-                            note.MovementData.ActionProbability = 1;
-                            note.MovementData.EffectiveTime = (lastLeftHyper.StartTime + note.StartTime) / 2.0;
-                            note.MovementData.KeyPress = MovementKey.Right;
+                            data.IsRealAction = false;
+                            data.ActionProbability = 1;
+                            data.EffectiveTime = (lastLeftHyper.StartTime + note.StartTime) / 2.0;
+                            data.KeyPress = MovementKey.Right;
                         }
                     }
                     else
                     {
                         if (lastRightHyper != null
-                            && lastActionNote.StartTime < lastRightHyper.StartTime
+                            && (lastActionNote is null || lastActionTime < lastRightHyper.StartTime)
                             && (!lastRightHyper.MovementData.IsStack)
-                            && note.MovementData.ActionProbability == 0)
+                            && data.ActionProbability == 0
+                            && Math.Abs(lastRightHyper.Position - note.Position) > note.HalfCatcherWidth)
                         {
-                            note.MovementData.ActionProbability = 1;
-                            note.MovementData.EffectiveTime = (lastRightHyper.StartTime + note.StartTime) / 2.0;
-                            note.MovementData.KeyPress = MovementKey.Left;
+                            data.IsRealAction = false;
+                            data.ActionProbability = 1;
+                            data.EffectiveTime = (lastRightHyper.StartTime + note.StartTime) / 2.0;
+                            data.KeyPress = MovementKey.Left;
                         }
                     }
                 }
-
-                CatchMovementData data = note.MovementData;
 
                 data.NotePrecision = calculatePrecision(note, prev, next);
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
