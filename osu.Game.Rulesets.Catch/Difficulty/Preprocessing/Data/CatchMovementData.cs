@@ -230,6 +230,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double PartialLocalStarRating;
         public double LocalStarRating;
 
+        public CatchDifficultyHitObject? FurthestLeft;
+        public CatchDifficultyHitObject? FurthestRight;
+
         /// <summary>
         /// Populates the class with default values which may be overwritten.
         /// </summary>
@@ -265,6 +268,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             DisplayPattern = PatternType.None;
             PartialLocalStarRating = 0;
             LocalStarRating = 0;
+
+            FurthestLeft = null;
+            FurthestRight = null;
         }
 
         /// <summary>

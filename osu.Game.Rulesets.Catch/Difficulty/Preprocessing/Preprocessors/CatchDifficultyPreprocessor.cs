@@ -20,6 +20,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             List<CatchDifficultyHitObject> rightAmbiguousActions = new List<CatchDifficultyHitObject>();
             CatchDifficultyHitObject? lastLeftHyper = null;
             CatchDifficultyHitObject? lastRightHyper = null;
+            CatchDifficultyHitObject? furthestLeft = null;
+            CatchDifficultyHitObject? furthestRight = null;
             CatchDifficultyHitObject? lastActionNote = null;
 
             for (int i = 1; i < hitObjects.Count - 1; i++)
@@ -29,6 +31,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
                 CatchMovementData data = note.MovementData;
                 CatchMovementData prevData = prev.MovementData;
+
+                data.NotePrecision = calculatePrecision(note, prev, next);
 
                 if (prevData.ActionProbability == 1)
                 {
@@ -63,12 +67,27 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (note.IsMovingRight)
                     {
                         lastRightHyper = prev;
+                        furthestRight = null;
                     }
                     else
                     {
                         lastLeftHyper = prev;
+                        furthestLeft = null;
                     }
                 }
+
+                if (!note.IsHyper && (furthestRight is null || furthestRight.Position < note.Position))
+                {
+                    furthestRight = note;
+                }
+
+                if (!note.IsHyper && (furthestLeft is null || furthestLeft.Position > note.Position))
+                {
+                    furthestLeft = note;
+                }
+
+                data.FurthestLeft = furthestLeft;
+                data.FurthestRight = furthestRight;
 
                 if (note.IsHyper)
                 {
@@ -86,6 +105,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                             data.ActionProbability = 1;
                             data.EffectiveTime = (lastLeftHyper.StartTime + note.StartTime) / 2.0;
                             data.KeyPress = MovementKey.Right;
+
+                            if (furthestLeft is not null)
+                            {
+                                CatchDifficultyHitObject? furPrev = furthestLeft.PreviousNote(0);
+                                CatchDifficultyHitObject? furNext = furthestLeft.NextNote(0);
+
+                                if (furPrev is not null && furNext is not null)
+                                {
+                                    furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
+                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
+
+                                    data.NotePrecision = calculatePrecision(furthestLeft, furPrev, furNext);
+                                    data.EffectiveTime = furthestLeft.MovementData.EffectiveTime;
+
+                                    furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext);
+                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
+                                }
+                            }
                         }
                     }
                     else
@@ -100,11 +137,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                             data.ActionProbability = 1;
                             data.EffectiveTime = (lastRightHyper.StartTime + note.StartTime) / 2.0;
                             data.KeyPress = MovementKey.Left;
+
+                            if (furthestRight is not null)
+                            {
+                                CatchDifficultyHitObject? furPrev = furthestRight.PreviousNote(0);
+                                CatchDifficultyHitObject? furNext = furthestRight.NextNote(0);
+
+                                if (furPrev is not null && furNext is not null)
+                                {
+                                    furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
+                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
+
+                                    data.NotePrecision = calculatePrecision(furthestRight, furPrev, furNext);
+                                    data.EffectiveTime = furthestRight.MovementData.EffectiveTime;
+
+                                    furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext);
+                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
+                                }
+                            }
                         }
                     }
                 }
 
-                data.NotePrecision = calculatePrecision(note, prev, next);
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
 

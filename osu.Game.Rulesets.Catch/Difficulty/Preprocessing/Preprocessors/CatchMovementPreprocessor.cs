@@ -46,14 +46,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 updateInitialData(note, next);
 
-                data.NotePattern = classify(note, prev, next);
+                data.NotePattern = Classify(note, prev, next);
 
-                updateData(note, prev, next);
+                UpdateData(note, prev, next);
 
                 // Handling curved stack
                 handleCurvedStack(note, prev, next);
 
-                PatternType type = classify(note, prev, next);
+                PatternType type = Classify(note, prev, next);
 
                 // Hack for akarui taiyo
                 if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
@@ -114,7 +114,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="next">The next note.</param>
         /// <param name="skipToDirectionChange"></param>
         /// <returns>The <see cref="PatternType"/> corresponding to the note.</returns>
-        private static PatternType classify(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, bool skipToDirectionChange = false)
+        public static PatternType Classify(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, bool skipToDirectionChange = false)
         {
             CatchMovementData data = note.MovementData;
 
@@ -135,7 +135,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             // Direction changes
-            PatternType directionChangeType = classifyAsDirectionChange(note, prev);
+            PatternType directionChangeType = ClassifyAsDirectionChange(note, prev);
 
             if (directionChangeType != PatternType.None)
             {
@@ -266,7 +266,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <returns>The <see cref="PatternType"/> corresponding to the direction change-related pattern, or null if none match.</returns>
-        private static PatternType classifyAsDirectionChange(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
+        public static PatternType ClassifyAsDirectionChange(CatchDifficultyHitObject note, CatchDifficultyHitObject prev)
         {
             CatchMovementData data = note.MovementData;
 
@@ -349,12 +349,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// </summary>
         /// <remarks>
         /// For each note, should be run after <see cref="updateInitialData"/>
-        /// and setting its <see cref="PatternType"/> to the result of <see cref="classify"/>
+        /// and setting its <see cref="PatternType"/> to the result of <see cref="Classify"/>
         /// </remarks>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
         /// <param name="next">The next note.</param>
-        private static void updateData(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        public static void UpdateData(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
@@ -465,10 +465,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                     else
                     {
-                        data.NotePattern = classify(note, prev, next, true);
+                        data.NotePattern = Classify(note, prev, next, true);
                     }
 
-                    updateData(note, prev, next);
+                    UpdateData(note, prev, next);
 
                     break;
                 }
@@ -478,7 +478,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (next.DeltaPosition <= 3 * note.CatcherWidth / 5.0)
                     {
                         data.NotePattern = PatternType.NarrowStack;
-                        updateData(note, prev, next);
+                        UpdateData(note, prev, next);
                         break;
                     }
 
@@ -488,8 +488,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         data.RightStandingPosition = null;
                         data.IsStack = false;
 
-                        data.NotePattern = classify(note, prev, next, true);
-                        updateData(note, prev, next);
+                        data.NotePattern = Classify(note, prev, next, true);
+                        UpdateData(note, prev, next);
                         break;
                     }
 
@@ -514,8 +514,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     {
                         // wiggle
                         data.StackWiggleCount += 1;
-                        data.NotePattern = classify(note, prev, next, true);
-                        updateData(note, prev, next);
+                        data.NotePattern = Classify(note, prev, next, true);
+                        UpdateData(note, prev, next);
                     }
                     else
                     {
@@ -548,8 +548,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (isWigglingBetter)
                     {
                         data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
-                        data.NotePattern = classify(note, prev, next, true);
-                        updateData(note, prev, next);
+                        data.NotePattern = Classify(note, prev, next, true);
+                        UpdateData(note, prev, next);
                     }
                     else
                     {
@@ -592,8 +592,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ForwardCatcherPosition = prev.Position + data.Directionize(note.HalfCatcherWidth + note.DeltaTime);
 
                     // We need to re-classify the note as not a stack, then run this method again
-                    data.NotePattern = classify(note, prev, next, true);
-                    updateData(note, prev, next);
+                    data.NotePattern = Classify(note, prev, next, true);
+                    UpdateData(note, prev, next);
 
                     break;
                 }
@@ -827,8 +827,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 prev.Position = note.Position - (next.Position - note.Position >= 0 ? -0.01 : 0.01);
                 note.IsMovingRight = note.Position >= prev.Position;
                 data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
-                note.MovementData.NotePattern = classify(note, prev, next);
-                updateData(note, prev, next);
+                note.MovementData.NotePattern = Classify(note, prev, next);
+                UpdateData(note, prev, next);
             }
             else if (!inExistingBelt && isPotentialBeltBeginning && inBelt)
             {
