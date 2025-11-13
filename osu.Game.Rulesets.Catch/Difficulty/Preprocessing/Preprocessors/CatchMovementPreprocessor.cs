@@ -457,7 +457,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
                     data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
 
-                    data.NotePattern = classify(note, prev, next, true);
+                    if ((note.Position < note.HalfCatcherWidth && next.Position < note.HalfCatcherWidth)
+                        || (note.PlayfieldWidth - note.Position < note.HalfCatcherWidth && note.PlayfieldWidth - next.Position < note.HalfCatcherWidth))
+                    {
+                        Console.WriteLine($"Detected at {note.StartTime}");
+                        data.NotePattern = PatternType.NarrowStack;
+                    }
+                    else
+                    {
+                        data.NotePattern = classify(note, prev, next, true);
+                    }
+
                     updateData(note, prev, next);
 
                     break;
@@ -815,7 +825,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             {
                 // starting a belt
                 data.BeltBeginning = note;
-                data.ActionProbability = curvedStackProbability!.Value;
+                data.ActionProbability = Math.Min(curvedStackProbability!.Value, data.ActionProbability);
                 data.BeltHasAction = beltHasAction || data.ActionProbability > 0;
                 data.NotePattern = type;
             }

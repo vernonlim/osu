@@ -40,6 +40,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public double Position;
 
         /// <summary>
+        /// Normalized playfield width>
+        /// </summary>
+        public double PlayfieldWidth;
+
+        /// <summary>
         /// The width of the catcher.
         /// </summary>
         /// <remarks>
@@ -122,6 +127,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             this.clockRate = clockRate;
 
             Position = BaseObject.EffectiveX / clockRate;
+            PlayfieldWidth = 512.0 / clockRate;
 
             // Temporary hack to ensure DeltaPosition > 0
             if (noteObjects.Count >= 2)
