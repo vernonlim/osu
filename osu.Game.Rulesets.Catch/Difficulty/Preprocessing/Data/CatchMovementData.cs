@@ -152,6 +152,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public bool IsStack;
 
         /// <summary>
+        /// Number of wiggle notes in the stack in a row.
+        /// </summary>
+        public uint StackWiggleCount;
+
+        /// <summary>
         /// Whether the next note is in the opposite direction of the movement between this note and the previous.
         /// </summary>
         public bool IsDirectionChange;
@@ -235,6 +240,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             IsHyperWalk = false;
             IsBreak = false;
             IsStack = false;
+            StackWiggleCount = 0;
             IsDirectionChange = false;
             LeftCatcherPosition = note.Position - note.HalfCatcherWidth;
             RightCatcherPosition = note.Position + note.HalfCatcherWidth;

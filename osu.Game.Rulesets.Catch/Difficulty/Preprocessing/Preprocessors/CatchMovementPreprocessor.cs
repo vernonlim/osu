@@ -460,7 +460,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if ((note.Position < note.HalfCatcherWidth && next.Position < note.HalfCatcherWidth)
                         || (note.PlayfieldWidth - note.Position < note.HalfCatcherWidth && note.PlayfieldWidth - next.Position < note.HalfCatcherWidth))
                     {
-                        Console.WriteLine($"Detected at {note.StartTime}");
+                        // wallhugger
                         data.NotePattern = PatternType.NarrowStack;
                     }
                     else
@@ -510,9 +510,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / note.CatcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime))
+                    if (next.DeltaPosition / note.CatcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0))
                     {
                         // wiggle
+                        data.StackWiggleCount += 1;
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);
                     }
@@ -533,11 +534,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.StackContinuation:
                 {
-                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime);
+                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount);
                     bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
 
                     if (isWigglingBetter)
                     {
+                        data.StackWiggleCount = prevData.StackWiggleCount + 1;
                         data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
                         data.NotePattern = classify(note, prev, next, true);
                         updateData(note, prev, next);
