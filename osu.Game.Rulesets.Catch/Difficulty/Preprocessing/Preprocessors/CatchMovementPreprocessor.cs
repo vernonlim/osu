@@ -801,7 +801,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             bool isPotentialBeltBeginning = curvedStackProbability is not null && nextInBelt;
 
-            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && prev.MovementData.ActionProbability == 0)
+            bool beltHasAction = prev.MovementData.BeltHasAction;
+
+            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && !beltHasAction)
             {
                 prev.Position = note.Position - (next.Position - note.Position >= 0 ? -0.01 : 0.01);
                 note.IsMovingRight = note.Position >= prev.Position;
@@ -811,22 +813,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
             else if (!inExistingBelt && isPotentialBeltBeginning && inBelt)
             {
+                // starting a belt
                 data.BeltBeginning = note;
                 data.ActionProbability = curvedStackProbability!.Value;
+                data.BeltHasAction = beltHasAction || data.ActionProbability > 0;
                 data.NotePattern = type;
             }
             else if (prevHasBelt && prev.IsHyper && isPotentialBeltBeginning)
             {
+                // adjusting a belt
                 data.ActionProbability *= belt!.MovementData.ActionProbability;
                 data.BeltBeginning = note;
+                data.BeltHasAction = beltHasAction || data.ActionProbability > 0;
                 data.NotePattern = type;
             }
             else if (inExistingBelt)
             {
+                // continuing a belt
                 if ((note.IsHyper && (next.Position - note.Position >= 0 ? belt!.IsMovingRight : !belt!.IsMovingRight)) || CatchPreprocessingUtils.NoteWithinBelt(next, belt!, belt!.MovementData.NotePattern))
                 {
                     data.ActionProbability *= belt!.MovementData.ActionProbability;
                     data.BeltBeginning = belt;
+                    data.BeltHasAction = beltHasAction || data.ActionProbability > 0;
                 }
             }
         }

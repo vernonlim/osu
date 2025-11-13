@@ -37,6 +37,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 
         public CatchDifficultyHitObject? BeltBeginning;
 
+        public bool BeltHasAction;
+
         /// <summary>
         /// The leftmost position at the current time for which it is possible to catch both the previous note and the next note.
         /// </summary>
@@ -229,6 +231,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             EffectiveTime = note.StartTime;
             KeyPress = MovementKey.None;
             BeltBeginning = null;
+            BeltHasAction = false;
             IsHyperWalk = false;
             IsBreak = false;
             IsStack = false;
