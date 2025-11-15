@@ -197,14 +197,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             const double region = 500.0;
             const int limit = 15;
 
-            const int miss_region = 5;
+            const int miss_note_region = 5;
+            const double miss_region = 500.0;
 
             List<(double, double)> filteredNotes = new List<(double, double)>();
             List<double> peakSeparateStrainTimes = new List<double>();
 
             foreach ((double time, double strain) note in sorted)
             {
-                if (peakSeparateStrainTimes.Any(t => Math.Abs(t - note.time) <= region))
+                if (peakSeparateStrainTimes.Any(t => Math.Abs(t - note.time) <= miss_region))
                     continue;
 
                 if (peakSeparateStrainTimes.Count < missCount)
@@ -227,8 +228,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 int index = notes.FindIndex(n => n.Item1 == missTime);
 
-                int lower = Math.Max(0, index - miss_region);
-                int upper = Math.Min(notes.Count - 1, index + miss_region);
+                int lower = Math.Max(0, index - miss_note_region);
+                int upper = Math.Min(notes.Count - 1, index + miss_note_region);
 
                 missSets.Add((notes[lower].Item1, notes[upper].Item1));
             }
