@@ -80,7 +80,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double sr = calculateSr(startTimes, combinedStrains);
-            List<double> srWithMisses = Enumerable.Range(1, 5).Select(m => calculateSr(startTimes, combinedStrains, m)).ToList();
+            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(startTimes, combinedStrains, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
             double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
@@ -135,15 +135,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             const double x3 = 8.0;
             const double y3 = 10.0;
 
-            if (sr <= x0) return lerp(sr, 0.0, 0.0, x0, y0);
-            if (sr <= x1) return lerp(sr, x0, y0, x1, y1);
-            if (sr <= x2) return lerp(sr, x1, y1, x2, y2);
+            if (sr <= x0) return CatchPreprocessingUtils.Lerp(sr, 0.0, 0.0, x0, y0);
+            if (sr <= x1) return CatchPreprocessingUtils.Lerp(sr, x0, y0, x1, y1);
+            if (sr <= x2) return CatchPreprocessingUtils.Lerp(sr, x1, y1, x2, y2);
 
-            return lerp(sr, x2, y2, x3, y3);
+            return CatchPreprocessingUtils.Lerp(sr, x2, y2, x3, y3);
         }
-
-        private static double lerp(double x, double x0, double y0, double x1, double y1)
-            => y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.

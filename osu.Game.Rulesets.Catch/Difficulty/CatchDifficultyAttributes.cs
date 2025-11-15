@@ -51,14 +51,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("2_miss_sr")]
         public double SRTwoMiss => StarRatingWithMisses[1];
 
-        [JsonProperty("3_miss_sr")]
-        public double SRThreeMiss => StarRatingWithMisses[2];
-
         [JsonProperty("4_miss_sr")]
-        public double SRFourMiss => StarRatingWithMisses[3];
+        public double SRFourMiss => StarRatingWithMisses[2];
 
-        [JsonProperty("5_miss_sr")]
-        public double SRFiveMiss => StarRatingWithMisses[4];
+        [JsonProperty("7_miss_sr")]
+        public double SRSevenMiss => StarRatingWithMisses[3];
+
+        [JsonProperty("12_miss_sr")]
+        public double SRTwelveMiss => StarRatingWithMisses[4];
 
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {

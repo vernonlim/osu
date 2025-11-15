@@ -377,5 +377,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 }
             }
         }
+
+        public static double Lerp(double x, double x0, double y0, double x1, double y1)
+            => y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     }
 }

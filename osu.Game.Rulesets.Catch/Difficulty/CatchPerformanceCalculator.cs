@@ -36,7 +36,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             numKatu = score.GetCountKatu() ?? 0; // HitResult.SmallTickMiss
             numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
 
-            double starRating = numMiss == 0 ? catchAttributes.StarRating : catchAttributes.StarRatingWithMisses[Math.Min(numMiss - 1, 4)];
+            double starRating = numMiss switch
+            {
+                0 => catchAttributes.StarRating,
+                1 => catchAttributes.SROneMiss,
+                2 => catchAttributes.SRTwoMiss,
+                var x when x < 4 => double.Lerp(catchAttributes.SRTwoMiss, catchAttributes.SRFourMiss, (x - 2.0) / (4.0 - 2.0)),
+                var x when x < 7 => double.Lerp(catchAttributes.SRFourMiss, catchAttributes.SRSevenMiss, (x - 4.0) / (7.0 - 4.0)),
+                var x => double.Lerp(catchAttributes.SRSevenMiss, catchAttributes.SRTwelveMiss, (x - 7.0) / (12.0 - 7.0)),
+            };
 
             // We are heavily relying on aim in catch the beat
             double value = Math.Pow(5.0 * Math.Max(1.0, starRating / 0.0049) - 4.0, 2.0) / 100000.0;
