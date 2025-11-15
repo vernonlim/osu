@@ -36,7 +36,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             numKatu = score.GetCountKatu() ?? 0; // HitResult.SmallTickMiss
             numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
 
-            double starRating = numMiss switch
+            double adjustedStarRating = numMiss switch
             {
                 0 => catchAttributes.StarRating,
                 1 => catchAttributes.SROneMiss,
@@ -46,8 +46,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 var x => double.Lerp(catchAttributes.SRSevenMiss, catchAttributes.SRTwelveMiss, (x - 7.0) / (12.0 - 7.0)),
             };
 
-            // We are heavily relying on aim in catch the beat
-            double value = Math.Pow(5.0 * Math.Max(1.0, starRating / 0.0049) - 4.0, 2.0) / 100000.0;
+            // Misscount-adjusted pathway
+            double withMiss = calculateValue(adjustedStarRating);
+
+            if (numMiss > 0)
+            {
+                withMiss *= 0.96;
+            }
+
+            withMiss *= Math.Pow(0.99, Math.Max(0, numMiss - 1));
+
+            // Low combo scaling
+            if (catchAttributes.MaxCombo > 0)
+                withMiss *= Math.Min(0.8 + (score.MaxCombo / (double)catchAttributes.MaxCombo) * 0.2, 1.0);
+
+            // Original pathway
+            double original = calculateValue(catchAttributes.StarRating);
+
+            original *= Math.Pow(0.97, Math.Max(0, numMiss));
+
+            // Original combo scaling
+            if (catchAttributes.MaxCombo > 0)
+                original *= Math.Min(Math.Pow(score.MaxCombo, 0.35) / Math.Pow(catchAttributes.MaxCombo, 0.35), 1.0);
+
+            // We take the maximum of the original SR with old scaling and misscount-adjusted SR with new scaling
+            double value = Math.Max(original, withMiss);
 
             // Longer maps are worth more. "Longer" means how many hits there are approximately
             // We add some undetected actions approximated with 15% of the maximum combo
@@ -57,12 +80,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 0.86 + 0.57 * Math.Min(1.0, totalActions / 1600.0) +
                 (totalActions > 1600 ? Math.Log10(totalActions / 1600.0) * 0.3 : 0.0);
             value *= lengthBonus;
-
-            value *= Math.Pow(0.98, Math.Max(0, numMiss - 5));
-
-            // Combo scaling
-            if (catchAttributes.MaxCombo > 0)
-                value *= Math.Min(Math.Pow(score.MaxCombo, 0.35) / Math.Pow(catchAttributes.MaxCombo, 0.35), 1.0);
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 
@@ -117,6 +134,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 Total = value
             };
         }
+
+        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0049) - 4.0, 2.0) / 100000.0;
 
         private double accuracy() => totalHits() == 0 ? 0 : Math.Clamp((double)totalSuccessfulHits() / totalHits(), 0, 1);
         private int totalHits() => num50 + num100 + num300 + numMiss + numKatu;
