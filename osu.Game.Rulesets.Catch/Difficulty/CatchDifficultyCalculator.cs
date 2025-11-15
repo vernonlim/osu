@@ -79,8 +79,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 }
             }
 
-            double sr = calculateSr(startTimes, combinedStrains);
-            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(startTimes, combinedStrains, m)).ToList();
+            List<(double, double)> notes = startTimes.Zip(combinedStrains).ToList();
+
+            nerfBeginning(notes);
+
+            List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
+
+            double sr = calculateSr(sorted);
+            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(sorted, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
             double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
@@ -107,9 +113,44 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return attributes;
         }
 
+        private void nerfBeginning(List<(double, double)> notes)
+        {
+            const double time_penalty_cutoff = 45000;
+            const double time_penalty_power = 0.2;
+
+            double firstNoteStartTime = notes[0].Item1;
+
+            for (int i = 0; i < notes.Count; i++)
+            {
+                notes[i] = (notes[i].Item1 - firstNoteStartTime, notes[i].Item2);
+            }
+
+            for (int i = 0; i < notes.Count; i++)
+            {
+                double time = notes[i].Item1;
+                double strain = notes[i].Item2;
+
+                if (time < time_penalty_cutoff)
+                    strain *= Math.Pow(time / time_penalty_cutoff, time_penalty_power);
+
+                notes[i] = (time, strain);
+            }
+        }
+
         private double calculateSr(List<double> startTimes, List<double> strains, int missCount = 0)
         {
-            double sr = calculateDifficultyValue(startTimes, strains, missCount);
+            List<(double, double)> notes = startTimes.Zip(strains).ToList();
+
+            nerfBeginning(notes);
+
+            List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
+
+            return calculateDifficultyValue(sorted, missCount);
+        }
+
+        private double calculateSr(List<(double, double)> sorted, int missCount = 0)
+        {
+            double sr = calculateDifficultyValue(sorted, missCount);
             // sr = 3.52 * Math.Pow(sr, 0.8);
 
             sr *= difficulty_multiplier;
@@ -149,40 +190,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <param name="strains"></param>
         /// <param name="missCount"></param>
         /// <returns></returns>
-        private double calculateDifficultyValue(List<double> startTimes, List<double> strains, int missCount = 0)
+        private double calculateDifficultyValue(List<(double, double)> sorted, int missCount = 0)
         {
             const double decay_weight = 0.9;
 
             const double region = 500.0;
             const int limit = 15;
 
-            const double time_penalty_cutoff = 45000;
-            const double time_penalty_power = 0.2;
-
-            List<(double, double)> notes = startTimes.Zip(strains).ToList();
-
-            double firstNoteStartTime = notes[0].Item1;
-
-            for (int i = 0; i < notes.Count; i++)
-            {
-                notes[i] = (notes[i].Item1 - firstNoteStartTime, notes[i].Item2);
-            }
-
-            for (int i = 0; i < notes.Count; i++)
-            {
-                double time = notes[i].Item1;
-                double strain = notes[i].Item2;
-
-                if (time < time_penalty_cutoff)
-                    strain *= Math.Pow(time / time_penalty_cutoff, time_penalty_power);
-
-                notes[i] = (time, strain);
-            }
-
             List<(double, double)> filteredNotes = new List<(double, double)>();
             List<double> peakSeparateStrainTimes = new List<double>();
 
-            foreach ((double time, double strain) note in notes.OrderByDescending(n => n.Item2))
+            foreach ((double time, double strain) note in sorted)
             {
                 if (peakSeparateStrainTimes.Any(t => Math.Abs(t - note.time) <= region))
                     continue;
