@@ -54,7 +54,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 withMiss *= 0.96;
             }
 
-            withMiss *= Math.Pow(0.99, Math.Max(0, numMiss - 1));
+            withMiss *= Math.Pow(0.985, Math.Max(0, numMiss - 1));
 
             // Low combo scaling
             if (catchAttributes.MaxCombo > 0)

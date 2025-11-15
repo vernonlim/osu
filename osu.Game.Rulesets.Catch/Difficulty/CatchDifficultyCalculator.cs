@@ -85,8 +85,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 
-            double sr = calculateSr(sorted);
-            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(sorted, m)).ToList();
+            double sr = calculateSr(notes, sorted);
+            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
             double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
@@ -145,19 +145,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 
-            return calculateDifficultyValue(sorted, missCount);
+            return calculateDifficultyValue(notes, sorted, missCount);
         }
 
-        private double calculateSr(List<(double, double)> sorted, int missCount = 0)
+        private double calculateSr(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
-            double sr = calculateDifficultyValue(sorted, missCount);
+            double sr = calculateDifficultyValue(notes, sorted, missCount);
             // sr = 3.52 * Math.Pow(sr, 0.8);
 
             sr *= difficulty_multiplier;
 
             sr = srScaler(sr);
 
-            sr *= 1.015;
+            sr *= 1.01;
 
             return sr;
         }
@@ -190,12 +190,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <param name="strains"></param>
         /// <param name="missCount"></param>
         /// <returns></returns>
-        private double calculateDifficultyValue(List<(double, double)> sorted, int missCount = 0)
+        private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
             const double decay_weight = 0.9;
 
             const double region = 500.0;
             const int limit = 15;
+
+            const int miss_region = 5;
 
             List<(double, double)> filteredNotes = new List<(double, double)>();
             List<double> peakSeparateStrainTimes = new List<double>();
@@ -218,22 +220,33 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double weight = 1.0;
 
             Stack<double> stack = new Stack<double>();
-            List<(double, double)> sets = new List<(double, double)>();
+            List<(double, double)> skipSets = new List<(double, double)>();
+            List<(double, double)> missSets = new List<(double, double)>();
+
+            foreach (double missTime in peakSeparateStrainTimes)
+            {
+                int index = notes.FindIndex(n => n.Item1 == missTime);
+
+                int lower = Math.Max(0, index - miss_region);
+                int upper = Math.Min(notes.Count - 1, index + miss_region);
+
+                missSets.Add((notes[lower].Item1, notes[upper].Item1));
+            }
 
             foreach ((double time, double strain) in filteredNotes)
             {
-                if (sets.Count < limit)
+                if (skipSets.Count < limit)
                 {
-                    if (isTimeInSets(sets, time))
+                    if (isTimeInSets(skipSets, time))
                     {
                         stack.Push(strain);
                         continue;
                     }
 
-                    sets.Add((time - region, time + region));
+                    skipSets.Add((time - region, time + region));
                 }
 
-                if (sets.Count >= limit && stack.Count != 0)
+                if (skipSets.Count >= limit && stack.Count != 0)
                 {
                     while (stack.Count != 0)
                     {
@@ -241,6 +254,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                         weight *= decay_weight;
                     }
                 }
+
+                if (isTimeInSets(missSets, time))
+                    continue;
 
                 difficulty += strain * weight;
                 weight *= decay_weight;
