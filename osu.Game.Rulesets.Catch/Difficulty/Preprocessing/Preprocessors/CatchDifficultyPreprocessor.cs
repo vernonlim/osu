@@ -117,7 +117,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
 
                                     data.NotePrecision = calculatePrecision(furthestLeft, furPrev, furNext);
-                                    data.EffectiveTime = furthestLeft.MovementData.EffectiveTime;
 
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
@@ -149,7 +148,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
 
                                     data.NotePrecision = calculatePrecision(furthestRight, furPrev, furNext);
-                                    data.EffectiveTime = furthestRight.MovementData.EffectiveTime;
 
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
