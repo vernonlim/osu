@@ -14,8 +14,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
     {
         public static void PopulateDifficultyData(List<CatchDifficultyHitObject> cdhos)
         {
-            foreach (CatchDifficultyHitObject cdho in cdhos)
+            for (int i = 1; i < cdhos.Count - 1; ++i)
             {
+                CatchDifficultyHitObject cdho = cdhos[i];
+                CatchDifficultyHitObject prev = cdhos[i - 1];
+                CatchDifficultyHitObject next = cdhos[i + 1];
+
                 double actionProbability = cdho.MovementData.ActionProbability;
                 double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(cdho);
                 double aimStrain = AimEvaluator.EvaluateDifficultyOf(cdho);
@@ -29,6 +33,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 cdho.MovementData.PrecisionStrain = precisionStrain;
                 cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
                 cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
+                cdho.MovementData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount);
             }
         }
 

@@ -229,6 +229,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public PatternType DisplayPattern;
         public double PartialLocalStarRating;
         public double LocalStarRating;
+        public double CatcherStandingWidth;
 
         public CatchDifficultyHitObject? FurthestLeft;
         public CatchDifficultyHitObject? FurthestRight;
