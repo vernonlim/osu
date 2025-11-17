@@ -30,12 +30,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 0.9;
         private const uint hyperchain_note_count = 8;
 
-        private const double high_velocity_buff = 1.0;
-        private const double high_velocity_distance_threshold = 512.0;
-        private const double high_velocity_threshold = 2.5;
-        private const double high_velocity_threshold_multiplier = 2.0;
+        private const double high_velocity_nerf = 0.1;
+        private const double high_velocity_threshold = 4.0;
 
-        private const double high_distance_buff = 0.2;
+        private const double high_distance_buff = 0.25;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
@@ -49,7 +47,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             implicitRhythmPenalty(actionNotes);
             similarDistancePenalty(cdhos);
             hyperchainPenalty(cdhos);
-            highVelocityBuff(cdhos);
+            highVelocityNerf(cdhos);
             highDistanceBuff(cdhos);
         }
 
@@ -185,25 +183,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-        private static void highVelocityBuff(List<CatchDifficultyHitObject> cdhos)
+        // High velocity nerf may be seen as some kind of correction of precision - approximation error is higher at higher velocity.
+        private static void highVelocityNerf(List<CatchDifficultyHitObject> cdhos)
         {
-            const double raw_buff = high_velocity_buff - 1.0;
-
             for (int i = 1; i < cdhos.Count; i++)
             {
                 CatchDifficultyHitObject note = cdhos[i];
                 CatchDifficultyHitObject prev = cdhos[i - 1];
                 double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
-                if (prev.IsHyper
-                    && speed > high_velocity_threshold
-                    && note.DeltaPosition < high_velocity_distance_threshold)
-                {
-                    double distanceFactor = 1.0 - note.DeltaPosition / high_velocity_distance_threshold;
-                    double velocityFactor = Math.Min((speed - high_velocity_threshold) / (high_velocity_threshold * high_velocity_threshold_multiplier - high_velocity_threshold), 1.0);
-
-                    note.ReadingData.ReadingFactors.Add(1.0 + distanceFactor * velocityFactor * raw_buff);
-                }
+                if (prev.IsHyper && speed > high_velocity_threshold)
+                    note.ReadingData.ReadingFactors.Add(Math.Max(1.0 - high_velocity_nerf * (speed - high_velocity_threshold), 0.0));
             }
         }
 
