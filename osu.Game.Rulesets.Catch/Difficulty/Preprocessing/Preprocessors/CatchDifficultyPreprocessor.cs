@@ -96,7 +96,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (next.Position - note.Position >= 0)
                     {
                         if (lastLeftHyper != null
-                            && (lastActionNote is null || lastActionTime < lastLeftHyper.StartTime)
+                            && (lastActionNote is null || lastActionTime <= lastLeftHyper.StartTime)
                             && (!lastLeftHyper.MovementData.IsStack)
                             && data.ActionProbability == 0
                             && Math.Abs(lastLeftHyper.Position - note.Position) > note.HalfCatcherWidth)
@@ -113,6 +113,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                                 if (furPrev is not null && furNext is not null)
                                 {
+                                    double actionProbability = furthestLeft.MovementData.ActionProbability;
+                                    PatternType notePattern = furthestLeft.MovementData.NotePattern;
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
 
@@ -120,6 +122,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
+
+                                    furthestLeft.MovementData.ActionProbability = actionProbability;
+                                    furthestLeft.MovementData.NotePattern = notePattern;
                                 }
                             }
                         }
@@ -127,7 +132,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     else
                     {
                         if (lastRightHyper != null
-                            && (lastActionNote is null || lastActionTime < lastRightHyper.StartTime)
+                            && (lastActionNote is null || lastActionTime <= lastRightHyper.StartTime)
                             && (!lastRightHyper.MovementData.IsStack)
                             && data.ActionProbability == 0
                             && Math.Abs(lastRightHyper.Position - note.Position) > note.HalfCatcherWidth)
@@ -144,6 +149,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                                 if (furPrev is not null && furNext is not null)
                                 {
+                                    double actionProbability = furthestRight.MovementData.ActionProbability;
+                                    PatternType notePattern = furthestRight.MovementData.NotePattern;
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
 
@@ -151,6 +158,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
+
+                                    furthestRight.MovementData.ActionProbability = actionProbability;
+                                    furthestRight.MovementData.NotePattern = notePattern;
                                 }
                             }
                         }
