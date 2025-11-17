@@ -168,7 +168,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
-                data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                data.PrecisionStrain = data.NotePattern == PatternType.Hyperjumps
+                    ? (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability
+                    : 1.0 * data.RawPrecisionStrain * data.ActionProbability;
 
                 data.NoteAim = calculateAim(note, prev, next);
 
