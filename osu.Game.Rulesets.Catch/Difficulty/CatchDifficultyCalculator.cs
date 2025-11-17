@@ -115,8 +115,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         private void nerfBeginning(List<(double, double)> notes)
         {
-            const double time_penalty_cutoff = 45000;
-            const double time_penalty_power = 0.2;
+            const double time_penalty_cutoff = 60000;
+            const double time_penalty_power = 0.23;
 
             double firstNoteStartTime = notes[0].Item1;
 
