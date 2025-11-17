@@ -168,9 +168,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
-                data.PrecisionStrain = data.NotePattern == PatternType.Hyperjumps
-                    ? (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability
-                    : 1.0 * data.RawPrecisionStrain * data.ActionProbability;
+                if (data.NotePattern == PatternType.Hyperjumps)
+                    data.PrecisionStrain = (0.85 * data.RawPrecisionStrain + 0.15 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                else if (data.NotePattern == PatternType.HyperjumpAfterJump)
+                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                else if (data.NotePattern == PatternType.Jumps)
+                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                else if (data.NotePattern == PatternType.JumpAfterHyperjump)
+                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                else
+                    data.PrecisionStrain = 1.0 * data.RawPrecisionStrain * data.ActionProbability;
 
                 data.NoteAim = calculateAim(note, prev, next);
 
@@ -216,7 +223,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 42;
+            return precision / 18 * 44;
         }
 
         /// <summary>

@@ -39,8 +39,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount) =>
             (ms <= 188
-                ? 2.2 * 1e-5 * Math.Pow(ms, 2) - 8.3 * 1e-3 * ms + 1.35
-                : 0.567)
+                ? 2.38 * 1e-5 * Math.Pow(ms, 2) - 8.96 * 1e-3 * ms + 1.41
+                : 0.5667)
             * (1 + Math.Max(0, wiggleCount - 4) * 0.05);
 
         /// <summary>
