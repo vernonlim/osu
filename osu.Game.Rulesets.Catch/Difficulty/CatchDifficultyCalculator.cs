@@ -145,7 +145,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 
-            return calculateDifficultyValue(notes, sorted, missCount);
+            return calculateSr(notes, sorted, missCount);
         }
 
         private double calculateSr(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
