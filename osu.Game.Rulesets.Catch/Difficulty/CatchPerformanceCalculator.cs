@@ -72,37 +72,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // We take the maximum of the original SR with old scaling and misscount-adjusted SR with new scaling
             double value = Math.Max(original, withMiss);
 
-            // Longer maps are worth more. "Longer" means how many hits there are approximately
-            // We add some undetected actions approximated with 15% of the maximum combo
-            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.15 * catchAttributes.MaxCombo;
-
-            double lengthBonus =
-                0.95 + 0.45 * Math.Min(1.0, totalActions / 1600.0) +
-                (totalActions > 1600 ? Math.Log10(totalActions / 1600.0) * 0.3 : 0.0);
-            value *= lengthBonus;
-
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 
             score.Mods.OfType<IApplicableToDifficulty>().ForEach(m => m.ApplyToDifficulty(difficulty));
 
             double clockRate = ModUtils.CalculateRateWithMods(score.Mods);
 
-            double preempt = IBeatmapDifficultyInfo.DifficultyRange(difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+            double catcherVelocityCorrection = 0.8; // For DT (HT), real reaction time is lower (higher) than pure AR-based AR because of changed catcher's velocity
+            double correctedClockRate = 1.0 + (clockRate - 1.0) * 0.8; //AR9+DT is approximately AR10.15 after correction
 
-            double flashlight_visibility_time = 203.125 * 0.77 / 440.0; //203.125 pixels above are visible at 200 combo; 440 pixels is the height of the visible playfield
+            double preempt = IBeatmapDifficultyInfo.DifficultyRange(difficulty.ApproachRate, 1800, 1200, 450) / correctedClockRate;
+
+            double flashlightVisibilityTime = 203.125 * 0.77 / 440.0; //203.125 pixels above catcher are visible at 200 combo; 440 pixels is the height of the visible playfield
 
             if (score.Mods.Any(m => m is ModFlashlight))
-                preempt *= flashlight_visibility_time;
+                preempt *= flashlightVisibilityTime;
 
-            double approachRate = preempt > 1200.0 ? -(preempt - 1800.0) / 120.0 : -(preempt - 1200.0) / 150.0 + 5.0;
+            double approachRate = preempt > 1200.0 ? (1800.0 - preempt) / 120.0 : (1200.0 - preempt) / 150.0 + 5.0;
 
             double approachRateFactor = 1.0;
-            if (approachRate > 9.0)
-                approachRateFactor += 0.1 * (approachRate - 9.0); // 10% for each AR above 9
+            if (approachRate > 9.5)
+                approachRateFactor += 0.15 * (approachRate - 9.5); // 15% for each AR above 9.5
             if (approachRate > 10.2)
-                approachRateFactor += 0.25 * (approachRate - 10.2); // Additional 20% at AR 11, 40% total
+                approachRateFactor += 0.25 * (approachRate - 10.2); // Additional 20% at AR 11, 42.5% total
             if (approachRate > 11)
-                approachRateFactor += 0.1 * (approachRate - 11.0); // Additional bonus for FL (starting at around AR8)
+                approachRateFactor += 0.1 * (approachRate - 11.0); // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
 
             value *= approachRateFactor;
 
@@ -110,19 +104,32 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hiddens gives almost nothing on max approach rate, and more the lower it is
                 if (approachRate <= 10.0)
-                    value *= 1.04 + 0.12 * (10.0 - approachRate); // 7.5% for each AR below 10
+                    value *= 1.04 + 0.12 * (10.0 - approachRate); // 12% for each AR below 10
                 else if (approachRate > 10.0)
-                    value *= 1.01 + 0.04 * (11.0 - Math.Min(11.0, approachRate)); // 5% at AR 10, 1% at AR 11
+                    value *= 1.0 + 0.04 * (11.0 - Math.Min(11.0, approachRate)); // 4% at AR 10, 0% at AR 11
             }
-
-            if (score.Mods.Any(m => m is ModFlashlight))
-                value *= 1.1 * lengthBonus;
 
             double circleSize = difficulty.CircleSize;
             double circleSizePower = 1.5;
             double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circleSizePower) * 0.32;
 
             value *= 1 + circleSizeBonus;
+
+            // Longer maps are worth more. "Longer" means how many hits there are approximately
+            // We add some undetected actions approximated with 15% of the maximum combo
+            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.15 * catchAttributes.MaxCombo;
+
+            double lengthBonus =
+                0.95 + 0.45 * Math.Min(1.0, totalActions / 1600.0) +
+                (totalActions > 1600 ? Math.Log10(totalActions / 1600.0) * 0.3 : 0.0);
+
+            // Length bonus should depend on approachRate (including FlashLight): if it's high enough, it's either draining or it requires memorisation
+            lengthBonus = Math.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 10.4) / 2.0);
+
+            if (score.Mods.Any(m => m is ModFlashlight))
+                lengthBonus *= 1.2;
+
+            value *= lengthBonus;
 
             value *= Math.Pow(accuracy(), 5.5);
 
