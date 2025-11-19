@@ -15,9 +15,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             (double maxSpeed, _) = EvaluateMaxSpeed(current);
 
             return 11.5 * maxSpeed * ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
-
-            //return 4.0 * Math.Sqrt(1.0 * Math.Pow(alternatingSpeed, 2) + Math.Pow(combinedSpeed, 2)
-            //                       - 0.1 * alternatingSpeed * combinedSpeed);
         }
 
         public static (double, SpeedType) EvaluateMaxSpeed(DifficultyHitObject current)
@@ -46,7 +43,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.BurstSpeed * 1.1;
+            return note.MovementData.BurstSpeed;
         }
 
         public static double EvaluateConsistencyDifficultyOf(DifficultyHitObject current)
@@ -61,7 +58,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.ConsistencySpeed * 1.28;
+            return note.MovementData.ConsistencySpeed;
         }
 
         public static double EvaluateSnapDifficultyOf(DifficultyHitObject current)
@@ -76,7 +73,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
                 return 0;
             }
 
-            return note.MovementData.SnapSpeed * 0.9;
+            return note.MovementData.SnapSpeed;
         }
     }
 }

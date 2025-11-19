@@ -214,16 +214,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            double amplitude = 44.7; //governs how much very low precision values are worth
+            double amplitude = 50; //governs how much very low precision values are worth
             double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -10.0; //shifts the boundary between concave and convex part (shifts the curve)
-            double pace = 36.0; //measures how fast strain decreases between easy and hard jumps
+            double shift = -5.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double pace = 35.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 44;
+            return precision / 18 * 45;
         }
 
         /// <summary>
@@ -480,7 +480,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return speed / 10000;
+            return 0.9 * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
@@ -492,7 +492,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return speed / 10000;
+            return 1.1 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
@@ -504,7 +504,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return speed / 10000;
+            return 1.2 * speed / 10000;
         }
     }
 }
