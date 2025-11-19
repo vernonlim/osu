@@ -171,7 +171,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (data.NotePattern == PatternType.Hyperjumps)
                     data.PrecisionStrain = (0.85 * data.RawPrecisionStrain + 0.15 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.HyperjumpAfterJump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.Jumps)
                     data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.JumpAfterHyperjump)
