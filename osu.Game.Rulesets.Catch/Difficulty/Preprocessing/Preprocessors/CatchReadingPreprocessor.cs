@@ -23,9 +23,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const double similar_distance_penalty = 1.0;
-        private const uint similar_distance_note_count = 4;
-        private const double similar_distance_leniency = 0.05;
+        private const double similar_distance_penalty = 0.9;
+        private const uint similar_distance_note_count = 3;
+        private const double similar_distance_leniency = 0.1;
+        private const double similar_distance_sensitivity = 1.5;
 
         private const double hyperchain_penalty = 0.9;
         private const uint hyperchain_note_count = 8;
@@ -45,7 +46,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             localRhythmPenalty(cdhos);
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
-            similarDistancePenalty(cdhos);
+            similarDistancePenalty(actionNotes);
             hyperchainPenalty(cdhos);
             highVelocityNerf(cdhos);
             highDistanceBuff(cdhos);
@@ -131,30 +132,49 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-        private static void similarDistancePenalty(List<CatchDifficultyHitObject> cdhos)
+        private static void similarDistancePenalty(List<CatchDifficultyHitObject> actionNotes)
         {
-            double counter = 0;
-            const double raw_penalty = (1.0 - similar_distance_penalty);
+            uint counter = 0;
+            double distanceToRemember = 0.0;
 
             // doesn't count first note
-            for (int i = 2; i < cdhos.Count; i++)
+            for (int i = 3; i < actionNotes.Count; i++)
             {
-                CatchDifficultyHitObject note = cdhos[i];
-                CatchDifficultyHitObject prev = cdhos[i - 1];
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
 
-                double lower = prev.DeltaPosition * (1.0 - similar_distance_leniency);
-                double higher = prev.DeltaPosition * (1.0 + similar_distance_leniency);
+                if (prev.IsHyper)
+                    continue;
 
-                if (note.DeltaPosition > lower && note.DeltaPosition < higher)
+                double ratio = Math.Abs(note.DeltaPosition - distanceToRemember) / Math.Max(note.DeltaPosition, distanceToRemember);
+                double halfRatio = Math.Abs(ratio - 0.5);
+
+                if (ratio <= similar_distance_leniency)
                 {
-                    counter++;
-                    double penalty = raw_penalty * Math.Min(counter / similar_distance_note_count, 1);
-                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    counter = Math.Min(counter + 1, similar_distance_note_count);
+                    if (counter == similar_distance_note_count)
+                    {
+                        double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - ratio / similar_distance_leniency, similar_distance_sensitivity);
+                        note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    }
                 }
+
+                else if (halfRatio <= similar_distance_leniency)
+                {
+                    counter = Math.Min(counter + 1, similar_distance_note_count);
+                    if (counter == similar_distance_note_count)
+                    {
+                        double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - halfRatio / similar_distance_leniency, similar_distance_sensitivity);
+                        note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    }
+                }
+
                 else
                 {
-                    counter = 0;
+                    counter = Math.Max(counter - 1, 0);
                 }
+
+                distanceToRemember = note.DeltaPosition;
             }
         }
 
