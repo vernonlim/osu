@@ -216,7 +216,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData prevData = prev.MovementData;
 
             if (prevData.IsStack
-                && (next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition))
+                && ((next.Position + note.HalfCatcherWidth < prevData.LeftStandingPosition || next.Position - note.HalfCatcherWidth > prevData.RightStandingPosition)
+                    || (Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth) > Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth))))
             {
                 data.DisplayPattern = PatternType.StackEnd;
                 return PatternType.StackEnd;
