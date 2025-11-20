@@ -101,13 +101,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
+            double hiddenFactor = 1.0;
+
             if (mods.Any(m => m is ModHidden))
             {
                 // Hiddens gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 10.0)
-                    sr *= Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
+                    hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
-                    sr *= Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+                    hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
             }
 
             const double circle_size_power = 1.5;
@@ -116,15 +118,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = sr * approachRateFactor * circleSizeFactor,
+                StarRating = sr * approachRateFactor * circleSizeFactor * hiddenFactor,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
                 ApproachRateFactor = approachRateFactor,
+                HiddenFactor = hiddenFactor,
                 CircleSizeFactor = circleSizeFactor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                StarRatingWithMisses = srWithMisses.Select(sr => sr * approachRateFactor * circleSizeFactor).ToList(),
+                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circleSizeFactor * hiddenFactor).ToList(),
             };
 
             return attributes;

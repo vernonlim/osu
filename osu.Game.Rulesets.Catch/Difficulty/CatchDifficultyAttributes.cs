@@ -22,6 +22,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("cs_factor")]
         public double CircleSizeFactor { get; set; }
 
+        [JsonProperty("hidden_factor")]
+        public double HiddenFactor { get; set; }
+
         /// <summary>
         /// Temporary debug property.
         /// </summary>
