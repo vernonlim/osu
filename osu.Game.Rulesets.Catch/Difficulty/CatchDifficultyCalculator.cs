@@ -124,7 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 CircleSizeFactor = circleSizeFactor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                StarRatingWithMisses = srWithMisses,
+                StarRatingWithMisses = srWithMisses.Select(sr => sr * approachRateFactor * circleSizeFactor).ToList(),
             };
 
             return attributes;
