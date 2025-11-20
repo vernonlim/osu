@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const double similar_distance_penalty = 0.9;
+        private const double similar_distance_penalty = 0.85;
         private const uint similar_distance_note_count = 3;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
