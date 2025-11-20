@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
@@ -80,6 +81,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 
             var difficulty = beatmap.BeatmapInfo.Difficulty.Clone();
+            mods.OfType<IApplicableToDifficulty>().ForEach(m => m.ApplyToDifficulty(difficulty));
+
             double approachRate = difficulty.ApproachRate;
             double circleSize = difficulty.CircleSize;
 
@@ -105,7 +108,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             if (mods.Any(m => m is ModHidden))
             {
-                // Hiddens gives almost nothing on max approach rate, and more the lower it is
+                // Hidden gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 10.0)
                     hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
