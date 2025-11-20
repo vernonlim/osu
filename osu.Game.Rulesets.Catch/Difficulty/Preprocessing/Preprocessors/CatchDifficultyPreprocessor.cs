@@ -216,14 +216,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             double amplitude = 50; //governs how much very low precision values are worth
             double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -5.0; //shifts the boundary between concave and convex part (shifts the curve)
-            double pace = 35.0; //measures how fast strain decreases between easy and hard jumps
+            double shift = -2.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double pace = 38.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 45;
+            return precision / 18 * 42;
         }
 
         /// <summary>
@@ -425,7 +425,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
-            double maxTime = Math.Max(note.StartTime, data.EffectiveTime);
+            double maxTime = data.EffectiveTime;//Math.Max(note.StartTime, data.EffectiveTime);
 
             if (data.ActionProbability > 0)
             {
@@ -473,38 +473,38 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         //Functions below are identical, but splitting them may be useful in future.
         private static double timeToSpeedSnap(double time)
         {
-            double amplitude = 20.5; //governs how much very low precision values are worth
+            double amplitude = 20.2; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 40.0; //normalises shift
+            double pace = 33.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return 0.9 * speed / 10000;
+            return 0.95 * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
         {
-            double amplitude = 20.5; //governs how much very low precision values are worth
+            double amplitude = 20.2; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 40.0; //normalises shift
+            double pace = 33.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 1.1 * speed / 10000;
+            return 1.08 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
         {
-            double amplitude = 20.5; //governs how much very low precision values are worth
+            double amplitude = 20.4; //governs how much very low precision values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 40.0; //normalises shift
+            double pace = 36.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return 1.2 * speed / 10000;
+            return 1.16 * speed / 10000;
         }
     }
 }
