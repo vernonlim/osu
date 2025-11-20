@@ -78,15 +78,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double clockRate = ModUtils.CalculateRateWithMods(score.Mods);
 
-            double catcherVelocityCorrection = 0.8; // For DT (HT), real reaction time is lower (higher) than pure AR-based AR because of changed catcher's velocity
             double correctedClockRate = 1.0 + (clockRate - 1.0) * 0.8; //AR9+DT is approximately AR10.15 after correction
 
             double preempt = IBeatmapDifficultyInfo.DifficultyRange(difficulty.ApproachRate, 1800, 1200, 450) / correctedClockRate;
 
-            double flashlightVisibilityTime = 203.125 * 0.77 / 440.0; //203.125 pixels above catcher are visible at 200 combo; 440 pixels is the height of the visible playfield
+            const double flashlight_visibility_time = 203.125 * 0.77 / 440.0; //203.125 pixels above catcher are visible at 200 combo; 440 pixels is the height of the visible playfield
 
             if (score.Mods.Any(m => m is ModFlashlight))
-                preempt *= flashlightVisibilityTime;
+                preempt *= flashlight_visibility_time;
 
             double approachRate = preempt > 1200.0 ? (1800.0 - preempt) / 120.0 : (1200.0 - preempt) / 150.0 + 5.0;
 
@@ -110,8 +109,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double circleSize = difficulty.CircleSize;
-            double circleSizePower = 1.5;
-            double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circleSizePower) * 0.32;
+            const double circle_size_power = 1.5;
+            double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circle_size_power) * 0.32;
 
             value *= 1 + circleSizeBonus;
 
