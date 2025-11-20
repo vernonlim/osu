@@ -51,18 +51,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double totalActions = totalMovements + totalAims;
 
-            int hyperWalkCount = DifficultyHitObjects.Count(n => ((CatchDifficultyHitObject)n).MovementData.IsHyperWalk);
-
             List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).StartTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
             List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
-
-            List<double> sameSpeedStrains = skills.OfType<BurstSpeed>().Single().GetObjectStrains().ToList();
-            List<double> delayedSameSpeedStrains = skills.OfType<ConsistencySpeed>().Single().GetObjectStrains().ToList();
-            List<double> alternatingSpeedStrains = skills.OfType<SnapSpeed>().Single().GetObjectStrains().ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
@@ -85,28 +79,51 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 
+            var difficulty = beatmap.BeatmapInfo.Difficulty.Clone();
+            double approachRate = difficulty.ApproachRate;
+            double circleSize = difficulty.CircleSize;
+
             double sr = calculateSr(notes, sorted);
             List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
             double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
-            double aim = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, zeroes, aimStrains, readingFactors));
-            double sameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, sameSpeedStrains, zeroes, readingFactors));
-            double delayedSameSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, delayedSameSpeedStrains, zeroes, readingFactors));
-            double alternatingSpeed = calculateSr(startTimes, combineStrains(actionProbabilities, zeroes, alternatingSpeedStrains, zeroes, readingFactors));
+
+            double adjustedApproachRate = CatchPerformanceCalculator.CalculateApproachRate(mods, approachRate, CatchPerformanceCalculator.CorrectedClockRate(clockRate));
+
+            double approachRateFactor = 1.0;
+            if (adjustedApproachRate > 9.5)
+                approachRateFactor += 0.15 * (adjustedApproachRate - 9.5); // 15% for each AR above 9.5
+            if (adjustedApproachRate > 10.2)
+                approachRateFactor += 0.25 * (adjustedApproachRate - 10.2); // Additional 20% at AR 11, 42.5% total
+            if (adjustedApproachRate > 11)
+                approachRateFactor += 0.1 * (adjustedApproachRate - 11.0); // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
+
+            approachRateFactor = Math.Sqrt(approachRateFactor);
+
+            if (mods.Any(m => m is ModHidden))
+            {
+                // Hiddens gives almost nothing on max approach rate, and more the lower it is
+                if (adjustedApproachRate <= 10.0)
+                    sr *= Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
+                else if (adjustedApproachRate > 10.0)
+                    sr *= Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+            }
+
+            const double circle_size_power = 1.5;
+            double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circle_size_power) * 0.32;
+            double circleSizeFactor = Math.Sqrt(1 + circleSizeBonus);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = sr,
+                StarRating = sr * approachRateFactor * circleSizeFactor,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
+                ApproachRateFactor = approachRateFactor,
+                CircleSizeFactor = circleSizeFactor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                BurstSR = sameSpeed,
-                ConsistencySR = delayedSameSpeed,
-                SnapSR = alternatingSpeed,
-                AimSR = aim,
                 StarRatingWithMisses = srWithMisses,
             };
 
@@ -172,7 +189,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             const double x2 = 6.55;
             const double y2 = 8.0;
-
 
             if (sr <= x0) return CatchPreprocessingUtils.Lerp(sr, 0.0, 0.0, x0, y0);
             if (sr <= x1) return CatchPreprocessingUtils.Lerp(sr, x0, y0, x1, y1);

@@ -16,6 +16,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("total_actions")]
         public double TotalActions { get; set; }
 
+        [JsonProperty("ar_factor")]
+        public double ApproachRateFactor { get; set; }
+
+        [JsonProperty("cs_factor")]
+        public double CircleSizeFactor { get; set; }
+
         /// <summary>
         /// Temporary debug property.
         /// </summary>
@@ -27,21 +33,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// </summary>
         [JsonProperty("speed_sr")]
         public double SpeedSR { get; set; }
-
-        [JsonProperty("burst_sr")]
-        public double BurstSR { get; set; }
-
-        [JsonProperty("consistency_sr")]
-        public double ConsistencySR { get; set; }
-
-        [JsonProperty("snap_sr")]
-        public double SnapSR { get; set; }
-
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("aim_sr")]
-        public double AimSR { get; set; }
 
         public IReadOnlyList<double> StarRatingWithMisses { get; set; } = new List<double> { 0, 0, 0, 0, 0 };
 
