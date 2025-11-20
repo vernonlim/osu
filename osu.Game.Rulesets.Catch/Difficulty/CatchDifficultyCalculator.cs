@@ -105,6 +105,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
             double hiddenFactor = 1.0;
+            double hiddenFullBonusSR = 4.5;
 
             if (mods.Any(m => m is ModHidden))
             {
@@ -113,11 +114,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
                     hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+
+                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hiddenFullBonusSR, sr) / hiddenFullBonusSR; // Easier maps have lower AR by default; HD doesn't change much there
             }
 
             const double circle_size_power = 1.5;
-            double circleSizeBonus = Math.Pow(Math.Max(0, circleSize - 3.0) / 10, circle_size_power) * 0.32;
-            double circleSizeFactor = Math.Sqrt(1 + circleSizeBonus);
+            double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.0) / 10.0, circle_size_power) * 0.32;
+            double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
