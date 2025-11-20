@@ -510,7 +510,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / note.CatcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0))
+                    if (next.DeltaPosition / note.CatcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0) && !note.IsHyper)
                     {
                         // wiggle
                         data.StackWiggleCount += 1;
@@ -545,7 +545,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount);
                     bool isWigglingBetter = next.DeltaPosition / note.CatcherWidth >= catcherStandingWidthBoundary;
 
-                    if (isWigglingBetter)
+                    if (isWigglingBetter && !note.IsHyper)
                     {
                         data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
                         data.NotePattern = Classify(note, prev, next, true);
