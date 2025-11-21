@@ -31,10 +31,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 0.9;
         private const uint hyperchain_note_count = 8;
 
+        private const double non_hyperchain_penalty = 0.95;
+        private const uint non_hyperchain_note_count = 4;
+
         private const double high_velocity_nerf = 0.1;
         private const double high_velocity_threshold = 4.0;
 
-        private const double high_distance_buff = 0.2;
+        private const double high_distance_buff = 0.25;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
@@ -48,6 +51,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             implicitRhythmPenalty(actionNotes);
             similarDistancePenalty(actionNotes);
             hyperchainPenalty(cdhos);
+            nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos);
             highDistanceBuff(cdhos);
         }
@@ -194,6 +198,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / hyperchain_note_count, 1);
+                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                }
+                else
+                {
+                    counter = 0;
+                }
+            }
+        }
+
+        private static void nonHyperchainPenalty(List<CatchDifficultyHitObject> actionNotes)
+        {
+            double counter = 0;
+            const double raw_penalty = (1.0 - non_hyperchain_penalty);
+
+            // doesn't count first note
+            for (int i = 3; i < actionNotes.Count; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
+                CatchDifficultyHitObject prevPrev = actionNotes[i - 2];
+
+                if (!note.IsHyper && !prev.IsHyper && !prevPrev.IsHyper || (counter>0 && note.MovementData.ActionProbability < 0.15))
+                {
+                    counter++;
+                    double penalty = raw_penalty * Math.Min(counter / non_hyperchain_note_count, 1);
                     note.ReadingData.ReadingFactors.Add(1.0 - penalty);
                 }
                 else

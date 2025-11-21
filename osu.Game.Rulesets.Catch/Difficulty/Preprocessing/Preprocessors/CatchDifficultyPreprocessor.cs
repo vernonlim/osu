@@ -214,10 +214,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            double amplitude = 50; //governs how much very low precision values are worth
+            double amplitude = 42.0; //governs how much very low precision values are worth
             double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -2.0; //shifts the boundary between concave and convex part (shifts the curve)
-            double pace = 38.0; //measures how fast strain decreases between easy and hard jumps
+            double shift = -10.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double pace = 35.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
@@ -427,8 +427,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
             double effective_difference = note.StartTime - data.EffectiveTime;
             double maxTime = data.EffectiveTime;
-            if (effective_difference >= 0.1 * note.DeltaTime)
-                maxTime = note.StartTime - 0.1 * note.DeltaTime;
+            if (effective_difference >= 0.05 * note.DeltaTime)
+                maxTime = note.StartTime - 0.05 * note.DeltaTime;
 
             if (data.ActionProbability > 0)
             {
@@ -479,11 +479,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double amplitude = 19.1; //governs how much very low speed values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 38.0; //normalises shift
+            double pace = 50.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return 0.92 * speed / 10000;
+            return 0.85 * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
@@ -491,11 +491,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double amplitude = 19.1; //governs how much very low speed values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 38.0; //normalises shift
+            double pace = 50.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 1.06 * speed / 10000;
+            return 0.95 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
@@ -503,11 +503,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double amplitude = 19.1; //governs how much very low speed values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 38.0; //normalises shift
+            double pace = 55.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return 1.16 * speed / 10000;
+            return 1.03 * speed / 10000;
         }
     }
 }

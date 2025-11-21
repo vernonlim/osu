@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
         {
             (double maxSpeed, _) = EvaluateMaxSpeed(current);
 
-            return 11.5 * maxSpeed * ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
+            return 9.0 * maxSpeed * ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
         }
 
         public static (double, SpeedType) EvaluateMaxSpeed(DifficultyHitObject current)
