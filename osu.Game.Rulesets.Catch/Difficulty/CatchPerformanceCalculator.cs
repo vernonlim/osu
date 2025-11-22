@@ -70,7 +70,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 original *= Math.Min(Math.Pow(score.MaxCombo, 0.35) / Math.Pow(catchAttributes.MaxCombo, 0.35), 1.0);
 
             // We take the maximum of the original SR with old scaling and misscount-adjusted SR with new scaling
-            double value = Math.Max(original, withMiss);
+            double value = numMiss == 0 ? original : 0.95 * Math.Max(original, withMiss);
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 

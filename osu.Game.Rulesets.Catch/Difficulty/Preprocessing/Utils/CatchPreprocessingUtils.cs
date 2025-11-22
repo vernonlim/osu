@@ -213,7 +213,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             if (standingTime == null)
                 return 2.0;
 
-            const double distanceExponent = 1.9;  // p
+            const double distanceExponent = 2.0;  // p
             const double timeExponent = 1.5;      // q
             const double distanceSensitivity = 10.0; // k
 

@@ -483,7 +483,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return 0.85 * speed / 10000;
+            return 0.91 * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
@@ -495,7 +495,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 0.95 * speed / 10000;
+            return 0.98 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)

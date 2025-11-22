@@ -15,7 +15,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double local_rhythm_range = 20.0;
         private const double local_rhythm_sensitivity = 2.0;
 
-        private const double explicit_rhythm_penalty = 0.93;
+        private const double explicit_rhythm_penalty = 0.94;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_leniency = 0.1;
 
@@ -23,21 +23,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const double similar_distance_penalty = 0.85;
+        private const double similar_distance_penalty = 0.8;
         private const uint similar_distance_note_count = 3;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
 
         private const double hyperchain_penalty = 0.9;
-        private const uint hyperchain_note_count = 8;
+        private const uint hyperchain_note_count = 6;
 
-        private const double non_hyperchain_penalty = 0.95;
+        private const double non_hyperchain_penalty = 0.94;
         private const uint non_hyperchain_note_count = 4;
 
         private const double high_velocity_nerf = 0.1;
         private const double high_velocity_threshold = 4.0;
 
-        private const double high_distance_buff = 0.25;
+        private const double high_distance_buff = 0.2;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
@@ -92,7 +92,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double lower = prevDelta * (1.0 - explicit_rhythm_leniency);
                 double higher = prevDelta * (1.0 + explicit_rhythm_leniency);
 
-                if ((delta > lower && delta < higher)) //|| (delta / 2 > lower && delta / 2 < higher) || (delta * 2 > lower && delta * 2 < higher))
+                if (delta > lower && delta < higher)
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
@@ -150,10 +150,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (prev.IsHyper)
                     continue;
 
-                double ratio = Math.Abs(note.DeltaPosition - distanceToRemember) / Math.Max(note.DeltaPosition, distanceToRemember);
-                double halfRatio = Math.Abs(ratio - 0.5);
+                double higher = Math.Max(note.DeltaPosition, distanceToRemember);
+                double lower = Math.Min(note.DeltaPosition, distanceToRemember);
 
-                if (ratio <= similar_distance_leniency)
+                double ratio = (higher - lower) / higher;
+                double halfRatio = (higher - lower) / Math.Max(lower, higher / 2.0);
+
+                if (ratio <= similar_distance_leniency || halfRatio <= similar_distance_leniency)
                 {
                     counter = Math.Min(counter + 1, similar_distance_note_count);
                     if (counter == similar_distance_note_count)
