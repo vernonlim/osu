@@ -259,13 +259,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             foreach ((double time, double strain) in filteredNotes)
             {
-                double originalWeight = weight;
-                // First note weighted with 90%, second with 85%, next with 90%^counter
-                if (counter == 1)
-                    weight = Math.Pow(originalWeight, 1.5);
-                if (counter == 2)
-                    weight = Math.Pow(originalWeight, 2.0);
-
                 if (skipSets.Count < limit)
                 {
                     if (isTimeInSets(skipSets, time))
@@ -281,23 +274,35 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 {
                     while (stack.Count != 0)
                     {
-                        difficulty += stack.Pop() * weight;
-                        weight *= decay_weight;
+                        double newWeight = (counter == 1)
+                            ? Math.Pow(weight, 1.5)
+                            : Math.Pow(weight, Math.Max(1, counter));
+
+                        difficulty += stack.Pop() * newWeight;
+                        counter++;
                     }
                 }
 
                 if (isTimeInSets(missSets, time))
                     continue;
 
+                double appliedWeight = (counter == 1)
+                    ? Math.Pow(weight, 1.5)
+                    : Math.Pow(weight, Math.Max(1, counter));
+
+                difficulty += strain * appliedWeight;
+
                 counter++;
-                difficulty += strain * weight;
-                weight *= decay_weight;
             }
 
             while (stack.Count != 0)
             {
-                difficulty += stack.Pop() * weight;
-                weight *= decay_weight;
+                double finalWeight = (counter == 1)
+                    ? Math.Pow(weight, 1.5)
+                    : Math.Pow(weight, Math.Max(1, counter));
+
+                difficulty += stack.Pop() * finalWeight;
+                counter++;
             }
 
             return difficulty;
