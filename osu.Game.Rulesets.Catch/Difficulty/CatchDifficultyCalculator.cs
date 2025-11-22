@@ -239,9 +239,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 filteredNotes.Add(note);
             }
 
-            double difficulty = 0.0;
-            double weight = 1.0;
-
             Stack<double> stack = new Stack<double>();
             List<(double, double)> skipSets = new List<(double, double)>();
             List<(double, double)> missSets = new List<(double, double)>();
@@ -256,8 +253,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 missSets.Add((notes[lower].Item1, notes[upper].Item1));
             }
 
+            double difficulty = 0.0;
+            double weight = 0.9;
+            int counter = 0;
+
             foreach ((double time, double strain) in filteredNotes)
             {
+                double originalWeight = weight;
+                // First note weighted with 90%, second with 85%, next with 90%^counter
+                if (counter == 1)
+                    weight = Math.Pow(originalWeight, 1.5);
+                if (counter == 2)
+                    weight = Math.Pow(originalWeight, 2.0);
+
                 if (skipSets.Count < limit)
                 {
                     if (isTimeInSets(skipSets, time))
@@ -281,6 +289,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (isTimeInSets(missSets, time))
                     continue;
 
+                counter++;
                 difficulty += strain * weight;
                 weight *= decay_weight;
             }
