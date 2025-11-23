@@ -208,26 +208,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth)
+        public static double CalculatePrecisionCorrection(double position, double deltaTime, double catcherWidth, double furthestForward)
         {
-            if (standingTime == null)
-                return 2.0;
+            const double timeExponent = 1.0;
 
-            const double distanceExponent = 2.0;  // p
-            const double timeExponent = 1.5;      // q
-            const double distanceSensitivity = 10.0; // k
+            double distance = Math.Abs(position - furthestForward);
 
-            double dRatio = distance / catcherWidth;
-            double tRatio = 2.0 * standingTime.Value / catcherWidth;
+            double standingTime = Math.Max(0.0, deltaTime - distance);
 
-            double timeExp = Math.Exp(-Math.Pow(tRatio, timeExponent));
+            double timeRatio = Math.Min(1.0, 2.0 * standingTime / catcherWidth); // If player can stand for more than c/2, they has to wait until being able to catch the note - precision correction doesn't grow
 
-            // exp(-k * (d/c)^p)
-            double distanceEffect = Math.Exp(-distanceSensitivity * Math.Pow(dRatio, distanceExponent));
-
-            // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
-            double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
-
+            double value = 1.0 + Math.Pow(timeRatio, timeExponent);
             return Math.Clamp(value, 1.0, 2.0);
         }
 
