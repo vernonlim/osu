@@ -41,7 +41,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        public static void Process(List<DifficultyHitObject> hitObjects)
+        public static void Process(List<DifficultyHitObject> hitObjects, double circleSize)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
             List<CatchDifficultyHitObject> actionNotes = cdhos.Where(n => n.MovementData.ActionProbability == 1).ToList();

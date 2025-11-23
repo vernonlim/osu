@@ -26,6 +26,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private const double difficulty_multiplier = 0.015;
 
         private float catcherWidth;
+        private float circleSize;
 
         public override int Version => 20250306;
 
@@ -385,7 +386,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchMovementPreprocessor.Process(objects);
             CatchDifficultyPreprocessor.Process(objects);
-            CatchReadingPreprocessor.Process(objects);
+            CatchReadingPreprocessor.Process(objects, circleSize);
             CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
             // CatchPreprocessorTest.Process(objects, beatmap);
 
@@ -395,6 +396,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
             catcherWidth = Catcher.CalculateCatchWidth(beatmap.Difficulty);
+
+            var difficulty = beatmap.BeatmapInfo.Difficulty.Clone();
+            mods.OfType<IApplicableToDifficulty>().ForEach(m => m.ApplyToDifficulty(difficulty));
+
+            circleSize = difficulty.CircleSize;
 
             return new Skill[]
             {
