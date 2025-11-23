@@ -119,9 +119,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hiddenFullBonusSR, sr) / hiddenFullBonusSR; // Easier maps have lower AR by default; HD doesn't change much there
             }
 
-            const double circle_size_power = 1.4;
-            double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.5) / 10.0, circle_size_power) * 0.5;
-            double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
+            // const double circle_size_power = 1.4;
+            // double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.5) / 10.0, circle_size_power) * 0.5;
+            // double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
+            double circleSizeFactor = 1.0;
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {

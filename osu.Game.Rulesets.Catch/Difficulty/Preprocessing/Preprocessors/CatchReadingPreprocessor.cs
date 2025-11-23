@@ -31,7 +31,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 0.9;
         private const uint hyperchain_note_count = 6;
 
-        private const double non_hyperchain_penalty = 0.94;
+        private const double non_hyperchain_penalty = 0.9;
         private const uint non_hyperchain_note_count = 4;
 
         private const double high_velocity_nerf = 0.1;
@@ -40,6 +40,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_buff = 0.2;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
+
+        private const double high_CS_threshold = 4.0;
+        private const double high_CS_power = 1.25;
+        private const double high_CS_rate = 0.36;
+        private const double high_CS_penalty_hypers = 0.7;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize)
         {
@@ -54,6 +59,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos);
             highDistanceBuff(cdhos);
+            highCSBuff(actionNotes, circleSize);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -261,6 +267,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * Math.Pow((average_distance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power));
                 }
+            }
+        }
+
+        private static void highCSBuff(List<CatchDifficultyHitObject> actionNotes, double circleSize)
+        {
+            double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - high_CS_threshold) / 10.0, high_CS_power) * high_CS_rate;
+            double circleSizeBonusHypers = high_CS_penalty_hypers * circleSizeBonus;
+
+            for (int i = 0; i < actionNotes.Count - 1; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                if (note.IsHyper)
+                    note.ReadingData.ReadingFactors.Add(1.0 + circleSizeBonusHypers);
+                else
+                    note.ReadingData.ReadingFactors.Add(1.0 + circleSizeBonus);
             }
         }
     }
