@@ -78,7 +78,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             mods.OfType<IApplicableToDifficulty>().ForEach(m => m.ApplyToDifficulty(difficulty));
 
             double approachRate = difficulty.ApproachRate;
-            double circleSize = difficulty.CircleSize;
 
             double sr = calculateSr(notes, sorted);
             List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
@@ -99,7 +98,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
             double hiddenFactor = 1.0;
-            double hiddenFullBonusSR = 4.5;
+            const double hidden_full_bonus_sr = 4.5;
 
             if (mods.Any(m => m is ModHidden))
             {
@@ -109,26 +108,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 else if (adjustedApproachRate > 10.0)
                     hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
 
-                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hiddenFullBonusSR, sr) / hiddenFullBonusSR; // Easier maps have lower AR by default; HD doesn't change much there
+                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr; // Easier maps have lower AR by default; HD doesn't change much there
             }
 
             // const double circle_size_power = 1.4;
             // double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.5) / 10.0, circle_size_power) * 0.5;
             // double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
-            double circleSizeFactor = 1.0;
+            const double circle_size_factor = 1.0;
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = sr * approachRateFactor * circleSizeFactor * hiddenFactor,
+                StarRating = sr * approachRateFactor * circle_size_factor * hiddenFactor,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
                 ApproachRateFactor = approachRateFactor,
                 HiddenFactor = hiddenFactor,
-                CircleSizeFactor = circleSizeFactor,
+                CircleSizeFactor = circle_size_factor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circleSizeFactor * hiddenFactor).ToList(),
+                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circle_size_factor * hiddenFactor).ToList(),
             };
 
             return attributes;
@@ -216,8 +215,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
         /// </summary>
-        /// <param name="startTimes"></param>
-        /// <param name="strains"></param>
+        /// <param name="notes"></param>
+        /// <param name="sorted"></param>
         /// <param name="missCount"></param>
         /// <returns></returns>
         private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
@@ -262,7 +261,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double difficulty = 0.0;
-            double weight = 0.9;
+            const double weight = decay_weight;
             int counter = 0;
 
             foreach ((double time, double strain) in filteredNotes)
