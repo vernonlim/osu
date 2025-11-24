@@ -143,6 +143,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         private void nerfBeginning(List<(double, double)> notes)
         {
+            if (notes.Count < 2)
+            {
+                return;
+            }
+
             const double time_penalty_cutoff = 60000;
             const double time_penalty_power = 0.23;
 
@@ -385,11 +390,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lastObject = hitObject;
             }
 
-            CatchMovementPreprocessor.Process(objects);
-            CatchDifficultyPreprocessor.Process(objects);
-            CatchReadingPreprocessor.Process(objects, circleSize);
-            CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
-            // CatchPreprocessorTest.Process(objects, beatmap);
+            if (objects.Count >= 2)
+            {
+                CatchMovementPreprocessor.Process(objects);
+                CatchDifficultyPreprocessor.Process(objects);
+                CatchReadingPreprocessor.Process(objects, circleSize);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
+                CatchPreprocessorTest.Process(objects, beatmap);
+            }
 
             return objects;
         }
