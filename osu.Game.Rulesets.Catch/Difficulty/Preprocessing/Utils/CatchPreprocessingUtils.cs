@@ -213,7 +213,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             const double catcherExponent = 1.0;
             const double timeExponent = 1.0;
             const double distanceExponent = 0.7;
-            const double maxCorrection = 0.5;
+            const double maxCorrection = 0.2;
 
             if (deltaTime == 0)
                 return 1.0 + maxCorrection;

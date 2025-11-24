@@ -214,9 +214,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            double amplitude = 42.0; //governs how much very low precision values are worth
+            double amplitude = 52.0; //governs how much very low precision values are worth
             double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -10.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double shift = 0.0; //shifts the boundary between concave and convex part (shifts the curve)
             double pace = 35.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
@@ -513,7 +513,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 1.0 * speed / 10000;
+            return 1.02 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
@@ -525,7 +525,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return 1.05 * speed / 10000;
+            return 1.1 * speed / 10000;
         }
     }
 }
