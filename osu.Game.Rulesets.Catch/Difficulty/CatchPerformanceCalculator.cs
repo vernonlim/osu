@@ -85,7 +85,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.15 * catchAttributes.MaxCombo;
 
             double lengthBonus =
-                0.95 + 0.3 * Math.Min(1.0, totalActions / 1500.0) +
+                0.95 + 0.35 * Math.Min(1.0, totalActions / 1500.0) +
                 (totalActions > 1500 ? Math.Log10(totalActions / 1500.0) * 0.3 : 0.0);
 
             // Length bonus should depend on approachRate (including FlashLight): if it's high enough, it's either draining or it requires memorisation
@@ -95,9 +95,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lengthBonus *= 1.2;
 
             value *= Math.Pow(accuracy(), 5.5);
-
-            if (score.Mods.Any(m => m is ModFlashlight))
-                value *= Math.Max(0.90, 1.0 - 0.01 * numMiss); // Playing with FlashLight is easier after missing as visible area is larger
 
             if (score.Mods.Any(m => m is ModNoFail))
                 value *= Math.Max(0.90, 1.0 - 0.02 * numMiss);

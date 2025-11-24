@@ -112,7 +112,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 10.0)
-                    hiddenFactor = Math.Sqrt(1.04 + 0.125 * (10.0 - adjustedApproachRate)); // 12.5% for each AR below 10
+                    hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
                     hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
 
@@ -351,7 +351,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            return Math.Max(precisionStrain, speedStrain) + 0.8 * Math.Min(precisionStrain, speedStrain) - 0.2 * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
+            return Math.Max(precisionStrain, speedStrain) + 0.8 * Math.Min(precisionStrain, speedStrain) + 0.3 * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
             //return Math.Pow(Math.Pow(precisionStrain, alpha) + Math.Pow(speedStrain, alpha), 1 / alpha);
             //return precisionStrain + speedStrain;
             //return 1.1 * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) - 0.2 * precisionStrain * speedStrain);
