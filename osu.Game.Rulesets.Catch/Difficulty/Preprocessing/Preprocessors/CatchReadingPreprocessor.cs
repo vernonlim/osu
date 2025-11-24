@@ -11,11 +11,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
     public static class CatchReadingPreprocessor
     {
-        private const double local_rhythm_penalty = 0.95;
+        private const double local_rhythm_penalty = 0.94;
         private const double local_rhythm_range = 20.0;
         private const double local_rhythm_sensitivity = 2.0;
 
-        private const double explicit_rhythm_penalty = 0.94;
+        private const double explicit_rhythm_penalty = 0.93;
         private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_leniency = 0.1;
 
@@ -31,13 +31,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double hyperchain_penalty = 0.9;
         private const uint hyperchain_note_count = 6;
 
-        private const double non_hyperchain_penalty = 0.9;
+        private const double non_hyperchain_penalty = 0.96;
         private const uint non_hyperchain_note_count = 4;
 
         private const double high_velocity_nerf = 0.1;
         private const double high_velocity_threshold = 4.0;
 
-        private const double high_distance_buff = 0.2;
+        private const double high_distance_buff = 0.22;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 

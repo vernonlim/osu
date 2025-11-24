@@ -169,12 +169,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
-                    data.PrecisionStrain = (0.85 * data.RawPrecisionStrain + 0.15 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = (0.84 * data.RawPrecisionStrain + 0.16 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.HyperjumpAfterJump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
-                else if (data.NotePattern == PatternType.Jumps)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.88 * data.RawPrecisionStrain + 0.12 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.JumpAfterHyperjump)
+                    data.PrecisionStrain = data.PrecisionStrain = (0.93 * data.RawPrecisionStrain + 0.07 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                else if (data.NotePattern == PatternType.Jumps)
                     data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else
                     data.PrecisionStrain = 1.0 * data.RawPrecisionStrain * data.ActionProbability;
@@ -214,10 +214,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            double amplitude = 42.0; //governs how much very low precision values are worth
+            double amplitude = 44.5; //governs how much very low precision values are worth
             double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -10.0; //shifts the boundary between concave and convex part (shifts the curve)
-            double pace = 35.0; //measures how fast strain decreases between easy and hard jumps
+            double shift = -8.0; //shifts the boundary between concave and convex part (shifts the curve)
+            double pace = 33.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
@@ -483,7 +483,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return 0.91 * speed / 10000;
+            return 0.88 * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
@@ -495,7 +495,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 0.98 * speed / 10000;
+            return 1.01 * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
@@ -503,11 +503,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             double amplitude = 19.1; //governs how much very low speed values are worth
             double limit = 1.0; //speed strain for very high speed values (easy jumps)
             double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 55.0; //normalises shift
+            double pace = 52.0; //normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return 1.03 * speed / 10000;
+            return 1.1 * speed / 10000;
         }
     }
 }

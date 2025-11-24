@@ -51,7 +51,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             if (numMiss > 0)
             {
-                withMiss *= 0.96;
+                if (score.Mods.Any(m => m is ModFlashlight))
+                    withMiss *= 0.95; // Playing FlashLight is easier after missing as the visible area is larger
+                else
+                    withMiss *= 0.96;
             }
 
             withMiss *= Math.Pow(0.985, Math.Max(0, numMiss - 1));
@@ -81,12 +84,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double approachRate = CalculateApproachRate(score.Mods, difficulty.ApproachRate, CorrectedClockRate(clockRate));
 
             // Longer maps are worth more. "Longer" means how many hits there are approximately
-            // We add some undetected actions approximated with 15% of the maximum combo
-            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.15 * catchAttributes.MaxCombo;
+            // We add some undetected actions approximated with 20% of the maximum combo
+            double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.2 * catchAttributes.MaxCombo;
 
             double lengthBonus =
-                0.95 + 0.35 * Math.Min(1.0, totalActions / 1500.0) +
-                (totalActions > 1500 ? Math.Log10(totalActions / 1500.0) * 0.3 : 0.0);
+                0.95 + 0.28 * Math.Min(1.0, totalActions / 1600.0) +
+                (totalActions > 1600 ? Math.Log10(totalActions / 1600.0) * 0.3 : 0.0);
 
             // Length bonus should depend on approachRate (including FlashLight): if it's high enough, it's either draining or it requires memorisation
             lengthBonus = Math.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 10.5) / 2.0);
@@ -100,6 +103,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 value *= Math.Max(0.90, 1.0 - 0.02 * numMiss);
 
             double lengthBonusPP = value * lengthBonus - value;
+
+            value *= 1.08;
 
             return new CatchPerformanceAttributes
             {

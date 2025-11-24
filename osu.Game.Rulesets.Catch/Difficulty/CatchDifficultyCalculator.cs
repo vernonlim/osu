@@ -144,7 +144,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private void nerfBeginning(List<(double, double)> notes)
         {
             const double time_penalty_cutoff = 60000;
-            const double time_penalty_power = 0.23;
+            const double time_penalty_power = 0.2;
 
             double firstNoteStartTime = notes[0].Item1;
 
@@ -185,7 +185,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             sr = srScaler(sr);
 
-            sr *= 1.02;
+            sr *= 1.07;
 
             return sr;
         }
@@ -196,23 +196,31 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             const double y0 = 2.0;
 
             const double x1 = 4.23;
-            const double y1 = 4.78;
+            const double y1 = 4.6;
 
-            const double x2 = 5.42;
-            const double y2 = 6.24;
+            const double x2 = 6.5;
+            const double y2 = 7.0;
 
-            const double x3 = 6.60;
-            const double y3 = 7.8;
+            const double x3 = 7.5;
+            const double y3 = 8.7;
 
-            const double x4 = 8.43;
-            const double y4 = 10.7;
+            const double x4 = 8.5;
+            const double y4 = 9.4;
+
+            const double x5 = 9.0;
+            const double y5 = 10.2;
+
+            const double x6 = 9.5;
+            const double y6 = 11.0;
 
             if (sr <= x0) return CatchPreprocessingUtils.Lerp(sr, 0.0, 0.0, x0, y0);
             if (sr <= x1) return CatchPreprocessingUtils.Lerp(sr, x0, y0, x1, y1);
             if (sr <= x2) return CatchPreprocessingUtils.Lerp(sr, x1, y1, x2, y2);
             if (sr <= x3) return CatchPreprocessingUtils.Lerp(sr, x2, y2, x3, y3);
+            if (sr <= x4) return CatchPreprocessingUtils.Lerp(sr, x3, y3, x4, y4);
+            if (sr <= x5) return CatchPreprocessingUtils.Lerp(sr, x4, y4, x5, y5);
 
-            return CatchPreprocessingUtils.Lerp(sr, x3, y3, x4, y4);
+            return CatchPreprocessingUtils.Lerp(sr, x5, y5, x6, y6);
         }
 
         /// <summary>
@@ -351,7 +359,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            return Math.Max(precisionStrain, speedStrain) + 0.8 * Math.Min(precisionStrain, speedStrain) + 0.3 * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
+            return 1.05 * Math.Max(precisionStrain, speedStrain) + 0.85 * Math.Min(precisionStrain, speedStrain) + 0.18 * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
             //return Math.Pow(Math.Pow(precisionStrain, alpha) + Math.Pow(speedStrain, alpha), 1 / alpha);
             //return precisionStrain + speedStrain;
             //return 1.1 * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) - 0.2 * precisionStrain * speedStrain);
