@@ -16,7 +16,43 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             List<CatchDifficultyHitObject> catchHitObjects = hitObjects.OfType<CatchDifficultyHitObject>().ToList();
 
+            // testCatcherPositions(catchHitObjects, beatmap);
             testEffectiveTime(catchHitObjects, beatmap);
+            testPrecision(catchHitObjects, beatmap);
+        }
+
+        private static bool testCatcherPositions(List<CatchDifficultyHitObject> catchHitObjects, IBeatmap beatmap)
+        {
+            foreach (CatchDifficultyHitObject catchHitObject in catchHitObjects)
+            {
+                CatchMovementData data = catchHitObject.MovementData;
+
+                if (data.LeftCatcherPosition > data.RightCatcherPosition)
+                {
+                    printMapInformation(beatmap);
+                    Console.WriteLine($"At time {catchHitObject.StartTime}, Left Catcher Position {data.LeftCatcherPosition} is to the right of Right Catcher Position {data.RightCatcherPosition}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool testPrecision(List<CatchDifficultyHitObject> catchHitObjects, IBeatmap beatmap)
+        {
+            foreach (CatchDifficultyHitObject catchHitObject in catchHitObjects)
+            {
+                CatchMovementData data = catchHitObject.MovementData;
+
+                if (data.NotePrecision <= 0)
+                {
+                    printMapInformation(beatmap);
+                    Console.WriteLine($"Precision at t={catchHitObject.StartTime} is less than 0 at {data.NotePrecision}");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool testEffectiveTime(List<CatchDifficultyHitObject> catchHitObjects, IBeatmap beatmap)
@@ -27,7 +63,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             {
                 CatchMovementData data = catchHitObject.MovementData;
 
-                if (data.ActionProbability > 0.01)
+                if (data.ActionProbability > 0.01 && data.KeyPress != MovementKey.Dash)
                 {
                     if (data.EffectiveTime > maxTime)
                     {
@@ -35,18 +71,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                     }
                     else
                     {
-                        string? artist = beatmap.Metadata.Artist;
-                        string? title = beatmap.Metadata.Title;
-                        string? difficulty = beatmap.BeatmapInfo?.DifficultyName;
-                        Console.WriteLine($"Map: {artist} - {title} [{difficulty}]");
+                        printMapInformation(beatmap);
                         Console.WriteLine($"Effective Time at t={catchHitObject.StartTime:0.0} is {data.EffectiveTime:0.0}, which is lower than {maxTime:0.0}");
-                        Console.WriteLine();
+                        Console.WriteLine($"Note Pattern is {data.NotePattern}");
                         return false;
                     }
                 }
             }
 
             return true;
+        }
+
+        private static void printMapInformation(IBeatmap beatmap)
+        {
+            string? artist = beatmap.Metadata.Artist;
+            string? title = beatmap.Metadata.Title;
+            string? difficulty = beatmap.BeatmapInfo?.DifficultyName;
+            Console.WriteLine($"Map: {artist} - {title} [{difficulty}]");
+            Console.WriteLine();
         }
     }
 }

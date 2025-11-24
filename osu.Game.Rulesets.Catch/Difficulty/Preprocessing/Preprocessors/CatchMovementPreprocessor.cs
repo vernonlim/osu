@@ -118,14 +118,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             CatchMovementData data = note.MovementData;
 
-            // Breaks
-            // PatternType breakType = classifyAsBreak(note, prev, next);
-            //
-            // if (breakType != PatternType.None && !skipToDirectionChange)
-            // {
-            //     return breakType;
-            // }
-
             // Stacks
             PatternType stackType = classifyAsStack(note, prev, next);
 
@@ -148,56 +140,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             if (streamType != PatternType.None)
             {
                 return streamType;
-            }
-
-            return PatternType.None;
-        }
-
-        /// <summary>
-        /// Attempts to classify a note as a break.
-        /// </summary>
-        /// <param name="note">The current note.</param>
-        /// <param name="prev">The previous note.</param>
-        /// <param name="next">The next note.</param>
-        /// <returns>The <see cref="PatternType"/> corresponding to the break-related pattern, or null if none match.</returns>
-        private static PatternType classifyAsBreak(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
-        {
-            CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
-
-            if (!prevData.IsBreak
-                && next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
-            {
-                return next.DeltaPosition > note.CatcherWidth
-                    ? PatternType.BreakBeginningRequiringMovement
-                    : PatternType.BreakBeginningWithoutMovement;
-            }
-
-            // Breaks
-            if (prevData.IsBreak
-                && next.DeltaPosition < next.DeltaTime - note.CatcherWidth)
-            {
-                return PatternType.SingleNote;
-            }
-
-            if (prevData.IsBreak
-                && note.IsHyper)
-            {
-                return PatternType.HyperdashAfterBreak;
-            }
-
-            if (prevData.IsBreak
-                && !note.IsHyper)
-            {
-                return PatternType.EdgedashAfterBreak;
-            }
-
-            if (prevData.IsBreak
-                && next.DeltaTime > 2 * next.DeltaPosition
-                && next.DeltaPosition <= note.CatcherWidth)
-            {
-                note.MovementData.DisplayPattern = PatternType.StackAfterBreak;
-                return PatternType.StackAfterBreak;
             }
 
             return PatternType.None;
@@ -367,79 +309,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             switch (data.NotePattern)
             {
-                case PatternType.BreakBeginningRequiringMovement:
-                {
-                    data.IsBreak = true;
-                    data.ActionProbability = 1;
-                    data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
-
-                    if (prevData.KeyPress == data.KeyPress)
-                    {
-                        data.KeyPress = MovementKey.Dash;
-                    }
-
-                    data.EffectiveTime = (note.StartTime + next.StartTime) / 2.0;
-                    break;
-                }
-
-                case PatternType.BreakBeginningWithoutMovement:
-                {
-                    data.IsBreak = true;
-                    data.ActionProbability = 0;
-                    break;
-                }
-
-                case PatternType.SingleNote:
-                {
-                    data.IsBreak = true;
-                    data.ActionProbability = 0;
-                    break;
-                }
-
-                case PatternType.StackAfterBreak:
-                {
-                    data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
-                    data.RightStandingPosition = Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth);
-                    data.LeftCatcherPosition = (double)data.LeftStandingPosition;
-                    data.RightCatcherPosition = (double)data.RightStandingPosition;
-
-                    data.ActionProbability = 0;
-
-                    break;
-                }
-
-                case PatternType.HyperdashAfterBreak:
-                {
-                    data.ActionProbability = 0;
-                    // Reset
-                    data.LeftCatcherPosition = note.LeftNoteBorder;
-                    data.RightCatcherPosition = note.RightNoteBorder;
-
-                    data.EffectiveTime = (prev.StartTime + next.StartTime) / 2.0;
-                    break;
-                }
-
-                case PatternType.EdgedashAfterBreak:
-                {
-                    data.ActionProbability = 0;
-                    bool isNextRight = next.Position > note.Position;
-
-                    double backwardPosition =
-                        isNextRight
-                            ? Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth - next.DeltaTime)
-                            : Math.Min(note.Position + note.HalfCatcherWidth, next.Position + note.HalfCatcherWidth + next.DeltaTime);
-                    double forwardPosition =
-                        isNextRight
-                            ? note.Position + note.HalfCatcherWidth
-                            : note.Position - note.HalfCatcherWidth;
-
-                    data.LeftCatcherPosition = isNextRight ? backwardPosition : forwardPosition;
-                    data.RightCatcherPosition = isNextRight ? forwardPosition : backwardPosition;
-
-                    data.EffectiveTime = (prev.StartTime + next.StartTime) / 2.0;
-                    break;
-                }
-
                 case PatternType.NarrowStack:
                 {
                     data.LeftStandingPosition = Math.Max(note.Position - note.HalfCatcherWidth, next.Position - note.HalfCatcherWidth);
@@ -526,7 +395,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         if (scale != 1.0)
                         {
                             data.NotePattern = PatternType.PotentialStackAfterJumpAfterHyperjump;
-                            data.AimModifier = scale;
                         }
                     }
 
@@ -823,7 +691,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             bool beltHasAction = prev.MovementData.BeltHasAction;
 
-            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && !beltHasAction)
+            if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && !beltHasAction && (note.IsMovingRight ? prev.Position > note.Position : prev.Position < note.Position))
             {
                 prev.Position = note.Position - (next.Position - note.Position >= 0 ? -0.01 : 0.01);
                 note.IsMovingRight = note.Position >= prev.Position;

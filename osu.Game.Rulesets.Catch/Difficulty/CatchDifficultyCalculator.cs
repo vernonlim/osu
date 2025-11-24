@@ -45,24 +45,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                                     .Select(n => n.MovementData.ActionProbability)
                                     .Sum();
 
-            double totalAims = DifficultyHitObjects
-                               .Select(n =>
-                                   (CatchDifficultyHitObject)n)
-                               .Count(n =>
-                                   n.MovementData.ActionProbability < 0.03 && n.MovementData.NoteAim != null);
-
-            double totalActions = totalMovements + totalAims;
+            double totalActions = totalMovements;
 
             List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).StartTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
-            List<double> aimStrains = skills.OfType<Aim>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
-            List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, aimStrains, readingFactors);
+            List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, readingFactors);
 
             // 2B Hotfix
             for (int i = 1; i < combinedStrains.Count - 1; i++)
@@ -85,13 +78,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             mods.OfType<IApplicableToDifficulty>().ForEach(m => m.ApplyToDifficulty(difficulty));
 
             double approachRate = difficulty.ApproachRate;
-            double circleSize = difficulty.CircleSize;
 
             double sr = calculateSr(notes, sorted);
             List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
 
-            double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, zeroes, readingFactors));
-            double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, zeroes, readingFactors));
+            double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, readingFactors));
+            double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, readingFactors));
 
             double adjustedApproachRate = CatchPerformanceCalculator.CalculateApproachRate(mods, approachRate, CatchPerformanceCalculator.CorrectedClockRate(clockRate));
 
@@ -106,7 +98,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
             double hiddenFactor = 1.0;
-            double hiddenFullBonusSR = 4.5;
+            const double hidden_full_bonus_sr = 4.5;
 
             if (mods.Any(m => m is ModHidden))
             {
@@ -116,26 +108,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 else if (adjustedApproachRate > 10.0)
                     hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
 
-                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hiddenFullBonusSR, sr) / hiddenFullBonusSR; // Easier maps have lower AR by default; HD doesn't change much there
+                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr; // Easier maps have lower AR by default; HD doesn't change much there
             }
 
             // const double circle_size_power = 1.4;
             // double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.5) / 10.0, circle_size_power) * 0.5;
             // double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
-            double circleSizeFactor = 1.0;
+            const double circle_size_factor = 1.0;
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = sr * approachRateFactor * circleSizeFactor * hiddenFactor,
+                StarRating = sr * approachRateFactor * circle_size_factor * hiddenFactor,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
                 ApproachRateFactor = approachRateFactor,
                 HiddenFactor = hiddenFactor,
-                CircleSizeFactor = circleSizeFactor,
+                CircleSizeFactor = circle_size_factor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circleSizeFactor * hiddenFactor).ToList(),
+                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circle_size_factor * hiddenFactor).ToList(),
             };
 
             return attributes;
@@ -143,6 +135,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         private void nerfBeginning(List<(double, double)> notes)
         {
+            if (notes.Count < 2)
+            {
+                return;
+            }
+
             const double time_penalty_cutoff = 60000;
             const double time_penalty_power = 0.2;
 
@@ -226,8 +223,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
         /// </summary>
-        /// <param name="startTimes"></param>
-        /// <param name="strains"></param>
+        /// <param name="notes"></param>
+        /// <param name="sorted"></param>
         /// <param name="missCount"></param>
         /// <returns></returns>
         private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
@@ -272,7 +269,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double difficulty = 0.0;
-            double weight = 0.9;
+            const double weight = decay_weight;
             int counter = 0;
 
             foreach ((double time, double strain) in filteredNotes)
@@ -339,7 +336,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return false;
         }
 
-        private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> aimStrains, List<double> readingFactors)
+        private List<double> combineStrains(List<double> actionProbabilities, List<double> precisionStrains, List<double> speedStrains, List<double> readingFactors)
         {
             List<double> combinedStrains = new List<double>();
 
@@ -348,10 +345,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double actionProbability = actionProbabilities[i];
                 double precisionStrain = precisionStrains[i];
                 double speedStrain = speedStrains[i];
-                double aimStrain = aimStrains[i];
                 double readingFactor = readingFactors[i];
 
-                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor));
+                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, readingFactor));
             }
 
             return combinedStrains;
@@ -365,7 +361,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             //return 1.1 * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) - 0.2 * precisionStrain * speedStrain);
         }
 
-        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double aimStrain, double readingFactor)
+        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double readingFactor)
         {
             double plsr = CalculatePartialLocalStarRating(precisionStrain, speedStrain);
 
@@ -393,11 +389,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 lastObject = hitObject;
             }
 
-            CatchMovementPreprocessor.Process(objects);
-            CatchDifficultyPreprocessor.Process(objects);
-            CatchReadingPreprocessor.Process(objects, circleSize);
-            CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
-            // CatchPreprocessorTest.Process(objects, beatmap);
+            if (objects.Count >= 2)
+            {
+                CatchMovementPreprocessor.Process(objects);
+                CatchDifficultyPreprocessor.Process(objects);
+                CatchReadingPreprocessor.Process(objects, circleSize);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
+                // CatchPreprocessorTest.Process(objects, beatmap);
+            }
 
             return objects;
         }
@@ -413,12 +412,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             return new Skill[]
             {
-                new Aim(mods),
                 new Precision(mods),
                 new Speed(mods),
-                new SnapSpeed(mods),
-                new BurstSpeed(mods),
-                new ConsistencySpeed(mods),
                 new PartialLocalStarRating(mods),
                 new LocalStarRating(mods),
             };

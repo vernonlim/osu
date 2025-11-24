@@ -76,7 +76,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 double penalty = (1.0 - local_rhythm_penalty) * Math.Pow(1.0 - multiplier, local_rhythm_sensitivity);
 
-                note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
             }
         }
 
@@ -102,7 +102,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / explicit_rhythm_note_count, 1);
-                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                 }
                 else
                 {
@@ -133,7 +133,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / implicit_rhythm_note_count, 1);
-                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                 }
                 else
                 {
@@ -168,7 +168,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (counter == similar_distance_note_count)
                     {
                         double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - ratio / similar_distance_leniency, similar_distance_sensitivity);
-                        note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                        note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                     }
                 }
 
@@ -178,7 +178,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (counter == similar_distance_note_count)
                     {
                         double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - halfRatio / similar_distance_leniency, similar_distance_sensitivity);
-                        note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                        note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                     }
                 }
 
@@ -207,7 +207,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / hyperchain_note_count, 1);
-                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                 }
                 else
                 {
@@ -232,7 +232,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / non_hyperchain_note_count, 1);
-                    note.ReadingData.ReadingFactors.Add(1.0 - penalty);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
                 }
                 else
                 {
@@ -251,7 +251,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
                 if (prev.IsHyper && speed > high_velocity_threshold)
-                    note.ReadingData.ReadingFactors.Add(Math.Max(1.0 - high_velocity_nerf * (speed - high_velocity_threshold), 0.0));
+                    note.ReadingData.CombinedReadingFactor *= Math.Max(1.0 - high_velocity_nerf * (speed - high_velocity_threshold), 0.0);
             }
         }
 
@@ -265,7 +265,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (average_distance > high_distance_threshold)
                 {
-                    note.ReadingData.ReadingFactors.Add(1.0 + high_distance_buff * Math.Pow((average_distance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power));
+                    note.ReadingData.CombinedReadingFactor *= 1.0 + high_distance_buff * Math.Pow((average_distance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power);
                 }
             }
         }
@@ -279,9 +279,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             {
                 CatchDifficultyHitObject note = actionNotes[i];
                 if (note.IsHyper)
-                    note.ReadingData.ReadingFactors.Add(1.0 + circleSizeBonusHypers);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonusHypers;
                 else
-                    note.ReadingData.ReadingFactors.Add(1.0 + circleSizeBonus);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonus;
             }
         }
     }
