@@ -22,7 +22,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                 double actionProbability = cdho.MovementData.ActionProbability;
                 double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(cdho);
-                double aimStrain = AimEvaluator.EvaluateDifficultyOf(cdho);
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(cdho);
                 double readingFactor = cdho.ReadingData.CombinedReadingFactor;
 
@@ -32,7 +31,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 cdho.MovementData.NoteSpeed = speedStrain;
                 cdho.MovementData.PrecisionStrain = precisionStrain;
                 cdho.MovementData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
-                cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, aimStrain, readingFactor);
+                cdho.MovementData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain,readingFactor);
                 cdho.MovementData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount);
             }
         }

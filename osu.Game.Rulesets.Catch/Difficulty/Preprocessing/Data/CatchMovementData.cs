@@ -193,19 +193,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double PrecisionStrain;
 
         /// <summary>
-        /// The width in pixels of the range allowing the catching of both the previous note and the next note.
-        /// </summary>
-        /// <remarks>
-        /// Is null when the precision is not negligible.
-        /// </remarks>
-        public double? NoteAim;
-
-        /// <summary>
-        /// Temporary parameter to implement aim adjustment in stacks.
-        /// </summary>
-        public double AimModifier;
-
-        /// <summary>
         /// Speed value for actions with the same direction.
         /// </summary>
         public double BurstSpeed;
@@ -260,8 +247,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             NotePrecision = null;
             RawPrecisionStrain = 0;
             PrecisionStrain = 0;
-            NoteAim = null;
-            AimModifier = 1.0;
             NoteSpeed = 0;
 
             DirectionChangeWeight = 1;

@@ -179,8 +179,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else
                     data.PrecisionStrain = 1.0 * data.RawPrecisionStrain * data.ActionProbability;
 
-                data.NoteAim = calculateAim(note, prev, next);
-
                 var recentGuaranteed = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
                                        .Where(n => n is not null)
                                        .MaxBy(n => n!.MovementData.EffectiveTime);
@@ -370,48 +368,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Calculates the aim value for a given note.
-        /// </summary>
-        /// <param name="note"></param>
-        /// <param name="prev"></param>
-        /// <param name="next"></param>
-        /// <returns></returns>
-        private static double? calculateAim(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
-        {
-            CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
-
-            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
-
-            if (data.BeltBeginning is not null)
-            {
-                return null;
-            }
-
-            double? aim = data.NotePattern switch
-            {
-                PatternType.SingleNote => note.DeltaPosition > note.HalfCatcherWidth ? note.CatcherWidth : null,
-                PatternType.StackAfterBreak => note.CatcherWidth,
-                PatternType.EdgedashAfterBreak => Math.Abs(data.RightCatcherPosition - data.LeftCatcherPosition),
-                PatternType.HyperdashAfterBreak => note.CatcherWidth,
-                PatternType.PotentialStack => data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
-                PatternType.PotentialStackAfterJumpAfterHyperjump => (note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition)) / data.AimModifier,
-                PatternType.NarrowStack => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
-                PatternType.StackContinuation => prevData.ActionProbability == 1 && data.ActionProbability == 0 ? note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition) : null,
-                //PatternType.JumpAfterHyperjump => note.CatcherWidth * (1 - next.DeltaPosition * Math.Pow(minimalVelocity, 0.5) / (note.CatcherWidth + (Math.Pow(minimalVelocity, 0.5) - 1) * next.DeltaPosition)),
-                //PatternType.Jumps => note.CatcherWidth - Math.Min(note.DeltaPosition, next.DeltaPosition),
-                _ => null,
-            };
-
-            if (aim is not null)
-            {
-                aim = Math.Max((double)aim, 1.0);
-            }
-
-            return aim;
         }
 
         /// <summary>

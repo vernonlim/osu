@@ -10,14 +10,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
     {
         FirstNote,
 
-        // Breaks
-        BreakBeginningRequiringMovement,
-        BreakBeginningWithoutMovement,
-        SingleNote,
-        StackAfterBreak,
-        HyperdashAfterBreak,
-        EdgedashAfterBreak,
-
         // Stacks
         PotentialStack,
         PotentialStackAfterJumpAfterHyperjump,
@@ -41,8 +33,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
 
         // Special Cases
         HyperWalk,
-        CurvedStack, // We are missing 4.5.3, that will be handled in the first/last note special case logic
-        FreeStackAtPlayfieldBorder,
 
         LastNote,
         None,

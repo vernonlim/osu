@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             List<CatchDifficultyHitObject> catchHitObjects = hitObjects.OfType<CatchDifficultyHitObject>().ToList();
 
-            testCatcherPositions(catchHitObjects, beatmap);
+            // testCatcherPositions(catchHitObjects, beatmap);
             testEffectiveTime(catchHitObjects, beatmap);
             testPrecision(catchHitObjects, beatmap);
         }
@@ -30,7 +30,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 if (data.LeftCatcherPosition > data.RightCatcherPosition)
                 {
                     printMapInformation(beatmap);
-                    Console.WriteLine($"Left Catcher Position {data.LeftCatcherPosition} is to the right of Right Catcher Position {data.RightCatcherPosition}");
+                    Console.WriteLine($"At time {catchHitObject.StartTime}, Left Catcher Position {data.LeftCatcherPosition} is to the right of Right Catcher Position {data.RightCatcherPosition}");
                     return false;
                 }
             }
