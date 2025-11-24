@@ -248,7 +248,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, prevForwardCatcherPosition, note.DeltaTime, note.CatcherWidth, PatternType.HyperjumpAfterJump, note.IsMovingRight);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, note.DeltaTime, note.CatcherWidth, prevForwardCatcherPosition);
                     data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = standstillTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
@@ -261,28 +261,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, prevForwardCatcherPosition, note.DeltaTime, note.CatcherWidth, PatternType.Jumps, note.IsMovingRight);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, note.DeltaTime, note.CatcherWidth, prevForwardCatcherPosition);
                     data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = acceleratingTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
 
                     return precisionCorrection * rawPrecision;
-                }
-
-                case PatternType.PotentialStandstill:
-                {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.PotentialStandstill);
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, prevForwardCatcherPosition, note.DeltaTime, note.CatcherWidth, PatternType.PotentialStandstill, note.IsMovingRight);
-                    
-                    return precisionCorrection / 2.0 * rawPrecision;
-                }
-
-                case PatternType.AcceleratingStream:
-                {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.AcceleratingStream);
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.Position, prevForwardCatcherPosition, note.DeltaTime, note.CatcherWidth, PatternType.AcceleratingStream, note.IsMovingRight);
-                    
-                    return precisionCorrection / 2.0 * rawPrecision;
                 }
 
                 default:

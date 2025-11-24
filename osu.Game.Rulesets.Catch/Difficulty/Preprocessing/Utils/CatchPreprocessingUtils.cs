@@ -208,26 +208,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double position, double prevForwardPosition, double deltaTime, double catcherWidth, PatternType pattern, bool isMovingRight)
+        public static double CalculatePrecisionCorrection(double position, double deltaTime, double catcherWidth, double furthestForward)
         {
             const double catcherExponent = 1.0;
             const double timeExponent = 1.0;
-            const double distanceExponent = 0.7;
-            const double maxCorrection = 0.5;
 
-            if (deltaTime == 0)
-                return 1.0 + maxCorrection;
+            double distance = Math.Max(0.0, position - furthestForward);
 
-            double minDistance = isMovingRight ? Math.Max(0.0, position - prevForwardPosition) : Math.Max(0.0, prevForwardPosition - position);
-
-            double standingTime = Math.Max(0.0, deltaTime - minDistance);
+            double standingTime = Math.Max(0.0, deltaTime - distance);
 
             double catcherRatio = Math.Min(1.0, 2.0 * standingTime / catcherWidth); // If player can stand for more than c/2, they has to wait until being able to catch the note - precision correction doesn't grow
-            // double timeRatio = Math.Min(1.0, 2.0 * standingTime / deltaTime);
-            double distanceRatio = Math.Min(1.0, minDistance / catcherWidth);
+            double timeRatio = Math.Min(1.0, 2.0 * standingTime / deltaTime);
 
-            double value = 1.0 + maxCorrection * (0.5 * Math.Pow(catcherRatio, catcherExponent) + 0.5 * Math.Pow(1.0 - distanceRatio, distanceExponent));
-            return Math.Clamp(value, 1.0, 1.0 + maxCorrection);
+            double value = 1.0 + 0.5 * Math.Pow(catcherRatio, catcherExponent) + 0.5 * Math.Pow(timeRatio, timeExponent) ;
+            return Math.Clamp(value, 1.0, 2.0);
         }
 
         public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
