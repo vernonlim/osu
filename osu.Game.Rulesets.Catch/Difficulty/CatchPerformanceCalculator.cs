@@ -88,7 +88,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.2 * catchAttributes.MaxCombo;
 
             double lengthBonus =
-                0.95 + 0.28 * Math.Min(1.0, totalActions / 1600.0) +
+                0.95 + 0.3 * Math.Min(1.0, totalActions / 1600.0) +
                 (totalActions > 1600 ? Math.Log10(totalActions / 1600.0) * 0.3 : 0.0);
 
             // Length bonus should depend on approachRate (including FlashLight): if it's high enough, it's either draining or it requires memorisation
@@ -104,7 +104,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double lengthBonusPP = value * lengthBonus - value;
 
-            value *= 1.08;
+            value *= 1.09;
 
             return new CatchPerformanceAttributes
             {

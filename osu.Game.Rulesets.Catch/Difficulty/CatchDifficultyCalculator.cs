@@ -190,13 +190,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private double srScaler(double sr)
         {
             const double x0 = 0.87;
-            const double y0 = 2.0;
+            const double y0 = 1.7;
 
             const double x1 = 4.23;
-            const double y1 = 4.6;
+            const double y1 = 4.55;
 
             const double x2 = 6.5;
-            const double y2 = 7.0;
+            const double y2 = 6.9;
 
             const double x3 = 7.5;
             const double y3 = 8.7;
