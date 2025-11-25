@@ -104,30 +104,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 10.0)
-                    hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
+                    hiddenFactor = Math.Sqrt(1.025 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
-                    hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+                    hiddenFactor = Math.Sqrt(1.0 + 0.025 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
 
                 hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr; // Easier maps have lower AR by default; HD doesn't change much there
             }
 
-            // const double circle_size_power = 1.4;
-            // double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - 3.5) / 10.0, circle_size_power) * 0.5;
-            // double circleSizeFactor = Math.Sqrt(1.0 + circleSizeBonus);
-            const double circle_size_factor = 1.0;
-
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = sr * approachRateFactor * circle_size_factor * hiddenFactor,
+                StarRating = sr * approachRateFactor * hiddenFactor,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
                 ApproachRateFactor = approachRateFactor,
                 HiddenFactor = hiddenFactor,
-                CircleSizeFactor = circle_size_factor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
-                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * circle_size_factor * hiddenFactor).ToList(),
+                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * hiddenFactor).ToList(),
             };
 
             return attributes;

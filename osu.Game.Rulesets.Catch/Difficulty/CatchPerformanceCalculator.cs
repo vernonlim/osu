@@ -46,34 +46,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 var x => double.Lerp(catchAttributes.SRSevenMiss, catchAttributes.SRTwelveMiss, (x - 7.0) / (12.0 - 7.0)),
             };
 
-            // Misscount-adjusted pathway
+            // Misscount-adjusted pathway - low combo scaling and misscount penalty but the SR of the map is lowered
             double withMiss = calculateValue(adjustedStarRating);
-
-            if (numMiss > 0)
-            {
-                if (score.Mods.Any(m => m is ModFlashlight))
-                    withMiss *= 0.95; // Playing FlashLight is easier after missing as the visible area is larger
-                else
-                    withMiss *= 0.96;
-            }
 
             withMiss *= Math.Pow(0.985, Math.Max(0, numMiss - 1));
 
-            // Low combo scaling
             if (catchAttributes.MaxCombo > 0)
                 withMiss *= Math.Min(0.8 + (score.MaxCombo / (double)catchAttributes.MaxCombo) * 0.2, 1.0);
 
-            // Original pathway
+            // Original pathway - moderate combo scaling and higher misscount penalty, no SR adjustment
             double original = calculateValue(catchAttributes.StarRating);
 
-            original *= Math.Pow(0.97, Math.Max(0, numMiss));
+            original *= Math.Pow(0.97, Math.Max(0, numMiss - 1));
 
-            // Original combo scaling
             if (catchAttributes.MaxCombo > 0)
                 original *= Math.Min(Math.Pow(score.MaxCombo, 0.35) / Math.Pow(catchAttributes.MaxCombo, 0.35), 1.0);
 
-            // We take the maximum of the original SR with old scaling and misscount-adjusted SR with new scaling
-            double value = numMiss == 0 ? original : 0.95 * Math.Max(original, withMiss);
+            // We take the maximum of either pathway to ensure that ending chokes are not overly penalized from the misscount pathway
+            // Afterwards, we apply a universal 0.925 non-FC penalty (first miss penalty)
+            double value = Math.Max(original, withMiss);
+            value = numMiss == 0 ? value : 0.925 * value;
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 

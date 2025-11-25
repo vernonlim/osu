@@ -43,7 +43,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double high_CS_threshold = 4.0;
         private const double high_CS_power = 1.25;
-        private const double high_CS_rate = 0.36;
+        private const double high_CS_rate = 0.33;
         private const double high_CS_penalty_hypers = 0.7;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize)
