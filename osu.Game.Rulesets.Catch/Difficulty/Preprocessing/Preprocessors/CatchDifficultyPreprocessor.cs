@@ -169,9 +169,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
-                    data.PrecisionStrain = (0.84 * data.RawPrecisionStrain + 0.16 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = (0.86 * data.RawPrecisionStrain + 0.14 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.HyperjumpAfterJump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.88 * data.RawPrecisionStrain + 0.12 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.JumpAfterHyperjump)
                     data.PrecisionStrain = data.PrecisionStrain = (0.93 * data.RawPrecisionStrain + 0.07 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.Jumps)
@@ -381,10 +381,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
-            double effective_difference = note.StartTime - data.EffectiveTime;
+            double effectiveRatio = Math.Min(0.25, (note.StartTime - data.EffectiveTime) / note.DeltaTime);
             double maxTime = data.EffectiveTime;
-            if (effective_difference >= 0.05 * note.DeltaTime)
-                maxTime = note.StartTime - 0.05 * note.DeltaTime;
+            if (data.EffectiveTime <= note.StartTime)
+                maxTime = note.StartTime - note.DeltaTime * effectiveRatio / 5.0;
 
             if (data.ActionProbability > 0)
             {

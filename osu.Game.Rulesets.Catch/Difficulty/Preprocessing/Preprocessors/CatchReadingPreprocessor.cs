@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
     public static class CatchReadingPreprocessor
     {
-        private const double local_rhythm_penalty = 0.94;
+        private const double local_rhythm_penalty = 0.95;
         private const double local_rhythm_range = 20.0;
         private const double local_rhythm_sensitivity = 2.0;
 
@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
 
-        private const double hyperchain_penalty = 0.9;
+        private const double hyperchain_penalty = 0.92;
         private const uint hyperchain_note_count = 6;
 
         private const double non_hyperchain_penalty = 0.96;
@@ -37,13 +37,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_velocity_nerf = 0.1;
         private const double high_velocity_threshold = 4.0;
 
-        private const double high_distance_buff = 0.22;
+        private const double high_distance_buff = 0.2;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
         private const double high_CS_threshold = 4.0;
-        private const double high_CS_power = 1.25;
-        private const double high_CS_rate = 0.33;
+        private const double high_CS_power = 1.2;
+        private const double high_CS_rate = 0.32;
         private const double high_CS_penalty_hypers = 0.7;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize)
