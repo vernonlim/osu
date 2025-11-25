@@ -104,9 +104,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 10.0)
-                    hiddenFactor = Math.Sqrt(1.025 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
+                    hiddenFactor = Math.Sqrt(1.04 + 0.12 * (10.0 - adjustedApproachRate)); // 12% for each AR below 10
                 else if (adjustedApproachRate > 10.0)
-                    hiddenFactor = Math.Sqrt(1.0 + 0.025 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+                    hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
 
                 hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr; // Easier maps have lower AR by default; HD doesn't change much there
             }
