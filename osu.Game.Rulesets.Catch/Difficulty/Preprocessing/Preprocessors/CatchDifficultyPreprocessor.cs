@@ -381,10 +381,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
-            double effectiveRatio = Math.Min(0.25, (note.StartTime - data.EffectiveTime) / note.DeltaTime);
+            const double maxRatio = 0.2;
+            const double effectiveImportance = 0.05;
+
+            double effectiveRatio = Math.Min(maxRatio, (note.StartTime - data.EffectiveTime) / note.DeltaTime);
             double maxTime = data.EffectiveTime;
             if (data.EffectiveTime <= note.StartTime)
-                maxTime = note.StartTime - note.DeltaTime * effectiveRatio / 5.0;
+                maxTime = note.StartTime - note.DeltaTime * effectiveRatio * effectiveImportance / maxRatio;
 
             if (data.ActionProbability > 0)
             {

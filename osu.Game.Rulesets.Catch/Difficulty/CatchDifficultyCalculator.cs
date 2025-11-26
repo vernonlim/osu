@@ -91,9 +91,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (adjustedApproachRate > 9.5)
                 approachRateFactor += 0.15 * (adjustedApproachRate - 9.5); // 15% for each AR above 9.5
             if (adjustedApproachRate > 10.2)
-                approachRateFactor += 0.225 * (adjustedApproachRate - 10.2); // Bonus for high AR, 40.5% at AR11
+                approachRateFactor += 0.21 * (adjustedApproachRate - 10.2); // Bonus for high AR, 40.5% at AR11
             if (adjustedApproachRate > 11)
-                approachRateFactor += 0.1 * (adjustedApproachRate - 11.0); // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
+                approachRateFactor += 0.125 * (adjustedApproachRate - 11.0); // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
 
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
@@ -104,7 +104,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
                 if (adjustedApproachRate <= 9.0)
-                    hiddenFactor = Math.Sqrt(1.12 + 0.12 * (9.0 - adjustedApproachRate)); // 12% for each AR below 9
+                    hiddenFactor = Math.Sqrt(1.12 + 0.1 * (9.0 - adjustedApproachRate)); // 10% for each AR below 9
                 else if (adjustedApproachRate <= 10.0)
                     hiddenFactor = Math.Sqrt(1.04 + 0.08 * (10.0 - adjustedApproachRate)); // 4% for AR10, 12% for AR9
                 else if (adjustedApproachRate > 10.0)
