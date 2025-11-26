@@ -46,7 +46,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_CS_rate = 0.32;
         private const double high_CS_penalty_hypers = 0.7;
 
-        public static void Process(List<DifficultyHitObject> hitObjects, double circleSize)
+        public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
             List<CatchDifficultyHitObject> actionNotes = cdhos.Where(n => n.MovementData.ActionProbability == 1).ToList();
@@ -54,11 +54,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             localRhythmPenalty(cdhos);
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
-            similarDistancePenalty(actionNotes);
+            similarDistancePenalty(actionNotes, clockRate);
             hyperchainPenalty(cdhos);
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos);
-            highDistanceBuff(cdhos);
+            highDistanceBuff(cdhos, clockRate);
             highCSBuff(actionNotes, circleSize);
         }
 
@@ -142,7 +142,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-        private static void similarDistancePenalty(List<CatchDifficultyHitObject> actionNotes)
+        private static void similarDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
             uint counter = 0;
             double distanceToRemember = 0.0;
@@ -156,8 +156,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (prev.IsHyper)
                     continue;
 
-                double higher = Math.Max(note.DeltaPosition, distanceToRemember);
-                double lower = Math.Min(note.DeltaPosition, distanceToRemember);
+                double higher = Math.Max(note.DeltaPosition * clockRate, distanceToRemember);
+                double lower = Math.Min(note.DeltaPosition * clockRate, distanceToRemember);
 
                 double ratio = (higher - lower) / higher;
                 double halfRatio = (higher - lower) / Math.Max(lower, higher / 2.0);
@@ -165,6 +165,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (ratio <= similar_distance_leniency || halfRatio <= similar_distance_leniency)
                 {
                     counter = Math.Min(counter + 1, similar_distance_note_count);
+
                     if (counter == similar_distance_note_count)
                     {
                         double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - ratio / similar_distance_leniency, similar_distance_sensitivity);
@@ -175,6 +176,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else if (halfRatio <= similar_distance_leniency)
                 {
                     counter = Math.Min(counter + 1, similar_distance_note_count);
+
                     if (counter == similar_distance_note_count)
                     {
                         double penalty = (1.0 - similar_distance_penalty) * Math.Pow(1.0 - halfRatio / similar_distance_leniency, similar_distance_sensitivity);
@@ -187,7 +189,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     counter = Math.Max(counter - 1, 0);
                 }
 
-                distanceToRemember = note.DeltaPosition;
+                distanceToRemember = note.DeltaPosition * clockRate;
             }
         }
 
@@ -255,17 +257,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-        private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos)
+        private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos, double clockRate)
         {
             for (int i = 0; i < cdhos.Count - 1; i++)
             {
                 CatchDifficultyHitObject note = cdhos[i];
                 CatchDifficultyHitObject next = cdhos[i + 1];
-                double average_distance = (note.DeltaPosition + next.DeltaPosition) / 2;
+                double averageDistance = (note.DeltaPosition + next.DeltaPosition) * clockRate / 2.0;
 
-                if (average_distance > high_distance_threshold)
+                if (averageDistance > high_distance_threshold)
                 {
-                    note.ReadingData.CombinedReadingFactor *= 1.0 + high_distance_buff * Math.Pow((average_distance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 + high_distance_buff * Math.Pow((averageDistance - high_distance_threshold) / (512.0 - high_distance_threshold), high_distance_power);
                 }
             }
         }

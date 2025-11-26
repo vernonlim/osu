@@ -389,7 +389,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 CatchMovementPreprocessor.Process(objects);
                 CatchDifficultyPreprocessor.Process(objects);
-                CatchReadingPreprocessor.Process(objects, circleSize);
+                CatchReadingPreprocessor.Process(objects, circleSize, clockRate);
                 CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
                 // CatchPreprocessorTest.Process(objects, beatmap);
             }
