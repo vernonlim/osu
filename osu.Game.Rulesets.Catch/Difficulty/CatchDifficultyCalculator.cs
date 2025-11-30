@@ -58,15 +58,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, readingFactors);
 
             // 2B Hotfix
-            for (int i = 1; i < combinedStrains.Count - 1; i++)
-            {
-                if (startTimes[i] - startTimes[i - 1] <= 2)
-                {
-                    combinedStrains[i + 1] = 0;
-                    combinedStrains[i] = 0;
-                    combinedStrains[i - 1] = 0;
-                }
-            }
+            // for (int i = 1; i < combinedStrains.Count - 1; i++)
+            // {
+            //     if (startTimes[i] - startTimes[i - 1] <= 2)
+            //     {
+            //         combinedStrains[i + 1] = 0;
+            //         combinedStrains[i] = 0;
+            //         combinedStrains[i - 1] = 0;
+            //     }
+            // }
 
             List<(double, double)> notes = startTimes.Zip(combinedStrains).ToList();
 
@@ -372,6 +372,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
             List<CatchDifficultyHitObject> noteObjects = new List<CatchDifficultyHitObject>();
 
+            double previousStartTime = -1;
+
             // In 2B beatmaps, it is possible that a normal Fruit is placed in the middle of a JuiceStream.
             foreach (var hitObject in CatchBeatmap.GetPalpableObjects(beatmap.HitObjects))
             {
@@ -379,10 +381,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (hitObject is Banana || hitObject is TinyDroplet)
                     continue;
 
-                if (lastObject != null)
+                if (lastObject != null && hitObject.StartTime != previousStartTime)
                     objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
 
                 lastObject = hitObject;
+                previousStartTime = hitObject.StartTime;
             }
 
             if (objects.Count >= 2)
