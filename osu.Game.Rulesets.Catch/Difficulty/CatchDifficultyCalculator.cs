@@ -91,7 +91,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 movementStrains
                     .Zip(isActionNote)
                     .Select(n => n.Second
-                        ? Math.Sqrt(n.First) * 30
+                        ? Math.Sqrt(n.First) * 26
                         : 0).ToList();
 
             // double groupPeakStrain = -1;
