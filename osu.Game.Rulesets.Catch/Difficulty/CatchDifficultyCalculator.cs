@@ -8,6 +8,7 @@ using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Beatmaps;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Catch.Difficulty.Skills;
@@ -50,12 +51,93 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> startTimes = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).StartTime).ToList();
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
+            List<double> movementStrains = skills.OfType<Movement>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
             List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, readingFactors);
+
+            Func<PatternType, bool> streamChecker = type => type == PatternType.AcceleratingStream
+                                                            || type == PatternType.ExtendedDirectionChange
+                                                            || type == PatternType.FreeStream
+                                                            || type == PatternType.HyperStream
+                                                            || type == PatternType.PotentialStandstill;
+
+            Func<PatternType, bool> jumpChecker = type => type == PatternType.Hyperjumps
+                                                          || type == PatternType.JumpAfterHyperjump
+                                                          || type == PatternType.Jumps
+                                                          || type == PatternType.HyperjumpAfterJump;
+
+            List<bool> isActionlessStreamNote =
+                DifficultyHitObjects
+                    .OfType<CatchDifficultyHitObject>()
+                    .Select(n => streamChecker(n.MovementData.NotePattern)
+                                 && n.MovementData.ActionProbability < 0.5).ToList();
+
+            List<bool> isActionJumpNote =
+                DifficultyHitObjects
+                    .OfType<CatchDifficultyHitObject>()
+                    .Select(n => jumpChecker(n.MovementData.NotePattern)
+                                 && n.MovementData.ActionProbability > 0).ToList();
+
+            List<bool> isActionNote =
+                DifficultyHitObjects
+                    .OfType<CatchDifficultyHitObject>()
+                    .Select(n => n.MovementData.ActionProbability > 0).ToList();
+
+            List<double> filteredMovementStrains =
+                movementStrains
+                    .Zip(isActionNote)
+                    .Select(n => n.Second
+                        ? Math.Sqrt(n.First) * 30
+                        : 0).ToList();
+
+            // double groupPeakStrain = -1;
+            // int firstIndex = 0;
+            //
+            // for (int i = 0; i < filteredMovementStrains.Count; i++)
+            // {
+            //     if (filteredMovementStrains[i] == 0)
+            //     {
+            //         if (groupPeakStrain > 0)
+            //         {
+            //             for (int j = firstIndex; j < i; j++)
+            //             {
+            //                 filteredMovementStrains[j] = 0;
+            //             }
+            //
+            //             double startTime = startTimes[firstIndex];
+            //             double endTime = startTimes[i - 1];
+            //
+            //             double total = endTime - startTime;
+            //
+            //             int center = (firstIndex + i) / 2;
+            //             filteredMovementStrains[center] = (1.0 - Math.Pow(Math.Max(200 - total, 0), 0.5) / Math.Pow(200, 0.5)) * groupPeakStrain;
+            //         }
+            //
+            //         groupPeakStrain = -1;
+            //         firstIndex = i + 1;
+            //         continue;
+            //     }
+            //
+            //     if (filteredMovementStrains[i] > groupPeakStrain)
+            //         groupPeakStrain = filteredMovementStrains[i];
+            // }
+            //
+            // if (groupPeakStrain > 0)
+            // {
+            //     for (int j = firstIndex; j < filteredMovementStrains.Count; j++)
+            //         filteredMovementStrains[j] = 0;
+            //
+            //     int center = (firstIndex + filteredMovementStrains.Count) / 2;
+            //     filteredMovementStrains[center] = groupPeakStrain;
+            // }
+
+            combinedStrains = combinedStrains
+                              .Zip(filteredMovementStrains)
+                              .Select(s => 0.7 * s.First + 0.3 * s.Second).ToList();
 
             // 2B Hotfix
             // for (int i = 1; i < combinedStrains.Count - 1; i++)
@@ -116,6 +198,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
                 StarRating = sr * approachRateFactor * hiddenFactor,
+                // StarRating = skills.OfType<Movement>().Single().DifficultyValue() * 4.59,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
                 TotalActions = totalActions,
@@ -415,6 +498,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 new Speed(mods),
                 new PartialLocalStarRating(mods),
                 new LocalStarRating(mods),
+                new Movement(mods, clockRate)
             };
         }
 

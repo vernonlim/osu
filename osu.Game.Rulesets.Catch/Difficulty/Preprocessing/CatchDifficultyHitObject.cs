@@ -14,6 +14,50 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
+        public const double NORMALIZED_HALF_CATCHER_WIDTH = 41.0f;
+        private const double absolute_player_positioning_error = 16.0f;
+
+        /// <summary>
+        /// Normalized position of <see cref="BaseObject"/>.
+        /// </summary>
+        public readonly double NormalizedPosition;
+
+        /// <summary>
+        /// Normalized position of <see cref="LastObject"/>.
+        /// </summary>
+        public readonly double LastNormalizedPosition;
+
+        /// <summary>
+        /// Normalized position of the player required to catch <see cref="BaseObject"/>, assuming the player moves as little as possible.
+        /// </summary>
+        public double PlayerPosition { get; private set; }
+
+        /// <summary>
+        /// Normalized position of the player after catching <see cref="LastObject"/>.
+        /// </summary>
+        public double LastPlayerPosition { get; private set; }
+
+        /// <summary>
+        /// Normalized distance between <see cref="LastPlayerPosition"/> and <see cref="PlayerPosition"/>.
+        /// </summary>
+        /// <remarks>
+        /// The sign of the value indicates the direction of the movement: negative is left and positive is right.
+        /// </remarks>
+        public double DistanceMoved { get; private set; }
+
+        /// <summary>
+        /// Normalized distance the player has to move from <see cref="LastPlayerPosition"/> in order to catch <see cref="BaseObject"/> at its <see cref="NormalizedPosition"/>.
+        /// </summary>
+        /// <remarks>
+        /// The sign of the value indicates the direction of the movement: negative is left and positive is right.
+        /// </remarks>
+        public double ExactDistanceMoved { get; private set; }
+
+        /// <summary>
+        /// Milliseconds elapsed since the start time of the previous <see cref="CatchDifficultyHitObject"/>, with a minimum of 40ms.
+        /// </summary>
+        public readonly double StrainTime;
+
         private readonly double clockRate;
 
         public new PalpableCatchHitObject BaseObject => (PalpableCatchHitObject)base.BaseObject;
@@ -171,6 +215,37 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             MovementData = new CatchMovementData(this);
             ReadingData = new CatchReadingData();
+
+            // We will scale everything by this factor, so we can assume a uniform CircleSize among beatmaps.
+            double scalingFactor = NORMALIZED_HALF_CATCHER_WIDTH / HalfCatcherWidth;
+
+            NormalizedPosition = BaseObject.EffectiveX * scalingFactor;
+            LastNormalizedPosition = LastObject.EffectiveX * scalingFactor;
+
+            // Every strain interval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure
+            StrainTime = Math.Max(40, DeltaTime);
+
+            setMovementState();
+        }
+
+        private void setMovementState()
+        {
+            LastPlayerPosition = Index == 0 ? LastNormalizedPosition : ((CatchDifficultyHitObject)Previous(0)).PlayerPosition;
+
+            PlayerPosition = Math.Clamp(
+                LastPlayerPosition,
+                NormalizedPosition - (NORMALIZED_HALF_CATCHER_WIDTH - absolute_player_positioning_error),
+                NormalizedPosition + (NORMALIZED_HALF_CATCHER_WIDTH - absolute_player_positioning_error)
+            );
+
+            DistanceMoved = PlayerPosition - LastPlayerPosition;
+
+            // For the exact position we consider that the catcher is in the correct position for both objects
+            ExactDistanceMoved = NormalizedPosition - LastPlayerPosition;
+
+            // After a hyperdash we ARE in the correct position. Always!
+            if (LastObject.HyperDash)
+                PlayerPosition = NormalizedPosition;
         }
 
         public CatchDifficultyHitObject? PreviousNote(int backwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex - (backwardsIndex + 1));
