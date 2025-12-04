@@ -207,7 +207,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth)
+        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth, double standstillCorrection)
         {
             if (standingTime == null)
                 return 2.0;
@@ -227,7 +227,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
             double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
 
-            return Math.Clamp(value, 1.0, 2.0);
+            value = (value - 1.0) * (standstillCorrection - 1.0) + 1.0;
+
+            return Math.Clamp(value, 1.0, standstillCorrection);
         }
 
         public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)

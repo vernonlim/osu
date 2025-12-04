@@ -35,9 +35,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint non_hyperchain_note_count = 4;
 
         private const double high_velocity_nerf = 0.1;
-        private const double high_velocity_threshold = 4.0;
+        private const double high_velocity_threshold = 5.0;
 
-        private const double high_distance_buff = 0.2;
+        private const double high_distance_buff = 0.15;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
@@ -45,6 +45,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_CS_power = 1.2;
         private const double high_CS_rate = 0.3;
         private const double high_CS_penalty_hypers = 0.7;
+
+        private const double density_buff = 1.03;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate)
         {
@@ -58,8 +60,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             hyperchainPenalty(cdhos);
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos);
-            highDistanceBuff(cdhos, clockRate);
+            highDistanceBuff(actionNotes, clockRate);
             highCSBuff(actionNotes, circleSize);
+            densityBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -253,17 +256,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
                 if (prev.IsHyper && speed > high_velocity_threshold)
-                    note.ReadingData.CombinedReadingFactor *= Math.Max(1.0 - high_velocity_nerf * (speed - high_velocity_threshold), 0.0);
+                    note.ReadingData.CombinedReadingFactor *= Math.Max(1.0 - high_velocity_nerf * Math.Max(1.0, (speed - high_velocity_threshold) / 2.0), 0.0);
             }
         }
 
-        private static void highDistanceBuff(List<CatchDifficultyHitObject> cdhos, double clockRate)
+        private static void highDistanceBuff(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
-            for (int i = 0; i < cdhos.Count - 1; i++)
+            for (int i = 1; i < actionNotes.Count - 1; i++)
             {
-                CatchDifficultyHitObject note = cdhos[i];
-                CatchDifficultyHitObject next = cdhos[i + 1];
-                double averageDistance = (note.DeltaPosition + next.DeltaPosition) * clockRate / 2.0;
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject next = actionNotes[i + 1];
+                double currentDistance = (note.Position - prev.Position) * clockRate;
+                double nextDistance = (next.Position - note.Position) * clockRate;
+                double averageDistance = (currentDistance + nextDistance) / 2.0;
 
                 if (averageDistance > high_distance_threshold)
                 {
@@ -284,6 +290,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonusHypers;
                 else
                     note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonus;
+            }
+        }
+
+        // Especially on rain/overdose level, it is harder to read direction changes when there's at least one note between them
+        private static void densityBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            for (int i = 1; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject prev = cdhos[i - 1];
+
+                if (prev.MovementData.ActionProbability == 0)
+                    note.ReadingData.CombinedReadingFactor *= density_buff;
             }
         }
     }

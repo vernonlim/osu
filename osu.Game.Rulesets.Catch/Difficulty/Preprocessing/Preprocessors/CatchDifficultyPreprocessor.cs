@@ -169,13 +169,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
-                    data.PrecisionStrain = (0.86 * data.RawPrecisionStrain + 0.14 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.HyperjumpAfterJump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.92 * data.RawPrecisionStrain + 0.08 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.JumpAfterHyperjump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.93 * data.RawPrecisionStrain + 0.07 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.94 * data.RawPrecisionStrain + 0.06 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.Jumps)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.95 * data.RawPrecisionStrain + 0.05 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (0.96 * data.RawPrecisionStrain + 0.04 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else
                     data.PrecisionStrain = 1.0 * data.RawPrecisionStrain * data.ActionProbability;
 
@@ -224,6 +224,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return precision / 18 * 41;
         }
 
+        const double standstillCorrection = 1.33;
+
         /// <summary>
         /// Calculates the precision value for a given note, and adjusts its effective time if needed.
         /// </summary>
@@ -244,7 +246,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, standstillCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = standstillTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
@@ -257,7 +259,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, standstillCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
                     data.EffectiveTime = acceleratingTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
@@ -347,20 +349,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     {
                         double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
                         double second = next.DeltaTime + note.DeltaPosition + note.HalfCatcherWidth;
-                        return first + second;
+                        return (first + second) / 2.0 * standstillCorrection;
                     }
 
                     double third = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder));
                     double fourth = next.DeltaTime + note.CatcherWidth;
 
-                    return third + fourth;
+                    return (third + fourth) / 2.0 * standstillCorrection;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
                     if (next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
                     {
-                        return next.DeltaTime + note.CatcherWidth - next.DeltaPosition;
+                        return (next.DeltaTime + note.CatcherWidth - next.DeltaPosition) / 2.0 * standstillCorrection;
                     }
 
                     break;
