@@ -367,12 +367,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
-            CatchHitObject? lastObject = null;
+            PalpableCatchHitObject? lastObject = null;
+            PalpableCatchHitObject? lastLastObject = null;
 
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
             List<CatchDifficultyHitObject> noteObjects = new List<CatchDifficultyHitObject>();
 
-            double previousStartTime = -1;
+            List<PalpableCatchHitObject> simultaneousObjects = new List<PalpableCatchHitObject>();
 
             // In 2B beatmaps, it is possible that a normal Fruit is placed in the middle of a JuiceStream.
             foreach (var hitObject in CatchBeatmap.GetPalpableObjects(beatmap.HitObjects))
@@ -381,12 +382,44 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (hitObject is Banana || hitObject is TinyDroplet)
                     continue;
 
-                if (lastObject != null && hitObject.StartTime - previousStartTime > 2)
-                    objects.Add(new CatchDifficultyHitObject(hitObject, lastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
+                // If there are simultaneous notes, store them
+                if (lastObject != null && hitObject.StartTime - lastObject.StartTime < 2)
+                {
+                    if (simultaneousObjects.Count == 0)
+                        simultaneousObjects.Add(lastObject);
 
+                    simultaneousObjects.Add(hitObject);
+
+                    continue;
+                }
+
+                // From the list of simultaneous notes, select a hyperdash if it exists, otherwise select any note
+                if (simultaneousObjects.Count > 0)
+                {
+                    List<PalpableCatchHitObject> hyperObjects = simultaneousObjects.Where(o => o.HyperDash).ToList();
+
+                    if (hyperObjects.Count > 0)
+                    {
+                        lastObject = hyperObjects[0];
+                    }
+                    else
+                    {
+                        lastObject = simultaneousObjects[0];
+                    }
+
+                    simultaneousObjects.Clear();
+                }
+
+                if (lastObject != null && lastLastObject != null)
+                    objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
+
+                lastLastObject = lastObject;
                 lastObject = hitObject;
-                previousStartTime = hitObject.StartTime;
             }
+
+            // Add the last object of the map
+            if (lastObject != null && lastLastObject != null && lastObject.StartTime - lastLastObject.StartTime > 2)
+                objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
 
             if (objects.Count >= 2)
             {
