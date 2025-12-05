@@ -367,6 +367,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
+            const double simultaneous_time = 0.5;
+
             PalpableCatchHitObject? lastObject = null;
             PalpableCatchHitObject? lastLastObject = null;
 
@@ -383,7 +385,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     continue;
 
                 // If there are simultaneous notes, store them
-                if (lastObject != null && hitObject.StartTime - lastObject.StartTime < 2)
+                if (lastObject != null && hitObject.StartTime - lastObject.StartTime < simultaneous_time)
                 {
                     if (simultaneousObjects.Count == 0)
                         simultaneousObjects.Add(lastObject);
@@ -418,7 +420,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             // Add the last object of the map
-            if (lastObject != null && lastLastObject != null && lastObject.StartTime - lastLastObject.StartTime > 2)
+            if (lastObject != null && lastLastObject != null && lastObject.StartTime - lastLastObject.StartTime > simultaneous_time)
                 objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
 
             if (objects.Count >= 2)
