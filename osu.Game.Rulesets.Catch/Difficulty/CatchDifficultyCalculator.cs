@@ -225,7 +225,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <returns></returns>
         private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
-            const double decay_weight = 0.9;
+            const double default_decay_weight = 0.9;
+            double[] decayWeights = new[] { 0.9, 0.86 };
 
             const double region = 500.0;
             const int limit = 15;
@@ -305,9 +306,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             return difficulty;
 
-            double calculateWeight() => counter == 1
-                ? Math.Pow(decay_weight, 1.5)
-                : Math.Pow(decay_weight, Math.Max(1, counter));
+            double calculateWeight() => counter < decayWeights.Length
+                ? decayWeights[counter]
+                : Math.Pow(default_decay_weight, counter);
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
