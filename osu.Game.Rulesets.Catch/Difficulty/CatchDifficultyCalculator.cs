@@ -265,7 +265,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             double difficulty = 0.0;
-            const double weight = decay_weight;
             int counter = 0;
 
             foreach ((double time, double strain) in filteredNotes)
@@ -285,11 +284,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 {
                     while (stack.Count != 0)
                     {
-                        double newWeight = (counter == 1)
-                            ? Math.Pow(weight, 1.5)
-                            : Math.Pow(weight, Math.Max(1, counter));
-
-                        difficulty += stack.Pop() * newWeight;
+                        difficulty += stack.Pop() * calculateWeight();
                         counter++;
                     }
                 }
@@ -297,26 +292,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (isTimeInSets(missSets, time))
                     continue;
 
-                double appliedWeight = (counter == 1)
-                    ? Math.Pow(weight, 1.5)
-                    : Math.Pow(weight, Math.Max(1, counter));
-
-                difficulty += strain * appliedWeight;
+                difficulty += strain * calculateWeight();
 
                 counter++;
             }
 
             while (stack.Count != 0)
             {
-                double finalWeight = (counter == 1)
-                    ? Math.Pow(weight, 1.5)
-                    : Math.Pow(weight, Math.Max(1, counter));
-
-                difficulty += stack.Pop() * finalWeight;
+                difficulty += stack.Pop() * calculateWeight();
                 counter++;
             }
 
             return difficulty;
+
+            double calculateWeight() => counter == 1
+                ? Math.Pow(decay_weight, 1.5)
+                : Math.Pow(decay_weight, Math.Max(1, counter));
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
