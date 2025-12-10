@@ -691,6 +691,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             bool beltHasAction = prev.MovementData.BeltHasAction;
 
+            if (belt != null && ((belt.IsMovingRight && note.IsHyper && !next.IsMovingRight) || (!belt.IsMovingRight && note.IsHyper && next.IsMovingRight)))
+                return;
+
             if (belt != null && (inExistingBelt && note.IsHyper && (next.Position - note.Position >= 0 ? !belt.IsMovingRight : belt.IsMovingRight)) && !beltHasAction && (note.IsMovingRight ? prev.Position > note.Position : prev.Position < note.Position))
             {
                 prev.Position = note.Position - (next.Position - note.Position >= 0 ? -0.01 : 0.01);
