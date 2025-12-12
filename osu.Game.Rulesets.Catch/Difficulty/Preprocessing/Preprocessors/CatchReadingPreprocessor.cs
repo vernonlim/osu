@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const double similar_distance_penalty = 0.8;
+        private const double similar_distance_penalty = 0.85;
         private const uint similar_distance_note_count = 3;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
@@ -46,7 +46,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_CS_rate = 0.3;
         private const double high_CS_penalty_hypers = 0.7;
 
-        private const double density_buff = 1.03;
+        private const double density_buff = 1.02;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate)
         {

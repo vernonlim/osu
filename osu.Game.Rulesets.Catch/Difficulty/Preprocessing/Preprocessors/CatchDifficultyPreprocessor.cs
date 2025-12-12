@@ -14,8 +14,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     {
         public static void Process(List<DifficultyHitObject> hitObjects)
         {
+            List<CatchDifficultyHitObject> guaranteedActions = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> leftGuaranteedActions = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> rightGuaranteedActions = new List<CatchDifficultyHitObject>();
+            List<CatchDifficultyHitObject> ambiguousActions = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> leftAmbiguousActions = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> rightAmbiguousActions = new List<CatchDifficultyHitObject>();
             CatchDifficultyHitObject? lastLeftHyper = null;
@@ -36,6 +38,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (prevData.ActionProbability == 1)
                 {
+                    guaranteedActions.Add(prev);
                     if (prevData.KeyPress == MovementKey.Left)
                     {
                         leftGuaranteedActions.Add(prev);
@@ -47,6 +50,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
                 else if (prevData.ActionProbability > 0.0)
                 {
+                    ambiguousActions.Add(prev);
                     if (prevData.KeyPress == MovementKey.Left)
                     {
                         leftAmbiguousActions.Add(prev);
@@ -167,6 +171,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                 }
 
+
+                //Precision calculation
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
                     data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
@@ -177,13 +183,28 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else if (data.NotePattern == PatternType.Jumps)
                     data.PrecisionStrain = data.PrecisionStrain = (0.96 * data.RawPrecisionStrain + 0.04 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else
-                    data.PrecisionStrain = 1.0 * data.RawPrecisionStrain * data.ActionProbability;
+                    data.PrecisionStrain = data.RawPrecisionStrain * data.ActionProbability;
 
-                var recentGuaranteed = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
+
+                // Delayed precision
+                const double delayedPrecisionWeight = 0.9;
+
+                CatchDifficultyHitObject? prevAction = guaranteedActions.LastOrDefault() ?? ambiguousActions.LastOrDefault();
+
+                if (prevAction?.MovementData != null)
+                {
+                    double prevPrecision = prevAction.MovementData.PrecisionStrain;
+
+                    data.PrecisionStrain = delayedPrecisionWeight * data.PrecisionStrain + (1.0 - delayedPrecisionWeight) * prevPrecision;
+                }
+
+
+                // Speed calculation
+                var recentGuaranteedDirectionised = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
                                        .Where(n => n is not null)
                                        .MaxBy(n => n!.MovementData.EffectiveTime);
 
-                var recentAmbiguous = new[] { leftAmbiguousActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault() }
+                var recentAmbiguousDirectionised = new[] { leftAmbiguousActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault() }
                                       .Where(n => n is not null)
                                       .MaxBy(n => n!.MovementData.EffectiveTime);
 
@@ -195,13 +216,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     burst = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
                     consistency = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
-                    snap = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedSnap);
+                    snap = calculateSpeed(note, recentGuaranteedDirectionised, recentAmbiguousDirectionised, timeToSpeedSnap);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
                     burst = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
                     consistency = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
-                    snap = calculateSpeed(note, recentGuaranteed, recentAmbiguous, timeToSpeedSnap);
+                    snap = calculateSpeed(note, recentGuaranteedDirectionised, recentAmbiguousDirectionised, timeToSpeedSnap);
                 }
 
                 data.BurstSpeed = burst * 2 * 12 * 120;
@@ -224,7 +245,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return precision / 18 * 41;
         }
 
-        const double standstillCorrection = 1.33;
+        const double standstillCorrection = 1.25;
 
         /// <summary>
         /// Calculates the precision value for a given note, and adjusts its effective time if needed.
