@@ -207,27 +207,25 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth, double maxPrecisionCorrection)
+        public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection)
         {
-            if (standingTime == null)
+            if (deltaPosition == 0.0)
                 return maxPrecisionCorrection;
 
-            const double distanceExponent = 2.0;  // p
-            const double timeExponent = 1.5;      // q
-            const double distanceSensitivity = 10.0; // k
+            const double distanceExponent = 1.0;
+            const double timeExponent = 1.0;
+            const double distanceWeight = 0.5;
 
-            double dRatio = distance / catcherWidth;
-            double tRatio = 2.0 * standingTime.Value / catcherWidth;
+            double standingTime = Math.Max(0.0, deltaTime - deltaPosition);
 
-            double timeExp = Math.Exp(-Math.Pow(tRatio, timeExponent));
+            double distanceRatio = Math.Min(1.0, deltaPosition / catcherWidth);
+            double timeRatio = Math.Min(1.0, standingTime / (catcherWidth / 2.0));
 
-            // exp(-k * (d/c)^p)
-            double distanceEffect = Math.Exp(- distanceSensitivity * Math.Pow(dRatio, distanceExponent));
+            double timeEffect = Math.Pow(timeRatio, timeExponent);
+            double distanceEffect = Math.Pow(1.0 - distanceRatio, distanceExponent);
 
-            // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
-            double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
-
-            value = (value - 1.0) * (maxPrecisionCorrection - 1.0) + 1.0;
+            double value = distanceWeight * distanceEffect + (1.0 - distanceWeight) * timeEffect;
+            value = value * (maxPrecisionCorrection - 1.0) + 1.0;
 
             return Math.Clamp(value, 1.0, maxPrecisionCorrection);
         }

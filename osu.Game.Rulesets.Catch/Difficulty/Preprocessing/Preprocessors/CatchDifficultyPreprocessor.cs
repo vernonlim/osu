@@ -265,7 +265,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, maxPrecisionCorrection);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
@@ -279,7 +279,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, maxPrecisionCorrection);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
                     double standstillTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
