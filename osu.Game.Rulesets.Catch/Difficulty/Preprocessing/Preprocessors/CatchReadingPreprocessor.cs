@@ -41,10 +41,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        private const double high_CS_threshold = 4.0;
-        private const double high_CS_power = 1.2;
-        private const double high_CS_rate = 0.3;
-        private const double high_CS_penalty_hypers = 0.7;
+        private const double high_CS_threshold = 3.5;
+        private const double high_CS_power = 1.6;
+        private const double high_CS_rate = 0.39;
+        private const double high_CS_penalty_hypers = 0.75;
 
         private const double density_buff = 1.02;
 
