@@ -190,7 +190,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
             if (note.DeltaPosition <= note.HalfCatcherWidth)
             {
-                double first = (-note.DeltaPosition - note.HalfCatcherWidth
+                double first = (- note.DeltaPosition - note.HalfCatcherWidth
                                 + (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next)));
 
                 double second = note.StartTime + next.StartTime;
@@ -199,7 +199,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
             else
             {
-                double first = (-note.CatcherWidth + (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CalculateSpeedFrom(next, note.BackwardNoteBorder)));
+                double first = (- note.CatcherWidth + (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CalculateSpeedFrom(next, note.BackwardNoteBorder)));
 
                 double second = note.StartTime + next.StartTime;
 
@@ -207,10 +207,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth, double standstillCorrection)
+        public static double CalculatePrecisionCorrection(double distance, double? standingTime, double catcherWidth, double maxPrecisionCorrection)
         {
             if (standingTime == null)
-                return 2.0;
+                return maxPrecisionCorrection;
 
             const double distanceExponent = 2.0;  // p
             const double timeExponent = 1.5;      // q
@@ -222,14 +222,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double timeExp = Math.Exp(-Math.Pow(tRatio, timeExponent));
 
             // exp(-k * (d/c)^p)
-            double distanceEffect = Math.Exp(-distanceSensitivity * Math.Pow(dRatio, distanceExponent));
+            double distanceEffect = Math.Exp(- distanceSensitivity * Math.Pow(dRatio, distanceExponent));
 
             // 1 + (1 - e^{-t^q}) + e^{-t^q} * distanceEffect
             double value = 1.0 + (1.0 - timeExp) + timeExp * distanceEffect;
 
-            value = (value - 1.0) * (standstillCorrection - 1.0) + 1.0;
+            value = (value - 1.0) * (maxPrecisionCorrection - 1.0) + 1.0;
 
-            return Math.Clamp(value, 1.0, standstillCorrection);
+            return Math.Clamp(value, 1.0, maxPrecisionCorrection);
         }
 
         public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)

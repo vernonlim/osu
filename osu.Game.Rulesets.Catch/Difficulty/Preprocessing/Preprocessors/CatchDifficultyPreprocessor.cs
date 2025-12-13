@@ -245,7 +245,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return precision / 18 * 41;
         }
 
-        const double standstillCorrection = 1.25;
+        const double maxPrecisionCorrection = 1.25;
 
         /// <summary>
         /// Calculates the precision value for a given note, and adjusts its effective time if needed.
@@ -265,25 +265,26 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump);
 
-                    double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
-
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, standstillCorrection);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, maxPrecisionCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
-                    data.EffectiveTime = standstillTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
+                    double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
+                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (maxPrecisionCorrection - 1.0);
+                    data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
                     return precisionCorrection * rawPrecision;
                 }
 
                 case PatternType.Jumps:
                 {
-                    double acceleratingTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
                     double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, standstillCorrection);
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, Math.Max(0, note.DeltaTime - note.DeltaPosition), note.CatcherWidth, maxPrecisionCorrection);
                     data.PrecisionCorrection = precisionCorrection;
 
-                    data.EffectiveTime = acceleratingTime * (precisionCorrection - 1) + data.EffectiveTime * (2 - precisionCorrection);
+                    double standstillTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
+                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (maxPrecisionCorrection - 1.0);
+                    data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
                     return precisionCorrection * rawPrecision;
                 }
@@ -370,20 +371,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     {
                         double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
                         double second = next.DeltaTime + note.DeltaPosition + note.HalfCatcherWidth;
-                        return (first + second) / 2.0 * standstillCorrection;
+                        return (first + second) / 2.0 * maxPrecisionCorrection;
                     }
 
                     double third = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder));
                     double fourth = next.DeltaTime + note.CatcherWidth;
 
-                    return (third + fourth) / 2.0 * standstillCorrection;
+                    return (third + fourth) / 2.0 * maxPrecisionCorrection;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
                     if (next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
                     {
-                        return (next.DeltaTime + note.CatcherWidth - next.DeltaPosition) / 2.0 * standstillCorrection;
+                        return (next.DeltaTime + note.CatcherWidth - next.DeltaPosition) / 2.0 * maxPrecisionCorrection;
                     }
 
                     break;
