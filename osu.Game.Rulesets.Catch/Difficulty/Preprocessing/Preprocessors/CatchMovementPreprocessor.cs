@@ -56,7 +56,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 PatternType type = Classify(note, prev, next);
 
                 // Hack for akarui taiyo
-                if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0)
+                if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * note.CatcherWidth / 5.0 && !note.IsHyper)
                 {
                     data.ActionProbability = 0;
                     data.NotePattern = PatternType.Ignored;
