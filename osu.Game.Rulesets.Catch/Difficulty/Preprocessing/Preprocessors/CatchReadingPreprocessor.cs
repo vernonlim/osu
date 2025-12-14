@@ -34,8 +34,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double non_hyperchain_penalty = 0.96;
         private const uint non_hyperchain_note_count = 4;
 
-        private const double high_velocity_nerf = 0.1;
-        private const double high_velocity_threshold = 5.0;
+        private const double high_velocity_nerf = 0.12;
+        private const double high_velocity_threshold = 4.5;
+        private const double max_velocity_nerf_threshold = 7.5;
+        private const double high_velocity_power = 0.75;
 
         private const double high_distance_buff = 0.15;
         private const double high_distance_threshold = 256.0;
@@ -256,7 +258,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
 
                 if (prev.IsHyper && speed > high_velocity_threshold)
-                    note.ReadingData.CombinedReadingFactor *= Math.Max(1.0 - high_velocity_nerf * Math.Max(1.0, (speed - high_velocity_threshold) / 2.0), 0.0);
+                    note.ReadingData.CombinedReadingFactor *= 1.0 - high_velocity_nerf * Math.Max(1.0, Math.Pow((speed - high_velocity_threshold) / (max_velocity_nerf_threshold - high_velocity_threshold), high_velocity_power));
             }
         }
 

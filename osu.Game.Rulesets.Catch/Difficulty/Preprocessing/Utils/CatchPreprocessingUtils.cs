@@ -207,27 +207,22 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection)
+        public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection, bool isStandstill)
         {
-            if (deltaPosition == 0.0)
-                return maxPrecisionCorrection;
-
-            const double distanceExponent = 1.0;
-            const double timeExponent = 1.0;
+            const double distanceExponent = 0.75; // The lower exponent is, the higher precision correction for medium values is
+            const double timeExponent = 1.5; // The higher exponent is, the higher precision correction for medium values is
             const double distanceWeight = 0.5;
 
             double standingTime = Math.Max(0.0, deltaTime - deltaPosition);
 
-            double distanceRatio = Math.Min(1.0, deltaPosition / catcherWidth);
-            double timeRatio = Math.Min(1.0, standingTime / (catcherWidth / 2.0));
+            double distanceRatio = isStandstill ? 0.0 : Math.Min(1.0, deltaPosition / catcherWidth);
+            double timeRatio = Math.Min(1.0, standingTime / catcherWidth);
 
             double timeEffect = Math.Pow(timeRatio, timeExponent);
             double distanceEffect = Math.Pow(1.0 - distanceRatio, distanceExponent);
 
-            double value = distanceWeight * distanceEffect + (1.0 - distanceWeight) * timeEffect;
-            value = value * (maxPrecisionCorrection - 1.0) + 1.0;
-
-            return Math.Clamp(value, 1.0, maxPrecisionCorrection);
+            double value = distanceWeight * distanceEffect + (1.0 - distanceWeight) * timeEffect; // No scaling yet, in [0,1] range
+            return Math.Clamp(value * (maxPrecisionCorrection - 1.0) + 1.0, 1.0, maxPrecisionCorrection);
         }
 
         public static double? CalculateCurvedStackProbability(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
