@@ -79,7 +79,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double approachRate = difficulty.ApproachRate;
 
-            double sr = calculateSr(notes, sorted);
+            double sr = calculateSr(startTimes, combinedStrains);
+            double srBeginningNerfed = calculateSr(notes, sorted);
             List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
 
             double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, readingFactors));
@@ -123,6 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 HiddenFactor = hiddenFactor,
                 PrecisionSR = precision,
                 SpeedSR = speed,
+                SRBeginningNerfed = srBeginningNerfed * approachRateFactor * hiddenFactor,
                 StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * hiddenFactor).ToList(),
             };
 
@@ -158,11 +160,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
         }
 
-        private double calculateSr(List<double> startTimes, List<double> strains, int missCount = 0)
+        private double calculateSr(List<double> startTimes, List<double> strains, int missCount = 0, bool nerfBeginning = false)
         {
             List<(double, double)> notes = startTimes.Zip(strains).ToList();
 
-            nerfBeginning(notes);
+            if (nerfBeginning)
+                this.nerfBeginning(notes);
 
             List<(double, double)> sorted = notes.OrderByDescending(n => n.Item2).ToList();
 

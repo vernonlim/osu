@@ -38,7 +38,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double adjustedStarRating = numMiss switch
             {
-                0 => catchAttributes.StarRating,
+                0 => catchAttributes.SRBeginningNerfed,
                 1 => catchAttributes.SROneMiss,
                 2 => catchAttributes.SRTwoMiss,
                 var x when x < 4 => double.Lerp(catchAttributes.SRTwoMiss, catchAttributes.SRFourMiss, (x - 2.0) / (4.0 - 2.0)),
@@ -55,7 +55,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 withMiss *= Math.Min(0.8 + (score.MaxCombo / (double)catchAttributes.MaxCombo) * 0.2, 1.0);
 
             // Original pathway - moderate combo scaling and higher misscount penalty, no SR adjustment
-            double original = calculateValue(catchAttributes.StarRating);
+            double original = calculateValue(catchAttributes.SRBeginningNerfed);
 
             original *= Math.Pow(0.97, Math.Max(0, numMiss - 1));
 

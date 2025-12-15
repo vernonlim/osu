@@ -34,6 +34,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("speed_sr")]
         public double SpeedSR { get; set; }
 
+        [JsonProperty("sr_beginning_nerfed")]
+        public double SRBeginningNerfed { get; set; }
+
         public IReadOnlyList<double> StarRatingWithMisses { get; set; } = new List<double> { 0, 0, 0, 0, 0 };
 
         [JsonProperty("1_miss_sr")]
