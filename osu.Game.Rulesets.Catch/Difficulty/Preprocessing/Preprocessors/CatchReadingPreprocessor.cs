@@ -28,6 +28,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
 
+        private const double alternating_distance_penalty = 0.98;
+        private const uint alternating_distance_note_count = 3;
+        private const double alternating_distance_leniency = 0.1;
+        private const double alternating_distance_sensitivity = 1.5;
+
         private const double hyperchain_penalty = 0.92;
         private const uint hyperchain_note_count = 6;
 
@@ -59,6 +64,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
             similarDistancePenalty(actionNotes, clockRate);
+            alternatingDistancePenalty(actionNotes, clockRate);
             hyperchainPenalty(cdhos);
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos);
@@ -152,7 +158,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             uint counter = 0;
             double distanceToRemember = 0.0;
 
-            // doesn't count first note
+            // Don't count first note
             for (int i = 3; i < actionNotes.Count; i++)
             {
                 CatchDifficultyHitObject note = actionNotes[i];
@@ -197,6 +203,77 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 distanceToRemember = note.DeltaPosition * clockRate;
             }
         }
+
+
+        private static void alternatingDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
+        {
+            uint counter = 0;
+
+            double rememberedDistanceOdd = 0.0;
+            double rememberedDistanceEven = 0.0;
+            int savedDistances = 0;
+
+            int validNoteIndex = 0; // Only non-hypers
+
+            // Don't count first notes
+            for (int i = 3; i < actionNotes.Count; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject prev = actionNotes[i - 1];
+
+                if (prev.IsHyper)
+                    continue;
+
+                double currentDistance = note.DeltaPosition * clockRate;
+                int oddEvenIndex = validNoteIndex & 1; // 0 for evens, 1 for odds
+
+                if (savedDistances == 2)
+                {
+                    double higherOdd = Math.Max(currentDistance, rememberedDistanceOdd);
+                    double higherEven = Math.Max(currentDistance, rememberedDistanceEven);
+                    double lowerOdd = Math.Min(currentDistance, rememberedDistanceOdd);
+                    double lowerEven = Math.Min(currentDistance, rememberedDistanceEven);
+
+                    double ratioOdd = (higherOdd - lowerOdd) / higherOdd;
+                    double halfRatioOdd = (higherOdd - lowerOdd) / Math.Max(lowerOdd, higherOdd / 2.0);
+                    double ratioEven = (higherEven - lowerEven) / higherEven;
+                    double halfRatioEven = (higherEven - lowerEven) / Math.Max(lowerEven, higherEven / 2.0);
+
+                    double lowerRatio = Math.Min(ratioOdd, ratioEven);
+                    double lowerHalfRatio = Math.Min(halfRatioOdd, halfRatioEven);
+
+                    if (lowerRatio <= alternating_distance_leniency || lowerHalfRatio <= alternating_distance_leniency)
+                    {
+                        counter = Math.Min(counter + 1, alternating_distance_note_count);
+
+                        if (counter == alternating_distance_note_count)
+                        {
+                            double effectiveRatio = Math.Min(lowerRatio, lowerHalfRatio);
+
+                            double penalty =
+                                (1.0 - alternating_distance_penalty) *
+                                Math.Pow(
+                                    1.0 - effectiveRatio / alternating_distance_leniency,
+                                    alternating_distance_sensitivity
+                                );
+
+                            note.ReadingData.CombinedReadingFactor *= 1.0 - penalty;
+                        }
+                    }
+                    else
+                        counter = Math.Max(counter - 1, 0);
+                }
+
+                if (oddEvenIndex == 1)
+                    rememberedDistanceOdd = currentDistance;
+                else
+                    rememberedDistanceEven = currentDistance;
+
+                savedDistances = Math.Min(savedDistances + 1, 2);
+                validNoteIndex++;
+            }
+        }
+        
 
         private static void hyperchainPenalty(List<CatchDifficultyHitObject> cdhos)
         {
