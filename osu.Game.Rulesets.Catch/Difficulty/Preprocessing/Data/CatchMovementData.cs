@@ -264,14 +264,5 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// <param name="pos2"></param>
         /// <returns></returns>
         public double FurthestForward(double pos1, double pos2) => Note.IsMovingRight ? Math.Max(pos1, pos2) : Math.Min(pos1, pos2);
-
-        // debug
-        public double PrevToNextDistance;
-
-        public double MinimalHyperdashSpeed;
-
-        public double PerfectHyperdashSpeed;
-
-        public double AverageHyperdashSpeed;
     }
 }

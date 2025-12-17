@@ -80,10 +80,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Debug
-                data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
-                data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
-                data.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
-                data.AverageHyperdashSpeed = CatchPreprocessingUtils.CalculateAverageHyperdashSpeed(note, prev, frameTime);
+                note.DisplayData.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
+                note.DisplayData.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
+                note.DisplayData.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
+                note.DisplayData.AverageHyperdashSpeed = CatchPreprocessingUtils.CalculateAverageHyperdashSpeed(note, prev, frameTime);
 
                 if (data.OriginalPattern == PatternType.None)
                 {

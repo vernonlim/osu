@@ -27,6 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
                 (_, SpeedType speedType) = SpeedEvaluator.EvaluateMaxSpeed(cdho);
 
+                cdho.DisplayData.CatcherWidth = catcherWidth;
                 cdho.DisplayData.SpeedType = speedType;
                 cdho.DisplayData.NoteSpeed = speedStrain;
                 cdho.MovementData.PrecisionStrain = precisionStrain;
@@ -128,6 +129,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// </summary>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
+        /// <param name="catcherWidth"></param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
         public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double catcherWidth, double frameTime) =>
@@ -138,6 +140,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// </summary>
         /// <param name="note">The current note.</param>
         /// <param name="prev">The previous note.</param>
+        /// <param name="catcherWidth"></param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
         public static double CalculateMaximalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double catcherWidth, double frameTime) =>

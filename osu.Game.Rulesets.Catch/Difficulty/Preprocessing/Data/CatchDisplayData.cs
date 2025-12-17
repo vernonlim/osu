@@ -18,5 +18,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public CatchDifficultyHitObject? FurthestLeft;
         public CatchDifficultyHitObject? FurthestRight;
         public MovementDirection SignificantMovementDirection;
+        public double PrevToNextDistance;
+        public double MinimalHyperdashSpeed;
+        public double PerfectHyperdashSpeed;
+        public double AverageHyperdashSpeed;
     }
 }
