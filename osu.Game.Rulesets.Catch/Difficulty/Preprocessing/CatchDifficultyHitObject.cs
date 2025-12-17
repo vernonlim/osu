@@ -95,15 +95,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public CatchDisplayData DisplayData;
 
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
-                                        float catcherWidth,
+                                        double normalizedCatcherWidth,
                                         List<DifficultyHitObject> objects,
                                         List<CatchDifficultyHitObject> noteObjects,
                                         int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             Position = BaseObject.EffectiveX / clockRate;
-            LeftNoteBorder = Position - catcherWidth / clockRate / 2.0;
-            RightNoteBorder = Position + catcherWidth / clockRate / 2.0;
+            LeftNoteBorder = Position - normalizedCatcherWidth / 2.0;
+            RightNoteBorder = Position + normalizedCatcherWidth / 2.0;
             DeltaPosition = Math.Abs(Position - LastObject.EffectiveX / clockRate);
 
             // Temporary hack to ensure DeltaPosition > 0
@@ -142,7 +142,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 
             NoteIndex = index;
 
-            MovementData = new CatchMovementData(this, catcherWidth, clockRate);
+            MovementData = new CatchMovementData(this, normalizedCatcherWidth, clockRate);
             ReadingData = new CatchReadingData();
             DisplayData = new CatchDisplayData();
         }

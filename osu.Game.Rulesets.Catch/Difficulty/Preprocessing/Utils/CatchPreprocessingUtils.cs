@@ -202,7 +202,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             if (note.DeltaPosition <= catcherWidth / 2.0)
             {
                 double first = (-note.DeltaPosition - catcherWidth / 2.0
-                                + (catcherWidth / 2.0 - 2 * next.DeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next, frameTime)));
+                                + (catcherWidth - 2 * next.DeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next, frameTime)));
 
                 double second = note.StartTime + next.StartTime;
 
