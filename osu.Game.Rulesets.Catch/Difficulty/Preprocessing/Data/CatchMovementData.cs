@@ -216,7 +216,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// Populates the class with default values which may be overwritten.
         /// </summary>
         /// <param name="note"></param>
-        /// <param name="catcherWidth"></param>
         /// <param name="normalizedCatcherWidth"></param>
         /// <param name="clockRate"></param>
         public CatchMovementData(CatchDifficultyHitObject note, double normalizedCatcherWidth, double clockRate)

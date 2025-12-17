@@ -84,9 +84,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         private static void printMapInformation(IBeatmap beatmap)
         {
-            string? artist = beatmap.Metadata.Artist;
-            string? title = beatmap.Metadata.Title;
-            string? difficulty = beatmap.BeatmapInfo?.DifficultyName;
+            string artist = beatmap.Metadata.Artist;
+            string title = beatmap.Metadata.Title;
+            string difficulty = beatmap.BeatmapInfo.DifficultyName;
             Console.WriteLine($"Map: {artist} - {title} [{difficulty}]");
             Console.WriteLine();
         }
