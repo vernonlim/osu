@@ -231,8 +231,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             IsStack = false;
             StackWiggleCount = 0;
             IsDirectionChange = false;
-            LeftCatcherPosition = note.Position - catcherWidth / 2.0 / clockRate;
-            RightCatcherPosition = note.Position + catcherWidth / 2.0 / clockRate;
+            LeftCatcherPosition = note.Position - catcherWidth / clockRate / 2.0;
+            RightCatcherPosition = note.Position + catcherWidth / clockRate / 2.0;
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;

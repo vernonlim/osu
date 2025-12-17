@@ -102,8 +102,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             Position = BaseObject.EffectiveX / clockRate;
-            LeftNoteBorder = Position - catcherWidth / 2.0 / clockRate;
-            RightNoteBorder = Position + catcherWidth / 2.0 / clockRate;
+            LeftNoteBorder = Position - catcherWidth / clockRate / 2.0;
+            RightNoteBorder = Position + catcherWidth / clockRate / 2.0;
             DeltaPosition = Math.Abs(Position - LastObject.EffectiveX / clockRate);
 
             // Temporary hack to ensure DeltaPosition > 0
