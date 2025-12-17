@@ -422,11 +422,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 double frameTime = 1000.0 / 60.0 / clockRate;
                 double playfieldBorder = 512.0 / clockRate;
+                double normalizedCatcherWidth = catcherWidth / clockRate;
 
-                CatchMovementPreprocessor.Process(objects, catcherWidth, clockRate, frameTime, playfieldBorder);
-                CatchDifficultyPreprocessor.Process(objects, catcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchMovementPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchDifficultyPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
                 CatchReadingPreprocessor.Process(objects, circleSize, clockRate, frameTime);
-                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, catcherWidth, clockRate);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, normalizedCatcherWidth, clockRate);
                 // CatchPreprocessorTest.Process(objects, beatmap);
             }
 

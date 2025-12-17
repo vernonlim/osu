@@ -335,7 +335,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
             _ = CatchPreprocessingUtils.CalculateMinimalDistance(note, prev, catcherWidth);
-            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, frameTime);
+            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
             double nextToPrevDeltaTime = next.StartTime - prev.StartTime;
 
             switch (type)

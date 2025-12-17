@@ -120,7 +120,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="note">The current note.</param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        public static double CalculatePerfectHyperdashSpeed(CatchDifficultyHitObject note, double frameTime) => note.DeltaPosition / (Math.Max(note.DeltaTime - frameTime, 1));
+        public static double CalculatePerfectHyperdashSpeed(CatchDifficultyHitObject note, double frameTime) =>
+            note.DeltaPosition / (Math.Max(note.DeltaTime - frameTime, 1));
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
@@ -129,8 +130,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="prev">The previous note.</param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double frameTime) =>
-            CalculateMinimalDistance(note, prev, frameTime) / Math.Max(note.DeltaTime - frameTime, 1);
+        public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double catcherWidth, double frameTime) =>
+            CalculateMinimalDistance(note, prev, catcherWidth) / Math.Max(note.DeltaTime - frameTime, 1);
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
@@ -139,8 +140,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="prev">The previous note.</param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        public static double CalculateMaximalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double frameTime) =>
-            CalculateMaximalDistance(note, prev, frameTime) / Math.Max(note.DeltaTime - frameTime, 1);
+        public static double CalculateMaximalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double catcherWidth, double frameTime) =>
+            CalculateMaximalDistance(note, prev, catcherWidth) / Math.Max(note.DeltaTime - frameTime, 1);
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, assuming the player starts from

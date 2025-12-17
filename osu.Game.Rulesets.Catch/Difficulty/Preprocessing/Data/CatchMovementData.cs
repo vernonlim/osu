@@ -217,7 +217,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         /// <param name="note"></param>
         /// <param name="catcherWidth"></param>
-        public CatchMovementData(CatchDifficultyHitObject note, double catcherWidth)
+        public CatchMovementData(CatchDifficultyHitObject note, double catcherWidth, double clockRate)
         {
             Note = note;
             NotePattern = PatternType.None;
@@ -231,8 +231,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             IsStack = false;
             StackWiggleCount = 0;
             IsDirectionChange = false;
-            LeftCatcherPosition = note.Position - catcherWidth / 2.0;
-            RightCatcherPosition = note.Position + catcherWidth / 2.0;
+            LeftCatcherPosition = note.Position - catcherWidth / 2.0 / clockRate;
+            RightCatcherPosition = note.Position + catcherWidth / 2.0 / clockRate;
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;

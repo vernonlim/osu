@@ -81,7 +81,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 // Debug
                 data.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
-                data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, frameTime);
+                data.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
                 data.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
                 data.AverageHyperdashSpeed = CatchPreprocessingUtils.CalculateAverageHyperdashSpeed(note, prev, frameTime);
 
@@ -317,7 +317,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
             double prevBackwardCatcherPosition = note.IsMovingRight ? prevData.LeftCatcherPosition : prevData.RightCatcherPosition;
-            double minimalSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, frameTime);
+            double minimalSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
 
             switch (data.NotePattern)
             {
@@ -388,7 +388,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                         if (prevPrev is not null)
                         {
-                            scale = Math.Sqrt(CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(prev, prevPrev, frameTime));
+                            scale = Math.Sqrt(CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(prev, prevPrev, catcherWidth, frameTime));
                         }
                     }
 
