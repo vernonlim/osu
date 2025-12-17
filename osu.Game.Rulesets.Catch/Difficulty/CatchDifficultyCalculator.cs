@@ -138,8 +138,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 return;
             }
 
-            const double time_penalty_cutoff = 60000;
-            const double time_penalty_power = 0.2;
+            const double time_penalty_cutoff = 60000; // No notes above the cutoff are affected
+            const double time_penalty_power = 0.3;
+            const double full_penalty = 0.5; // Penalty for the first note
 
             double firstNoteStartTime = notes[0].Item1;
 
@@ -154,7 +155,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double strain = notes[i].Item2;
 
                 if (time < time_penalty_cutoff)
-                    strain *= Math.Pow(time / time_penalty_cutoff, time_penalty_power);
+                    strain *= full_penalty + (1.0 - full_penalty) * Math.Pow(time / time_penalty_cutoff, time_penalty_power);
 
                 notes[i] = (time, strain);
             }

@@ -79,9 +79,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // We add some undetected actions approximated with 20% of the maximum combo
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.2 * catchAttributes.MaxCombo;
 
+            const double linear_pace = 0.34;
+            const int cutoff = 1700;
+            const double logarithmic_pace = 0.25;
+
             double lengthBonus =
-                0.95 + 0.31 * Math.Min(1.0, totalActions / 1700.0) +
-                (totalActions > 1700 ? Math.Log10(totalActions / 1700.0) * 0.25 : 0.0);
+                1.0 + linear_pace * Math.Min(1.0, totalActions / cutoff) +
+                (totalActions > cutoff ? Math.Log10(totalActions / cutoff) * logarithmic_pace : 0.0);
 
             // Length bonus should depend on approachRate (including FlashLight): if it's high enough, it's either draining or it requires memorisation
             lengthBonus = Math.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 10.5) / 2.0);
