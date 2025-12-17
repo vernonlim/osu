@@ -420,10 +420,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             if (objects.Count >= 2)
             {
-                CatchMovementPreprocessor.Process(objects);
-                CatchDifficultyPreprocessor.Process(objects);
-                CatchReadingPreprocessor.Process(objects, circleSize, clockRate);
-                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
+                double frameTime = 1000.0 / 60.0 / clockRate;
+                double playfieldBorder = 512.0 / clockRate;
+
+                CatchMovementPreprocessor.Process(objects, catcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchDifficultyPreprocessor.Process(objects, catcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchReadingPreprocessor.Process(objects, circleSize, clockRate, frameTime);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, catcherWidth, clockRate);
                 // CatchPreprocessorTest.Process(objects, beatmap);
             }
 

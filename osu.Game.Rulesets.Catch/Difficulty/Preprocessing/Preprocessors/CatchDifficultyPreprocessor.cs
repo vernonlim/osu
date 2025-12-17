@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
     public static class CatchDifficultyPreprocessor
     {
-        public static void Process(List<DifficultyHitObject> hitObjects)
+        public static void Process(List<DifficultyHitObject> hitObjects, double catcherWidth, double clockRate, double frameTime, double playfieldBorder)
         {
             List<CatchDifficultyHitObject> guaranteedActions = new List<CatchDifficultyHitObject>();
             List<CatchDifficultyHitObject> leftGuaranteedActions = new List<CatchDifficultyHitObject>();
@@ -34,11 +34,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchMovementData data = note.MovementData;
                 CatchMovementData prevData = prev.MovementData;
 
-                data.NotePrecision = calculatePrecision(note, prev, next);
+                data.NotePrecision = calculatePrecision(note, prev, next, catcherWidth, frameTime);
 
                 if (prevData.ActionProbability == 1)
                 {
                     guaranteedActions.Add(prev);
+
                     if (prevData.KeyPress == MovementKey.Left)
                     {
                         leftGuaranteedActions.Add(prev);
@@ -51,6 +52,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else if (prevData.ActionProbability > 0.0)
                 {
                     ambiguousActions.Add(prev);
+
                     if (prevData.KeyPress == MovementKey.Left)
                     {
                         leftAmbiguousActions.Add(prev);
@@ -90,8 +92,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     furthestLeft = note;
                 }
 
-                data.FurthestLeft = furthestLeft;
-                data.FurthestRight = furthestRight;
+                note.DisplayData.FurthestLeft = furthestLeft;
+                note.DisplayData.FurthestRight = furthestRight;
 
                 if (note.IsHyper)
                 {
@@ -103,7 +105,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                             && (lastActionNote is null || lastActionTime <= lastLeftHyper.StartTime)
                             && (!lastLeftHyper.MovementData.IsStack)
                             && data.ActionProbability == 0
-                            && Math.Abs(lastLeftHyper.Position - note.Position) > note.HalfCatcherWidth)
+                            && Math.Abs(lastLeftHyper.Position - note.Position) > catcherWidth / 2.0)
                         {
                             data.IsRealAction = false;
                             data.ActionProbability = 1;
@@ -120,12 +122,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     double actionProbability = furthestLeft.MovementData.ActionProbability;
                                     PatternType notePattern = furthestLeft.MovementData.NotePattern;
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
-                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
+                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    data.NotePrecision = calculatePrecision(furthestLeft, furPrev, furNext);
+                                    data.NotePrecision = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
 
-                                    furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext);
-                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext);
+                                    furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext, catcherWidth, clockRate);
+                                    CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                                     furthestLeft.MovementData.ActionProbability = actionProbability;
                                     furthestLeft.MovementData.NotePattern = notePattern;
@@ -139,7 +141,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                             && (lastActionNote is null || lastActionTime <= lastRightHyper.StartTime)
                             && (!lastRightHyper.MovementData.IsStack)
                             && data.ActionProbability == 0
-                            && Math.Abs(lastRightHyper.Position - note.Position) > note.HalfCatcherWidth)
+                            && Math.Abs(lastRightHyper.Position - note.Position) > catcherWidth / 2.0)
                         {
                             data.IsRealAction = false;
                             data.ActionProbability = 1;
@@ -156,12 +158,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     double actionProbability = furthestRight.MovementData.ActionProbability;
                                     PatternType notePattern = furthestRight.MovementData.NotePattern;
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
-                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
+                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    data.NotePrecision = calculatePrecision(furthestRight, furPrev, furNext);
+                                    data.NotePrecision = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
 
-                                    furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext);
-                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext);
+                                    furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext, catcherWidth, clockRate);
+                                    CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                                     furthestRight.MovementData.ActionProbability = actionProbability;
                                     furthestRight.MovementData.NotePattern = notePattern;
@@ -171,8 +173,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                 }
 
-
-                //Precision calculation
+                // Precision calculation
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
                     data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
@@ -185,9 +186,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 else
                     data.PrecisionStrain = data.RawPrecisionStrain * data.ActionProbability;
 
-
                 // Delayed precision
-                const double delayedPrecisionWeight = 0.92;
+                const double delayed_precision_weight = 0.92;
 
                 CatchDifficultyHitObject? prevAction = guaranteedActions.LastOrDefault() ?? ambiguousActions.LastOrDefault();
 
@@ -195,18 +195,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     double prevPrecision = prevAction.MovementData.PrecisionStrain;
 
-                    data.PrecisionStrain = delayedPrecisionWeight * data.PrecisionStrain + (1.0 - delayedPrecisionWeight) * prevPrecision;
+                    data.PrecisionStrain = delayed_precision_weight * data.PrecisionStrain + (1.0 - delayed_precision_weight) * prevPrecision;
                 }
 
-
                 // Speed calculation
-                var recentGuaranteedDirectionised = new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
-                                       .Where(n => n is not null)
-                                       .MaxBy(n => n!.MovementData.EffectiveTime);
+                var recentGuaranteedDirectionized =
+                    new[] { leftGuaranteedActions.LastOrDefault(), rightGuaranteedActions.LastOrDefault() }
+                        .Where(n => n is not null)
+                        .MaxBy(n => n!.MovementData.EffectiveTime);
 
-                var recentAmbiguousDirectionised = new[] { leftAmbiguousActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault() }
-                                      .Where(n => n is not null)
-                                      .MaxBy(n => n!.MovementData.EffectiveTime);
+                var recentAmbiguousDirectionized =
+                    new[] { leftAmbiguousActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault() }
+                        .Where(n => n is not null)
+                        .MaxBy(n => n!.MovementData.EffectiveTime);
 
                 double burst = 0;
                 double consistency = 0;
@@ -216,13 +217,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 {
                     burst = calculateSpeed(note, leftGuaranteedActions.LastOrDefault(), leftAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
                     consistency = calculateSpeed(note, leftGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
-                    snap = calculateSpeed(note, recentGuaranteedDirectionised, recentAmbiguousDirectionised, timeToSpeedSnap);
+                    snap = calculateSpeed(note, recentGuaranteedDirectionized, recentAmbiguousDirectionized, timeToSpeedSnap);
                 }
                 else if (data.KeyPress == MovementKey.Right)
                 {
                     burst = calculateSpeed(note, rightGuaranteedActions.LastOrDefault(), rightAmbiguousActions.LastOrDefault(), timeToSpeedBurst);
                     consistency = calculateSpeed(note, rightGuaranteedActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), leftAmbiguousActions.AsEnumerable().Reverse().Skip(1).FirstOrDefault(), timeToSpeedConsistency);
-                    snap = calculateSpeed(note, recentGuaranteedDirectionised, recentAmbiguousDirectionised, timeToSpeedSnap);
+                    snap = calculateSpeed(note, recentGuaranteedDirectionized, recentAmbiguousDirectionized, timeToSpeedSnap);
                 }
 
                 data.BurstSpeed = burst * 2 * 12 * 120;
@@ -233,10 +234,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            double amplitude = 40.0; //governs how much very low precision values are worth
-            double limit = 1.0; //precision strain for very high precision values (easy jumps)
-            double shift = -15.0; //shifts the boundary between concave and convex part (shifts the curve)
-            double pace = 29.0; //measures how fast strain decreases between easy and hard jumps
+            const double amplitude = 40.0; //governs how much very low precision values are worth
+            const double limit = 1.0; //precision strain for very high precision values (easy jumps)
+            const double shift = -15.0; //shifts the boundary between concave and convex part (shifts the curve)
+            const double pace = 29.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
@@ -245,7 +246,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return precision / 18 * 41;
         }
 
-        const double maxPrecisionCorrection = 1.25;
+        private const double max_precision_correction = 1.25;
 
         /// <summary>
         /// Calculates the precision value for a given note, and adjusts its effective time if needed.
@@ -253,23 +254,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="note"></param>
         /// <param name="prev"></param>
         /// <param name="next"></param>
+        /// <param name="catcherWidth"></param>
+        /// <param name="frameTime"></param>
         /// <returns></returns>
-        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next)
+        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double frameTime)
         {
             CatchMovementData data = note.MovementData;
-            CatchMovementData prevData = prev.MovementData;
 
             switch (data.NotePattern)
             {
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump);
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.HyperjumpAfterJump, catcherWidth, frameTime);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection, false);
-                    data.PrecisionCorrection = precisionCorrection;
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, false);
+                    note.DisplayData.PrecisionCorrection = precisionCorrection;
 
-                    double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next);
-                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (maxPrecisionCorrection - 1.0);
+                    double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next, catcherWidth, frameTime);
+                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (max_precision_correction - 1.0);
                     data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
                     return precisionCorrection * rawPrecision;
@@ -277,13 +279,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps);
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.Jumps, catcherWidth, frameTime);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection, false);
-                    data.PrecisionCorrection = precisionCorrection;
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, false);
+                    note.DisplayData.PrecisionCorrection = precisionCorrection;
 
-                    double standstillTime = (data.Directionize(prev.Position - next.Position) - note.HalfCatcherWidth + 2 * note.StartTime) / 2.0;
-                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (maxPrecisionCorrection - 1.0);
+                    double standstillTime = (data.Directionize(prev.Position - next.Position) - catcherWidth / 2.0 + 2 * note.StartTime) / 2.0;
+                    double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (max_precision_correction - 1.0);
                     data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
                     return precisionCorrection * rawPrecision;
@@ -291,27 +293,27 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.PotentialStandstill:
                 {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.PotentialStandstill);
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.PotentialStandstill, catcherWidth, frameTime);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection, true);
-                    data.PrecisionCorrection = precisionCorrection;
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, true);
+                    note.DisplayData.PrecisionCorrection = precisionCorrection;
 
                     return precisionCorrection * rawPrecision;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
-                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.AcceleratingStream);
+                    double? rawPrecision = calculateRawPrecision(note, prev, next, PatternType.AcceleratingStream, catcherWidth, frameTime);
 
-                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, note.CatcherWidth, maxPrecisionCorrection, true);
-                    data.PrecisionCorrection = precisionCorrection;
+                    double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, true);
+                    note.DisplayData.PrecisionCorrection = precisionCorrection;
 
                     return precisionCorrection * rawPrecision;
                 }
 
                 default:
                 {
-                    return calculateRawPrecision(note, prev, next, data.NotePattern);
+                    return calculateRawPrecision(note, prev, next, data.NotePattern, catcherWidth, frameTime);
                 }
             }
         }
@@ -323,15 +325,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="prev">The previous note.</param>
         /// <param name="next">The next note.</param>
         /// <param name="type"></param>
+        /// <param name="catcherWidth"></param>
+        /// <param name="frameTime"></param>
         /// <returns>The precision value in milliseconds, or null if it is infinite.</returns>
-        private static double? calculateRawPrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type)
+        private static double? calculateRawPrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type, double catcherWidth, double frameTime)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
-            _ = CatchPreprocessingUtils.CalculateMinimalDistance(note, prev);
-            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev);
+            _ = CatchPreprocessingUtils.CalculateMinimalDistance(note, prev, catcherWidth);
+            double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, frameTime);
             double nextToPrevDeltaTime = next.StartTime - prev.StartTime;
 
             switch (type)
@@ -343,13 +347,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.JumpAfterHyperjump:
                 {
-                    if (next.DeltaPosition - next.DeltaTime >= note.HalfCatcherWidth)
+                    if (next.DeltaPosition - next.DeltaTime >= catcherWidth / 2.0)
                     {
-                        return (note.CatcherWidth) / (2.0 * minimalVelocity);
+                        return (catcherWidth) / (2.0 * minimalVelocity);
                     }
 
-                    double first = note.HalfCatcherWidth - next.DeltaPosition + nextToPrevDeltaTime;
-                    double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth) / minimalVelocity;
+                    double first = catcherWidth / 2.0 - next.DeltaPosition + nextToPrevDeltaTime;
+                    double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - catcherWidth / 2.0) / minimalVelocity;
                     double third = first - second;
 
                     return third / 2.0;
@@ -357,24 +361,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Hyperjumps:
                 {
-                    double first = (note.HalfCatcherWidth - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next);
-                    double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - note.HalfCatcherWidth) / minimalVelocity;
+                    double first = (catcherWidth / 2.0 - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime);
+                    double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - catcherWidth / 2.0) / minimalVelocity;
 
                     return (first - second + nextToPrevDeltaTime) / 2.0;
                 }
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - note.FrameTime, 1);
+                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - frameTime, 1);
 
-                    if (data.Directionize(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - note.HalfCatcherWidth)
+                    if (data.Directionize(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - catcherWidth / 2.0)
                     {
-                        return note.HalfCatcherWidth;
+                        return catcherWidth / 2.0;
                     }
 
                     double first = data.Directionize(next.Position - prevForwardCatcherPosition);
-                    double second = (first + note.HalfCatcherWidth - note.DeltaTime) / optimalVelocity;
-                    double third = nextToPrevDeltaTime + data.Directionize(prevForwardCatcherPosition - note.Position) + note.HalfCatcherWidth;
+                    double second = (first + catcherWidth / 2.0 - note.DeltaTime) / optimalVelocity;
+                    double third = nextToPrevDeltaTime + data.Directionize(prevForwardCatcherPosition - note.Position) + catcherWidth / 2.0;
                     double fourth = second + third;
 
                     return fourth / 2.0;
@@ -382,29 +386,29 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    return (next.DeltaTime + note.CatcherWidth - next.DeltaPosition) / 2.0;
+                    return (next.DeltaTime + catcherWidth - next.DeltaPosition) / 2.0;
                 }
 
                 case PatternType.PotentialStandstill:
                 {
-                    if (note.DeltaPosition <= note.HalfCatcherWidth)
+                    if (note.DeltaPosition <= catcherWidth / 2.0)
                     {
-                        double first = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next));
-                        double second = next.DeltaTime + note.DeltaPosition + note.HalfCatcherWidth;
+                        double first = (catcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime));
+                        double second = next.DeltaTime + note.DeltaPosition + catcherWidth / 2.0;
                         return (first + second) / 2.0;
                     }
 
-                    double third = (note.CatcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder));
-                    double fourth = next.DeltaTime + note.CatcherWidth;
+                    double third = (catcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder, frameTime));
+                    double fourth = next.DeltaTime + catcherWidth;
 
                     return (third + fourth) / 2.0;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
-                    if (next.DeltaPosition > next.DeltaTime / 2.0 + note.HalfCatcherWidth)
+                    if (next.DeltaPosition > next.DeltaTime / 2.0 + catcherWidth / 2.0)
                     {
-                        return (next.DeltaTime + note.CatcherWidth - next.DeltaPosition) / 2.0;
+                        return (next.DeltaTime + catcherWidth - next.DeltaPosition) / 2.0;
                     }
 
                     break;
@@ -425,18 +429,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculateSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject? prevGuaranteedAction, CatchDifficultyHitObject? prevAmbiguousAction, Func<double, double> timeToSpeed)
         {
             CatchMovementData data = note.MovementData;
-            const double maxRatio = 0.2;
-            const double effectiveImportance = 0.05;
+            const double max_ratio = 0.2;
+            const double effective_importance = 0.05;
 
-            double effectiveRatio = Math.Min(maxRatio, (note.StartTime - data.EffectiveTime) / note.DeltaTime);
+            double effectiveRatio = Math.Min(max_ratio, (note.StartTime - data.EffectiveTime) / note.DeltaTime);
             double maxTime = data.EffectiveTime;
             if (data.EffectiveTime <= note.StartTime)
-                maxTime = note.StartTime - note.DeltaTime * effectiveRatio * effectiveImportance / maxRatio;
+                maxTime = note.StartTime - note.DeltaTime * effectiveRatio * effective_importance / max_ratio;
 
             if (data.ActionProbability > 0)
             {
                 if (data.ActionProbability < 1
-                    && data.DisplayPattern != PatternType.StackEnd
+                    && data.OriginalPattern != PatternType.StackEnd
                     && prevGuaranteedAction is not null)
                 {
                     double minGuaranteedTime = Math.Min(prevGuaranteedAction.StartTime, prevGuaranteedAction.MovementData.EffectiveTime);
@@ -476,13 +480,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return 0;
         }
 
-        //Functions below are identical, but splitting them may be useful in future.
+        // Functions below are identical, but splitting them may be useful in the future.
         private static double timeToSpeedSnap(double time)
         {
-            double amplitude = 19.1; //governs how much very low speed values are worth
-            double limit = 1.0; //speed strain for very high speed values (easy jumps)
-            double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 47.0; // normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
 
@@ -491,10 +495,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedBurst(double time)
         {
-            double amplitude = 19.1; //governs how much very low speed values are worth
-            double limit = 1.0; //speed strain for very high speed values (easy jumps)
-            double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 47.0; // normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
@@ -503,10 +507,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedConsistency(double time)
         {
-            double amplitude = 19.1; //governs how much very low speed values are worth
-            double limit = 1.0; //speed strain for very high speed values (easy jumps)
-            double shift = -10.0; //measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            double pace = 47.0; //normalises shift
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 47.0; // normalises shift
 
             double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
