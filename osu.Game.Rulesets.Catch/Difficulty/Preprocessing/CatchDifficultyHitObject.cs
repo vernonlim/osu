@@ -103,7 +103,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             Position = BaseObject.EffectiveX / clockRate;
             LeftNoteBorder = Position - normalizedCatcherWidth / 2.0;
             RightNoteBorder = Position + normalizedCatcherWidth / 2.0;
-            DeltaPosition = Math.Abs(Position - LastObject.EffectiveX / clockRate);
 
             // Temporary hack to ensure DeltaPosition > 0
             if (noteObjects.Count >= 2)
@@ -125,6 +124,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                     }
                 }
             }
+
+            DeltaPosition = Math.Abs(Position - LastObject.EffectiveX / clockRate);
 
             if (noteObjects.Count >= 1)
             {
