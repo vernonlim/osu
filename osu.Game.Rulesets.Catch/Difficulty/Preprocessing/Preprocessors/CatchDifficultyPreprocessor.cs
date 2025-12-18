@@ -243,7 +243,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 41;
+            return precision / 18 * 40;
         }
 
         private const double max_precision_correction = 1.25;
