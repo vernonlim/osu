@@ -204,7 +204,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-
         private static void alternatingDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
             uint counter = 0;
@@ -273,7 +272,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 validNoteIndex++;
             }
         }
-        
 
         private static void hyperchainPenalty(List<CatchDifficultyHitObject> cdhos)
         {
