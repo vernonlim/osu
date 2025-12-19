@@ -55,6 +55,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double density_buff = 1.02;
 
+        private const double fake_action_buff = 1.0;
+
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -71,6 +73,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             highDistanceBuff(actionNotes, clockRate);
             highCSBuff(actionNotes, circleSize);
             densityBuff(cdhos);
+            fakeActionBuff(actionNotes);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -380,6 +383,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (prev.MovementData.ActionProbability == 0)
                     note.ReadingData.CombinedReadingFactor *= density_buff;
+            }
+        }
+
+        private static void fakeActionBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            foreach (var note in cdhos)
+            {
+                // Continue if action is real, so the code after this is for fake actions only
+                if (note.MovementData.IsRealAction) continue;
+
+                note.ReadingData.CombinedReadingFactor *= fake_action_buff;
             }
         }
     }
