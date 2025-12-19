@@ -391,7 +391,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / catcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0) && !note.IsHyper)
+                    if (next.DeltaPosition / catcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
                     {
                         // wiggle
                         data.StackWiggleCount += 1;
@@ -414,7 +414,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.StackContinuation:
                 {
-                    double rawCatcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0);
+                    double rawCatcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate);
                     bool isWigglingRawBetter = next.DeltaPosition / catcherWidth >= rawCatcherStandingWidthBoundary;
 
                     if (isWigglingRawBetter)
@@ -422,7 +422,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         data.StackWiggleCount = prevData.StackWiggleCount + 1;
                     }
 
-                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount);
+                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount, clockRate);
                     bool isWigglingBetter = next.DeltaPosition / catcherWidth >= catcherStandingWidthBoundary;
 
                     if (isWigglingBetter && !note.IsHyper)

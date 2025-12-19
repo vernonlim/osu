@@ -14,6 +14,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
     {
         public static void PopulateDifficultyData(List<CatchDifficultyHitObject> cdhos, double catcherWidth, double clockRate)
         {
+            cdhos[0].DisplayData.NoteCombo = 1;
+            cdhos[^1].DisplayData.NoteCombo = cdhos.Count;
+
             for (int i = 1; i < cdhos.Count - 1; ++i)
             {
                 CatchDifficultyHitObject cdho = cdhos[i];
@@ -30,19 +33,23 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 cdho.DisplayData.CatcherWidth = catcherWidth;
                 cdho.DisplayData.SpeedType = speedType;
                 cdho.DisplayData.NoteSpeed = speedStrain;
-                cdho.MovementData.PrecisionStrain = precisionStrain;
                 cdho.DisplayData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
                 cdho.DisplayData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, readingFactor);
-                cdho.DisplayData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount);
+                cdho.DisplayData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount, clockRate);
                 cdho.DisplayData.SignificantMovementDirection = cdho.SignificantMovementDirection(catcherWidth, clockRate);
+                cdho.DisplayData.NoteCombo = i + 1;
             }
         }
 
-        public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount) =>
-            (ms <= 188
-                ? 2.38 * 1e-5 * Math.Pow(ms, 2) - 8.96 * 1e-3 * ms + 1.41
-                : 0.5667)
-            * (1 + Math.Max(0, wiggleCount - 4) * 0.05);
+        public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount, double clockRate)
+        {
+            double adjustedDelta = ms * clockRate;
+
+            return (adjustedDelta <= 188
+                       ? 2.38 * 1e-5 * Math.Pow(adjustedDelta, 2) - 8.96 * 1e-3 * adjustedDelta + 1.41
+                       : 0.5667)
+                   * (1 + Math.Max(0, wiggleCount - 4) * 0.05);
+        }
 
         /// <summary>
         /// Calculates the value of the CDF for the catcher position at the given note for the value x.
