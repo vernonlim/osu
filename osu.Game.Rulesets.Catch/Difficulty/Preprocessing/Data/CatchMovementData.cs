@@ -18,6 +18,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public PatternType NotePattern;
 
         /// <summary>
+        /// The original pattern assigned to the note before reclassification.
+        /// </summary>
+        public PatternType OriginalPattern;
+
+        /// <summary>
         /// The time at which the action associated with this note takes place.
         /// </summary>
         public double EffectiveTime;
@@ -207,28 +212,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </summary>
         public double SnapSpeed;
 
-        public double NoteSpeed;
-
-        public SpeedType SpeedType;
-
-        public double DirectionChangeWeight;
-        public double PrecisionCorrection;
-        public PatternType DisplayPattern;
-        public double PartialLocalStarRating;
-        public double LocalStarRating;
-        public double CatcherStandingWidth;
-
-        public CatchDifficultyHitObject? FurthestLeft;
-        public CatchDifficultyHitObject? FurthestRight;
-
         /// <summary>
         /// Populates the class with default values which may be overwritten.
         /// </summary>
         /// <param name="note"></param>
-        public CatchMovementData(CatchDifficultyHitObject note)
+        /// <param name="normalizedCatcherWidth"></param>
+        /// <param name="clockRate"></param>
+        public CatchMovementData(CatchDifficultyHitObject note, double normalizedCatcherWidth, double clockRate)
         {
             Note = note;
             NotePattern = PatternType.None;
+            OriginalPattern = PatternType.None;
             EffectiveTime = note.StartTime;
             KeyPress = MovementKey.None;
             BeltBeginning = null;
@@ -238,8 +232,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             IsStack = false;
             StackWiggleCount = 0;
             IsDirectionChange = false;
-            LeftCatcherPosition = note.Position - note.HalfCatcherWidth;
-            RightCatcherPosition = note.Position + note.HalfCatcherWidth;
+            LeftCatcherPosition = note.Position - normalizedCatcherWidth / 2.0;
+            RightCatcherPosition = note.Position + normalizedCatcherWidth / 2.0;
             LeftStandingPosition = null;
             RightStandingPosition = null;
             ActionProbability = 1;
@@ -247,16 +241,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             NotePrecision = null;
             RawPrecisionStrain = 0;
             PrecisionStrain = 0;
-            NoteSpeed = 0;
-
-            DirectionChangeWeight = 1;
-            PrecisionCorrection = 1;
-            DisplayPattern = PatternType.None;
-            PartialLocalStarRating = 0;
-            LocalStarRating = 0;
-
-            FurthestLeft = null;
-            FurthestRight = null;
         }
 
         /// <summary>
@@ -281,14 +265,5 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// <param name="pos2"></param>
         /// <returns></returns>
         public double FurthestForward(double pos1, double pos2) => Note.IsMovingRight ? Math.Max(pos1, pos2) : Math.Min(pos1, pos2);
-
-        // debug
-        public double PrevToNextDistance;
-
-        public double MinimalHyperdashSpeed;
-
-        public double PerfectHyperdashSpeed;
-
-        public double AverageHyperdashSpeed;
     }
 }

@@ -36,7 +36,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
             CatchDifficultyHitObject? prev = note.PreviousNote(0);
-            CatchDifficultyHitObject? next = note.PreviousNote(0);
 
             if (prev is null)
             {
@@ -51,7 +50,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
             CatchDifficultyHitObject? prev = note.PreviousNote(0);
-            CatchDifficultyHitObject? next = note.PreviousNote(0);
 
             if (prev is null)
             {
@@ -66,7 +64,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Evaluators
             CatchDifficultyHitObject note = (CatchDifficultyHitObject)current;
 
             CatchDifficultyHitObject? prev = note.PreviousNote(0);
-            CatchDifficultyHitObject? next = note.PreviousNote(0);
 
             if (prev is null)
             {

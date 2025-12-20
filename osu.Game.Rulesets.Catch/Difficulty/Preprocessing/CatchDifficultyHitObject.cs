@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Game.Rulesets.Catch.Difficulty.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -14,8 +13,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
 {
     public class CatchDifficultyHitObject : DifficultyHitObject
     {
-        private readonly double clockRate;
-
         public new PalpableCatchHitObject BaseObject => (PalpableCatchHitObject)base.BaseObject;
 
         public new PalpableCatchHitObject LastObject => (PalpableCatchHitObject)base.LastObject;
@@ -23,11 +20,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         private readonly IReadOnlyList<CatchDifficultyHitObject> noteDifficultyHitObjects;
 
         public readonly int NoteIndex;
-
-        /// <summary>
-        /// The minimum frame time the game is assumed to have.
-        /// </summary>
-        public double FrameTime;
 
         /// <summary>
         /// Whether this note is a Hyperdash.
@@ -40,40 +32,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         public double Position;
 
         /// <summary>
-        /// Normalized playfield width>
-        /// </summary>
-        public double PlayfieldWidth;
-
-        /// <summary>
-        /// The width of the catcher.
-        /// </summary>
-        /// <remarks>
-        /// Equivalent to the width of the notes.
-        /// </remarks>
-        public double CatcherWidth;
-
-        /// <summary>
-        /// Half of the catcher width.
-        /// </summary>
-        /// <remarks>
-        /// Equivalent to the radius of each note.
-        /// </remarks>
-        public double HalfCatcherWidth => CatcherWidth / 2.0;
-
-        /// <summary>
         /// The distance between this note and the previous note.
         /// </summary>
-        public double DeltaPosition => Math.Abs(Position - LastObject.EffectiveX / clockRate);
+        public double DeltaPosition;
 
         /// <summary>
         /// The left border of the note.
         /// </summary>
-        public double LeftNoteBorder => Position - HalfCatcherWidth;
+        public double LeftNoteBorder;
 
         /// <summary>
         /// The right border of the note.
         /// </summary>
-        public double RightNoteBorder => Position + HalfCatcherWidth;
+        public double RightNoteBorder;
 
         /// <summary>
         /// The note border closest to the previous note.
@@ -99,10 +70,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// <remarks>
         /// If the distance is not deemed 'significant' enough (allowing for the catcher to catch both notes without any), this is set to None.
         /// </remarks>
-        public MovementDirection SignificantMovementDirection =>
-            (Position - LastObject.EffectiveX / clockRate > HalfCatcherWidth || (Position > LastObject.EffectiveX / clockRate && LastObject.HyperDash))
+        public MovementDirection SignificantMovementDirection(double catcherWidth, double clockRate) =>
+            (Position - LastObject.EffectiveX / clockRate > catcherWidth / 2.0 || (Position > LastObject.EffectiveX / clockRate && LastObject.HyperDash))
                 ? MovementDirection.Right
-                : ((LastObject.EffectiveX / clockRate - Position > HalfCatcherWidth || (LastObject.EffectiveX / clockRate > Position && LastObject.HyperDash))
+                : ((LastObject.EffectiveX / clockRate - Position > catcherWidth / 2.0 || (LastObject.EffectiveX / clockRate > Position && LastObject.HyperDash))
                     ? MovementDirection.Left
                     : MovementDirection.None);
 
@@ -117,17 +88,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// </summary>
         public CatchReadingData ReadingData;
 
+        /// <summary>
+        /// Data used only for GUI display - to be potentially removed in the future.
+        /// </summary>
+        public CatchDisplayData DisplayData;
+
         public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
-                                        float catcherWidth,
+                                        double normalizedCatcherWidth,
                                         List<DifficultyHitObject> objects,
                                         List<CatchDifficultyHitObject> noteObjects,
                                         int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            this.clockRate = clockRate;
-
             Position = BaseObject.EffectiveX / clockRate;
-            PlayfieldWidth = 512.0 / clockRate;
+            LeftNoteBorder = Position - normalizedCatcherWidth / 2.0;
+            RightNoteBorder = Position + normalizedCatcherWidth / 2.0;
 
             // Temporary hack to ensure DeltaPosition > 0
             if (noteObjects.Count >= 2)
@@ -150,6 +125,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 }
             }
 
+            DeltaPosition = Math.Abs(Position - LastObject.EffectiveX / clockRate);
+
             if (noteObjects.Count >= 1)
             {
                 CatchDifficultyHitObject prev = noteObjects[^1];
@@ -160,17 +137,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
                 IsMovingRight = Position >= LastObject.EffectiveX / clockRate;
             }
 
-            CatcherWidth = catcherWidth / clockRate;
-
-            FrameTime = 1000.0 / 60.0 / clockRate;
-
             noteDifficultyHitObjects = noteObjects;
             noteObjects.Add(this);
 
             NoteIndex = index;
 
-            MovementData = new CatchMovementData(this);
+            MovementData = new CatchMovementData(this, normalizedCatcherWidth, clockRate);
             ReadingData = new CatchReadingData();
+            DisplayData = new CatchDisplayData();
         }
 
         public CatchDifficultyHitObject? PreviousNote(int backwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex - (backwardsIndex + 1));

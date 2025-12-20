@@ -364,6 +364,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
             const double simultaneous_time = 0.5;
+            double normalizedCatcherWidth = catcherWidth / clockRate;
 
             PalpableCatchHitObject? lastObject = null;
             PalpableCatchHitObject? lastLastObject = null;
@@ -409,7 +410,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 }
 
                 if (lastObject != null && lastLastObject != null)
-                    objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
+                    objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, normalizedCatcherWidth, objects, noteObjects, objects.Count));
 
                 lastLastObject = lastObject;
                 lastObject = hitObject;
@@ -417,14 +418,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             // Add the last object of the map
             if (lastObject != null && lastLastObject != null && lastObject.StartTime - lastLastObject.StartTime > simultaneous_time)
-                objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, catcherWidth, objects, noteObjects, objects.Count));
+                objects.Add(new CatchDifficultyHitObject(lastObject, lastLastObject, clockRate, normalizedCatcherWidth, objects, noteObjects, objects.Count));
 
             if (objects.Count >= 2)
             {
-                CatchMovementPreprocessor.Process(objects);
-                CatchDifficultyPreprocessor.Process(objects);
-                CatchReadingPreprocessor.Process(objects, circleSize, clockRate);
-                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects);
+                double frameTime = 1000.0 / 60.0 / clockRate;
+                double playfieldBorder = 512.0 / clockRate;
+
+                CatchMovementPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchDifficultyPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchReadingPreprocessor.Process(objects, circleSize, clockRate, frameTime);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, normalizedCatcherWidth, clockRate);
                 // CatchPreprocessorTest.Process(objects, beatmap);
             }
 

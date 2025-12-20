@@ -48,14 +48,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        private const double high_CS_threshold = 3.5;
-        private const double high_CS_power = 1.6;
-        private const double high_CS_rate = 0.39;
-        private const double high_CS_penalty_hypers = 0.75;
+        private const double high_cs_threshold = 3.5;
+        private const double high_cs_power = 1.6;
+        private const double high_cs_rate = 0.39;
+        private const double high_cs_penalty_hypers = 0.75;
 
         private const double density_buff = 1.02;
 
-        public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate)
+        private const double fake_action_buff = 1.0;
+
+        public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
             List<CatchDifficultyHitObject> actionNotes = cdhos.Where(n => n.MovementData.ActionProbability == 1).ToList();
@@ -67,10 +69,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             alternatingDistancePenalty(actionNotes, clockRate);
             hyperchainPenalty(cdhos);
             nonHyperchainPenalty(actionNotes);
-            highVelocityNerf(cdhos);
+            highVelocityNerf(cdhos, frameTime);
             highDistanceBuff(actionNotes, clockRate);
             highCSBuff(actionNotes, circleSize);
             densityBuff(cdhos);
+            fakeActionBuff(actionNotes);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -204,7 +207,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-
         private static void alternatingDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
             uint counter = 0;
@@ -273,7 +275,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 validNoteIndex++;
             }
         }
-        
 
         private static void hyperchainPenalty(List<CatchDifficultyHitObject> cdhos)
         {
@@ -287,7 +288,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchDifficultyHitObject prev = cdhos[i - 1];
                 CatchDifficultyHitObject prevPrev = cdhos[i - 2];
 
-                if (note.IsHyper && prev.IsHyper && prevPrev.IsHyper || (counter>0 && note.MovementData.ActionProbability < 0.15))
+                if ((note.IsHyper && prev.IsHyper && prevPrev.IsHyper) || (counter > 0 && note.MovementData.ActionProbability < 0.15))
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / hyperchain_note_count, 1);
@@ -312,7 +313,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchDifficultyHitObject prev = actionNotes[i - 1];
                 CatchDifficultyHitObject prevPrev = actionNotes[i - 2];
 
-                if (!note.IsHyper && !prev.IsHyper && !prevPrev.IsHyper || (counter>0 && note.MovementData.ActionProbability < 0.15))
+                if ((!note.IsHyper && !prev.IsHyper && !prevPrev.IsHyper) || (counter > 0 && note.MovementData.ActionProbability < 0.15))
                 {
                     counter++;
                     double penalty = raw_penalty * Math.Min(counter / non_hyperchain_note_count, 1);
@@ -326,13 +327,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         }
 
         // High velocity nerf may be seen as some kind of correction of precision - approximation error is higher at higher velocity.
-        private static void highVelocityNerf(List<CatchDifficultyHitObject> cdhos)
+        private static void highVelocityNerf(List<CatchDifficultyHitObject> cdhos, double frameTime)
         {
             for (int i = 1; i < cdhos.Count; i++)
             {
                 CatchDifficultyHitObject note = cdhos[i];
                 CatchDifficultyHitObject prev = cdhos[i - 1];
-                double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note);
+                double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
 
                 if (prev.IsHyper && speed > high_velocity_threshold)
                     note.ReadingData.CombinedReadingFactor *= 1.0 - high_velocity_nerf * Math.Min(1.0, Math.Pow((speed - high_velocity_threshold) / (max_velocity_nerf_threshold - high_velocity_threshold), high_velocity_power));
@@ -359,8 +360,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static void highCSBuff(List<CatchDifficultyHitObject> actionNotes, double circleSize)
         {
-            double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - high_CS_threshold) / 10.0, high_CS_power) * high_CS_rate;
-            double circleSizeBonusHypers = high_CS_penalty_hypers * circleSizeBonus;
+            double circleSizeBonus = Math.Pow(Math.Max(0.0, circleSize - high_cs_threshold) / 10.0, high_cs_power) * high_cs_rate;
+            double circleSizeBonusHypers = high_cs_penalty_hypers * circleSizeBonus;
 
             for (int i = 0; i < actionNotes.Count - 1; i++)
             {
@@ -382,6 +383,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 if (prev.MovementData.ActionProbability == 0)
                     note.ReadingData.CombinedReadingFactor *= density_buff;
+            }
+        }
+
+        private static void fakeActionBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            foreach (var note in cdhos)
+            {
+                // Continue if action is real, so the code after this is for fake actions only
+                if (note.MovementData.IsRealAction) continue;
+
+                note.ReadingData.CombinedReadingFactor *= fake_action_buff;
             }
         }
     }
