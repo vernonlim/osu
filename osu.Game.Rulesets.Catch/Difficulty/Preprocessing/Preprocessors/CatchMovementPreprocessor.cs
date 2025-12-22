@@ -17,6 +17,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     {
         private const double lower_q_bound = 0.03;
         private const double upper_q_bound = 0.85;
+        private const double standing_bound = 3.0 / 5.0;
 
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
@@ -59,7 +60,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 PatternType type = Classify(note, prev, next, catcherWidth, clockRate);
 
                 // Hack for akarui taiyo
-                if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= 3.0 * catcherWidth / 5.0 && !note.IsHyper)
+                if (type == PatternType.PotentialStackBeginning && note.DeltaPosition <= standing_bound * catcherWidth && !note.IsHyper)
                 {
                     data.ActionProbability = 0;
                     data.NotePattern = PatternType.Ignored;
@@ -180,7 +181,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.LeftStandingPosition is not null
-                && next.DeltaPosition <= 3.0 * catcherWidth / 5.0
+                && next.DeltaPosition <= standing_bound * catcherWidth
                 && Math.Abs(next.Position - prev.Position) <= catcherWidth)
             {
                 data.OriginalPattern = PatternType.NarrowStack;
@@ -356,7 +357,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.PotentialStack:
                 {
-                    if (next.DeltaPosition <= 3 * catcherWidth / 5.0)
+                    if (next.DeltaPosition <= standing_bound * catcherWidth)
                     {
                         data.NotePattern = PatternType.NarrowStack;
                         UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
