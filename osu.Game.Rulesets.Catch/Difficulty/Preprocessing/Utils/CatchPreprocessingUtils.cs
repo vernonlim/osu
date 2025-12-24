@@ -45,7 +45,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             const double standing_bound = 0.6;
 
-            const double linear_decrease = -0.54;
+            const double linear_decrease = -0.0054;
             const double additive_constant = 1.28;
 
             const int series_start_count = 4;
