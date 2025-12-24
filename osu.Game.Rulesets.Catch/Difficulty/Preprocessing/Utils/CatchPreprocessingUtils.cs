@@ -43,12 +43,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount, double clockRate)
         {
+            const double standing_bound = 0.6;
+
+            const double linear_decrease = -0.54;
+            const double additive_constant = 1.28;
+
+            const int series_start_count = 4;
+            const double series_decay = 0.05;
+
             double adjustedDelta = ms * clockRate;
 
-            return (adjustedDelta <= 188
-                       ? 2.38 * 1e-5 * Math.Pow(adjustedDelta, 2) - 8.96 * 1e-3 * adjustedDelta + 1.41
-                       : 0.5667)
-                   * (1 + Math.Max(0, wiggleCount - 4) * 0.05);
+            return Math.Min(1.0, Math.Max(standing_bound, linear_decrease * adjustedDelta + additive_constant)) * (1 + Math.Max(0, wiggleCount - series_start_count) * series_decay);
         }
 
         /// <summary>

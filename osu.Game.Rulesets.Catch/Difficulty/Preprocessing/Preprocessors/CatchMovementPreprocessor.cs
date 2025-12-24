@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     {
         private const double lower_q_bound = 0.03;
         private const double upper_q_bound = 0.85;
-        private const double standing_bound = 3.0 / 5.0;
+        private const double standing_bound = 0.6;
 
         /// <summary>
         /// Processes a list of <see cref="CatchDifficultyHitObject"/>s and populates their corresponding <see cref="CatchMovementData"/>s.
