@@ -237,13 +237,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             const double amplitude = 40.0; //governs how much very low precision values are worth
             const double limit = 1.0; //precision strain for very high precision values (easy jumps)
             const double shift = -15.0; //shifts the boundary between concave and convex part (shifts the curve)
-            const double pace = 29.0; //measures how fast strain decreases between easy and hard jumps
+            const double pace = 25.0; //measures how fast strain decreases between easy and hard jumps
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
                 : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 40;
+            return precision / 18 * 39;
         }
 
         private const double max_precision_correction = 1.25;
@@ -483,38 +483,38 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         // Functions below are identical, but splitting them may be useful in the future.
         private static double timeToSpeedSnap(double time)
         {
-            const double amplitude = 19.1; // governs how much very low speed values are worth
-            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
-            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 47.0; // normalises shift
+            const double amplitude = 13.0; // governs how much very low speed values are worth
+            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 35.0; // normalises shift
+            const double constant = 0.88;
 
-            double speed = limit + amplitude / (1 + Math.Exp((time + shift) / pace));
+            double speed = 1.0 + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return 0.88 * speed / 10000;
+            return constant * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
         {
-            const double amplitude = 19.1; // governs how much very low speed values are worth
-            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
-            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 47.0; // normalises shift
+            const double amplitude = 13.0; // governs how much very low speed values are worth
+            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 35.0; // normalises shift
+            const double constant = 0.99;
 
-            double speed = limit + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
+            double speed = 1.0 + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return 1.0 * speed / 10000;
+            return constant * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
         {
-            const double amplitude = 19.1; // governs how much very low speed values are worth
-            const double limit = 1.0; // speed strain for very high speed values (easy jumps)
-            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 47.0; // normalises shift
+            const double amplitude = 13.0; // governs how much very low speed values are worth
+            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 35.0; // normalises shift
+            const double constant = 1.14;
 
-            double speed = limit + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
+            double speed = 1.0 + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return 1.12 * speed / 10000;
+            return constant * speed / 10000;
         }
     }
 }
