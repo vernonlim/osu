@@ -268,7 +268,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 if (!prev.IsHyper
-                    && note.IsHyper
                     && prev.SignificantMovementDirection(catcherWidth, clockRate) != currentDirection)
                 {
                     return PatternType.ExtendedDirectionChange;
