@@ -88,13 +88,23 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double adjustedApproachRate = CatchPerformanceCalculator.CalculateApproachRate(mods, approachRate, CatchPerformanceCalculator.CorrectedClockRate(clockRate));
 
+            const double first_threshold = 9.2;
+            const double second_threshold = 10.15; //adjusted AR for AR9+DT
+            const double third_threshold = 11.0;
+
+            const double first_power = 1.8;
+            const double second_power = 1.2;
+            const double first_constant = 0.1;
+            const double second_constant = 0.34;
+            const double third_constant = 0.15; // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
+
             double approachRateFactor = 1.0;
-            if (adjustedApproachRate > 9.5)
-                approachRateFactor += 0.15 * (adjustedApproachRate - 9.5); // 15% for each AR above 9.5
-            if (adjustedApproachRate > 10.2)
-                approachRateFactor += 0.21 * (adjustedApproachRate - 10.2); // Bonus for high AR, 40.5% at AR11
-            if (adjustedApproachRate > 11)
-                approachRateFactor += 0.125 * (adjustedApproachRate - 11.0); // Additional bonus for FL (starting at around AR8) or Lazer's extended AR scale
+            if (adjustedApproachRate >= first_threshold && adjustedApproachRate < second_threshold)
+                approachRateFactor = 1.0 + Math.Pow((adjustedApproachRate - first_threshold) / (second_threshold - first_threshold), first_power) * first_constant;
+            if (adjustedApproachRate >= second_threshold)
+                approachRateFactor = 1.0 + first_constant + Math.Pow((adjustedApproachRate - second_threshold) / (third_threshold - second_threshold), second_power) * second_constant;
+            if (adjustedApproachRate > third_threshold)
+                approachRateFactor += third_constant * (adjustedApproachRate - 11.0);
 
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
