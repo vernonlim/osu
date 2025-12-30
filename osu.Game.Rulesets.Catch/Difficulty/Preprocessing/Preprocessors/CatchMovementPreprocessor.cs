@@ -391,7 +391,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / catcherWidth * scale >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
+                    if (next.DeltaPosition / catcherWidth * Math.Pow(scale, 2.0) >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
                     {
                         // wiggle
                         data.StackWiggleCount += 1;
