@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             {
                 CatchMovementData data = catchHitObject.MovementData;
 
-                if (data.ActionProbability > 0.01 && data.KeyPress != MovementKey.Dash)
+                if (data.ActionProbability > 0.01)
                 {
                     if (data.EffectiveTime > maxTime)
                     {

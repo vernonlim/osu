@@ -254,6 +254,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             if (!data.IsDirectionChange)
             {
                 MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
+                MovementDirection previousDirection = prev.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
 
                 if (prev.IsHyper)
                 {
@@ -268,7 +269,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 if (!prev.IsHyper
-                    && prev.SignificantMovementDirection(catcherWidth, clockRate) != currentDirection)
+                    && previousDirection != currentDirection)
                 {
                     return PatternType.ExtendedDirectionChange;
                 }
@@ -614,18 +615,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ActionProbability = 0;
                     data.LeftCatcherPosition = note.LeftNoteBorder;
                     data.RightCatcherPosition = note.RightNoteBorder;
-
-                    MovementDirection nextDirection = next.SignificantMovementDirection(catcherWidth, clockRate);
-
-                    if (note.DeltaPosition == 0
-                        && nextDirection != MovementDirection.None)
-                    {
-                        if ((prev.SignificantMovementDirection(catcherWidth, clockRate) == MovementDirection.Left && nextDirection == MovementDirection.Right)
-                            || (prev.SignificantMovementDirection(catcherWidth, clockRate) == MovementDirection.Right && nextDirection == MovementDirection.Left))
-                        {
-                            data.ActionProbability = 1;
-                        }
-                    }
 
                     break;
                 }
