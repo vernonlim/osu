@@ -211,7 +211,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             {
                 if (next.IsHyper)
                 {
-                    if (next.MovementData.IsDirectionChange)
+                    if (note.MovementData.IsDirectionChange && !next.MovementData.IsDirectionChange)
                     {
                         return 1.0;
                     }
