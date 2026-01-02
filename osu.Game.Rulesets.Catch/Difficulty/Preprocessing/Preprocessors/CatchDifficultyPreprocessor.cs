@@ -205,9 +205,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (currentPrecision == null)
                     {
-                        data.FuturePrecisionUtilized = true;
-
                         data.NotePrecision = weightedPrecision;
+
+                        if (weightedPrecision != null)
+                        {
+                            data.FuturePrecisionUtilized = true;
+                        }
                     }
                     else if (weightedPrecision == null)
                     {

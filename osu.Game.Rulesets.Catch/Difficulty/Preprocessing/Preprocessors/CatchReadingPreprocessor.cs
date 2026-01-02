@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -57,6 +58,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double fake_action_buff = 1.0;
 
+        private const double future_precision_buff = 1.0;
+
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -74,6 +77,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             highCSBuff(actionNotes, circleSize);
             densityBuff(cdhos);
             fakeActionBuff(actionNotes);
+            futurePrecisionBuff(actionNotes);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -394,6 +398,29 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 if (note.MovementData.IsRealAction) continue;
 
                 note.ReadingData.CombinedReadingFactor *= fake_action_buff;
+            }
+        }
+
+        private static void futurePrecisionBuff(List<CatchDifficultyHitObject> actionNotes)
+        {
+            for (int i = 1; i < actionNotes.Count - 2; i++)
+            {
+                CatchDifficultyHitObject note = actionNotes[i];
+                CatchDifficultyHitObject next = actionNotes[i + 1];
+                CatchDifficultyHitObject nextNext = actionNotes[i + 2];
+
+                if (!note.MovementData.FuturePrecisionUtilized) continue;
+
+                // This should never be null if future precision was utilized
+                Debug.Assert(note.MovementData.FuturePrecision != null);
+
+                double futurePrecision = (double)note.MovementData.FuturePrecision; // p'_1, non-weighted
+                double? nextPrecision = next.MovementData.NotePrecision; // p_2, possibly null/infinity
+
+                double deltaTime = nextNext.StartTime - note.StartTime;
+
+                // placeholder
+                note.ReadingData.CombinedReadingFactor *= future_precision_buff;
             }
         }
     }
