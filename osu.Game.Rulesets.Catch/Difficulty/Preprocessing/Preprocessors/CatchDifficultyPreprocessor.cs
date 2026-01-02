@@ -184,7 +184,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     (double? futurePrecision, _) = calculatePrecision(note, prev, nextNext, type, catcherWidth, frameTime);
 
-                    data.NotePrecision = next.MovementData.ActionProbability * currentPrecision + (1.0 - next.MovementData.ActionProbability) * futurePrecision;
+                    if (currentPrecision is null && next.MovementData.ActionProbability == 0)
+                    {
+                        data.NotePrecision = futurePrecision;
+                    }
+                    else if (futurePrecision is null && next.MovementData.ActionProbability == 1)
+                    {
+                        data.NotePrecision = currentPrecision;
+                    }
+                    else
+                    {
+                        data.NotePrecision = next.MovementData.ActionProbability * currentPrecision + (1.0 - next.MovementData.ActionProbability) * futurePrecision;
+                    }
                 }
 
                 // Precision calculation
