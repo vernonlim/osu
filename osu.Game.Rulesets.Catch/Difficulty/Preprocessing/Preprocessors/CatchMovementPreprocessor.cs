@@ -164,6 +164,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
+            // Future Precision
+            double nextDeltaPosition = Math.Abs(next.Position - note.Position);
+
             if (prevData.IsStack
                 && ((next.Position + catcherWidth / 2.0 < prevData.LeftStandingPosition || next.Position - catcherWidth / 2.0 > prevData.RightStandingPosition)
                     || (Math.Max(note.Position - catcherWidth / 2.0, next.Position - catcherWidth / 2.0) > Math.Min(note.Position + catcherWidth / 2.0, next.Position + catcherWidth / 2.0))))
@@ -181,7 +184,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.LeftStandingPosition is not null
-                && next.DeltaPosition <= standing_bound * catcherWidth
+                && nextDeltaPosition <= standing_bound * catcherWidth
                 && Math.Abs(next.Position - prev.Position) <= catcherWidth)
             {
                 data.OriginalPattern = PatternType.NarrowStack;
@@ -189,7 +192,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
 
             if (prevData.LeftStandingPosition is not null
-                && next.DeltaPosition <= catcherWidth
+                && nextDeltaPosition <= catcherWidth
                 && Math.Abs(next.Position - prev.Position) <= catcherWidth)
             {
                 data.OriginalPattern = PatternType.PotentialStack;
@@ -198,7 +201,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             // direction change check to exclude streams
             if ((data.IsDirectionChange)
-                && next.DeltaPosition <= catcherWidth)
+                && nextDeltaPosition <= catcherWidth)
             {
                 // There should be other cases covering this
                 Debug.Assert(prevData.IsStack != true);
@@ -251,6 +254,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         {
             CatchMovementData data = note.MovementData;
 
+            // Future Precision
+            double nextDeltaPosition = Math.Abs(next.Position - note.Position);
+
             if (!data.IsDirectionChange)
             {
                 MovementDirection currentDirection = note.IsMovingRight ? MovementDirection.Right : MovementDirection.Left;
@@ -278,7 +284,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     && !note.IsHyper
                     //&& prev.SignificantMovementDirection == currentDirection
                     && CatchPreprocessingUtils.CalculateSpeed(note) <= CatchPreprocessingUtils.CalculateSpeed(next)
-                    && next.DeltaPosition > catcherWidth / 2.0)
+                    && nextDeltaPosition > catcherWidth / 2.0)
                 {
                     return PatternType.AcceleratingStream;
                 }
@@ -287,7 +293,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     && !note.IsHyper
                     && ( // (prev.SignificantMovementDirection != currentDirection)
                         (CatchPreprocessingUtils.CalculateSpeed(note) > CatchPreprocessingUtils.CalculateSpeed(next))
-                        || next.DeltaPosition <= catcherWidth / 2.0))
+                        || nextDeltaPosition <= catcherWidth / 2.0))
                 {
                     return PatternType.FreeStream;
                 }

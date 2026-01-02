@@ -180,7 +180,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double? currentPrecision = data.NotePrecision;
 
-                    (double? futurePrecision, _) = calculatePrecision(note, prev, nextNext, data.NotePattern, catcherWidth, frameTime);
+                    PatternType type = CatchMovementPreprocessor.Classify(note, prev, nextNext, catcherWidth, clockRate);
+
+                    (double? futurePrecision, _) = calculatePrecision(note, prev, nextNext, type, catcherWidth, frameTime);
 
                     data.NotePrecision = next.MovementData.ActionProbability * currentPrecision + (1.0 - next.MovementData.ActionProbability) * futurePrecision;
                 }
