@@ -201,6 +201,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <returns></returns>
         public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next, double velocity, double catcherWidth)
         {
+            CatchDifficultyHitObject? nextNext = next.NextNote(0);
+
+            if (nextNext != null
+                && ((nextNext.Position < next.Position && next.IsMovingRight) || (nextNext.Position > next.Position && !next.IsMovingRight))
+                && next.IsHyper)
+            {
+                return 1.0;
+            }
+
             const double power = 0.6; // Increase results in lower weight
             const double velocity_power = 1.1; // Increase results in higher weight for hyperdashes
             double normalisedVelocity = Math.Pow(velocity, velocity_power);
