@@ -213,6 +213,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double SnapSpeed;
 
         /// <summary>
+        /// Whether "Future Precision" was utilized.
+        /// </summary>
+        public bool FuturePrecisionUtilized;
+
+        /// <summary>
+        /// The precision between this note and the note after the next note.
+        /// </summary>
+        public double? FuturePrecision;
+
+        /// <summary>
         /// Populates the class with default values which may be overwritten.
         /// </summary>
         /// <param name="note"></param>
@@ -241,6 +251,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             NotePrecision = null;
             RawPrecisionStrain = 0;
             PrecisionStrain = 0;
+            FuturePrecisionUtilized = false;
+            FuturePrecision = null;
         }
 
         /// <summary>
