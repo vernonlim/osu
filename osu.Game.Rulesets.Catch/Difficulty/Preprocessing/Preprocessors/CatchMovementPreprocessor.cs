@@ -466,13 +466,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (note.IsMovingRight)
                     {
-                        prevData.LeftCatcherPosition = prev.Position;
+                        prevData.LeftCatcherPosition = prev.LeftNoteBorder;
                         prevData.RightCatcherPosition = prev.RightNoteBorder;
                     }
                     else
                     {
                         prevData.LeftCatcherPosition = prev.LeftNoteBorder;
-                        prevData.RightCatcherPosition = prev.Position;
+                        prevData.RightCatcherPosition = prev.RightNoteBorder;
                     }
 
                     data.BackwardCatcherPosition = note.BackwardNoteBorder;
