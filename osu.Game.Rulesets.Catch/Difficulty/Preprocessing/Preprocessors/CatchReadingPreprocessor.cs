@@ -58,7 +58,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double fake_action_buff = 1.0;
 
-        private const double future_precision_buff = 1.0;
+        private const double future_precision_buff = 0.1;
+        private const double max_precision_ratio = 0.5;
+        private const double max_delta_time = 256.0;
+        private const double time_power = 0.5;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
         {
@@ -418,12 +421,16 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 Debug.Assert(note.MovementData.FuturePrecision != null);
 
                 double futurePrecision = (double)note.MovementData.FuturePrecision; // p'_1, non-weighted
-                double? nextPrecision = next.MovementData.NotePrecision; // p_2, possibly null/infinity
+                double? rawPrecision = note.MovementData.NotePrecision; // p_1
+                double precisionRatio = Math.Max(1.0, rawPrecision / futurePrecision); // p_1 / p'_1 <= 1
+                double precisionTerm = Math.Min(precisionRatio - 1.0, max_precision_ratio) / max_precision_ratio;
 
-                double deltaTime = nextNext.StartTime - note.StartTime;
+                double longDeltaTime = nextNext.StartTime - note.StartTime;
+                double timeRatio = Math.Pow(longDeltaTime / max_delta_time, time_power);
 
-                // placeholder
-                note.ReadingData.CombinedReadingFactor *= future_precision_buff;
+                double bonus = timeRatio * precisionTerm * next.MovementData.ActionProbability * future_precision_buff;
+
+                note.ReadingData.CombinedReadingFactor *= 1.0 + bonus;
             }
         }
     }
