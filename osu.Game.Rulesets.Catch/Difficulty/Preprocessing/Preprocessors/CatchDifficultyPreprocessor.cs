@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchMovementData data = note.MovementData;
                 CatchMovementData prevData = prev.MovementData;
 
-                (data.NotePrecision, data.EffectiveTime) = calculatePrecision(note, prev, next, catcherWidth, frameTime);
+                (data.NotePrecision, data.EffectiveTime) = calculatePrecision(note, prev, next, data.NotePattern, catcherWidth, frameTime);
 
                 if (prevData.ActionProbability == 1)
                 {
@@ -124,7 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    (data.NotePrecision, _) = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, _) = calculatePrecision(furthestLeft, furPrev, furNext, data.NotePattern, catcherWidth, frameTime);
 
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
@@ -160,7 +160,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    (data.NotePrecision, _) = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, _) = calculatePrecision(furthestRight, furPrev, furNext, data.NotePattern, catcherWidth, frameTime);
 
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
@@ -174,9 +174,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Future precision
-                if (next.MovementData.NotePattern == PatternType.AcceleratingStream)
+                if (next.MovementData.NotePattern == PatternType.AcceleratingStream && (i + 2) < hitObjects.Count)
                 {
+                    CatchDifficultyHitObject nextNext = (CatchDifficultyHitObject)hitObjects[i + 2];
+
                     double? currentPrecision = data.NotePrecision;
+
+                    (double? futurePrecision, _) = calculatePrecision(note, prev, nextNext, data.NotePattern, catcherWidth, frameTime);
+
+                    data.NotePrecision = next.MovementData.ActionProbability * currentPrecision + (1.0 - next.MovementData.ActionProbability) * futurePrecision;
                 }
 
                 // Precision calculation
@@ -263,11 +269,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="catcherWidth"></param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        private static (double?, double) calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double frameTime)
+        private static (double?, double) calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, PatternType type, double catcherWidth, double frameTime)
         {
             CatchMovementData data = note.MovementData;
 
-            switch (data.NotePattern)
+            switch (type)
             {
                 case PatternType.HyperjumpAfterJump:
                 {
@@ -319,7 +325,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 default:
                 {
-                    return (calculateRawPrecision(note, prev, next, data.NotePattern, catcherWidth, frameTime), data.EffectiveTime);
+                    return (calculateRawPrecision(note, prev, next, type, catcherWidth, frameTime), data.EffectiveTime);
                 }
             }
         }
