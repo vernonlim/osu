@@ -21,5 +21,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double PerfectHyperdashSpeed;
         public double AverageHyperdashSpeed;
         public double NoteCombo;
+        public bool FuturePrecisionUsed;
+        public double FuturePrecisionDifference;
     }
 }

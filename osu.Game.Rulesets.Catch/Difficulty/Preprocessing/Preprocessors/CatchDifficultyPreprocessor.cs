@@ -203,6 +203,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     if (currentPrecision == null)
                     {
+                        note.DisplayData.FuturePrecisionUsed = true;
+                        note.DisplayData.FuturePrecisionDifference = -1;
                         data.NotePrecision = weightedPrecision;
                     }
                     else if (weightedPrecision == null)
@@ -211,6 +213,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                     else
                     {
+                        if (currentPrecision.Value > weightedPrecision.Value)
+                        {
+                            note.DisplayData.FuturePrecisionUsed = true;
+                            note.DisplayData.FuturePrecisionDifference = weightedPrecision.Value - currentPrecision.Value;
+                        }
+
                         data.NotePrecision = Math.Min(currentPrecision.Value, weightedPrecision.Value);
                     }
                 }
