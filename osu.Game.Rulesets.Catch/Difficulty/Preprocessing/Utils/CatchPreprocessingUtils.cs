@@ -196,6 +196,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// Calculates the probability that a direction change should instead be considered a standstill for the previous note.
         /// </summary>
         /// <param name="next"></param>
+        /// <param name="note"></param>
         /// <param name="velocity"></param>
         /// <param name="catcherWidth"></param>
         /// <returns></returns>
@@ -203,11 +204,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         {
             CatchDifficultyHitObject? nextNext = next.NextNote(0);
 
-            if (nextNext != null
-                && ((nextNext.Position < next.Position && next.IsMovingRight) || (nextNext.Position > next.Position && !next.IsMovingRight))
-                && next.IsHyper)
+            double deltaPosition = Math.Abs(next.Position - note.Position);
+
+            if (nextNext != null)
             {
-                return 1.0;
+                if (next.IsHyper)
+                {
+                    if ((nextNext.Position < next.Position && next.IsMovingRight) || (nextNext.Position > next.Position && !next.IsMovingRight))
+                    {
+                        return 1.0;
+                    }
+                }
+                // else if (!next.MovementData.IsDirectionChange)
+                // {
+                //     deltaPosition = Math.Abs(nextNext.Position - note.Position);
+                // }
             }
 
             const double power = 0.6; // Increase results in lower weight
@@ -215,7 +226,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double normalisedVelocity = Math.Pow(velocity, velocity_power);
 
             return Math.Clamp(
-                Math.Pow(Math.Min(Math.Abs(next.Position - note.Position), 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
+                Math.Pow(Math.Min(deltaPosition, 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
                 0.0, 1.0);
         }
 
