@@ -43,12 +43,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             for (int i = 1; i < hitObjects.Count - 1; i++)
             {
                 CatchDifficultyHitObject note = (CatchDifficultyHitObject)hitObjects[i];
+                CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
+
+                updateInitialData(note, next, catcherWidth, frameTime);
+            }
+
+            for (int i = 1; i < hitObjects.Count - 1; i++)
+            {
+                CatchDifficultyHitObject note = (CatchDifficultyHitObject)hitObjects[i];
                 CatchDifficultyHitObject prev = (CatchDifficultyHitObject)hitObjects[i - 1];
                 CatchDifficultyHitObject next = (CatchDifficultyHitObject)hitObjects[i + 1];
 
                 CatchMovementData data = note.MovementData;
-
-                updateInitialData(note, next, catcherWidth, frameTime);
 
                 data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate);
 

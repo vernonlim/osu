@@ -210,15 +210,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             {
                 if (next.IsHyper)
                 {
-                    if ((nextNext.Position < next.Position && next.IsMovingRight) || (nextNext.Position > next.Position && !next.IsMovingRight))
+                    if (next.MovementData.IsDirectionChange)
                     {
                         return 1.0;
                     }
                 }
-                // else if (!next.MovementData.IsDirectionChange)
-                // {
-                //     deltaPosition = Math.Abs(nextNext.Position - note.Position);
-                // }
+                else if (!next.MovementData.IsDirectionChange)
+                {
+                    deltaPosition = Math.Abs(nextNext.Position - note.Position);
+                }
             }
 
             const double power = 0.6; // Increase results in lower weight
