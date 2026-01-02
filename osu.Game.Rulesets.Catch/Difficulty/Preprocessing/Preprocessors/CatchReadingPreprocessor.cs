@@ -12,6 +12,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
     public static class CatchReadingPreprocessor
     {
+        private const double high_cs_threshold = 3.5;
+        private const double high_cs_power = 1.6;
+        private const double high_cs_rate = 0.39;
+        private const double high_cs_penalty_hypers = 0.75;
+
         private const double local_rhythm_penalty = 0.95;
         private const double local_rhythm_range = 20.0;
         private const double local_rhythm_sensitivity = 2.0;
@@ -49,11 +54,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        private const double high_cs_threshold = 3.5;
-        private const double high_cs_power = 1.6;
-        private const double high_cs_rate = 0.39;
-        private const double high_cs_penalty_hypers = 0.75;
-
         private const double density_buff = 1.02;
 
         private const double fake_action_buff = 1.0;
@@ -65,6 +65,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
             List<CatchDifficultyHitObject> actionNotes = cdhos.Where(n => n.MovementData.ActionProbability == 1).ToList();
 
+            // Sets HighCSFactor
+            highCSBuff(actionNotes, circleSize);
+
+            // Sets CombinedReadingFactor
             localRhythmPenalty(cdhos);
             explicitRhythmPenalty(actionNotes);
             implicitRhythmPenalty(actionNotes);
@@ -74,7 +78,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos, frameTime);
             highDistanceBuff(actionNotes, clockRate);
-            highCSBuff(actionNotes, circleSize);
             densityBuff(cdhos);
             fakeActionBuff(actionNotes);
             futurePrecisionBuff(actionNotes);
@@ -371,9 +374,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             {
                 CatchDifficultyHitObject note = actionNotes[i];
                 if (note.IsHyper)
-                    note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonusHypers;
+                    note.ReadingData.HighCSFactor *= 1.0 + circleSizeBonusHypers;
                 else
-                    note.ReadingData.CombinedReadingFactor *= 1.0 + circleSizeBonus;
+                    note.ReadingData.HighCSFactor *= 1.0 + circleSizeBonus;
             }
         }
 

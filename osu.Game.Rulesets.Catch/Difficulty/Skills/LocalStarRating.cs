@@ -27,8 +27,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
             double speed = SpeedEvaluator.EvaluateDifficultyOf(current);
             double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
             double readingFactor = ((CatchDifficultyHitObject)current).ReadingData.CombinedReadingFactor;
+            double highCSFactor = ((CatchDifficultyHitObject)current).ReadingData.HighCSFactor;
 
-            return CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precision, speed, readingFactor) / 3.0;
+            return CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precision, speed, readingFactor, highCSFactor) / 3.0;
         }
     }
 }
