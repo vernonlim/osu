@@ -124,7 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    (data.NotePrecision, data.EffectiveTime) = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, _) = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
 
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
@@ -160,7 +160,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    (data.NotePrecision, data.EffectiveTime) = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, _) = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
 
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
