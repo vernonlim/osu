@@ -480,8 +480,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 // Direction changes
                 case PatternType.JumpAfterHyperjump:
                 {
-                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, minimalSpeed, catcherWidth);
-                    note.DisplayData.DirectionChangeWeight = CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, minimalSpeed, catcherWidth);
+                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, note, minimalSpeed, catcherWidth);
+                    note.DisplayData.DirectionChangeWeight = CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, note, minimalSpeed, catcherWidth);
                     data.KeyPress = data.BackwardKeyPress;
                     data.ForwardCatcherPosition = next.Position + data.Directionize(catcherWidth / 2.0 + next.DeltaTime);
 
@@ -544,8 +544,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, 1, catcherWidth);
-                    note.DisplayData.DirectionChangeWeight = CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, 1, catcherWidth);
+                    data.ActionProbability = 1 * CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, note, 1, catcherWidth);
+                    note.DisplayData.DirectionChangeWeight = CatchPreprocessingUtils.CalculateDirectionChangeWeight(next, note, 1, catcherWidth);
                     data.KeyPress = data.BackwardKeyPress;
                     data.ForwardCatcherPosition = data.FurthestBackward(prevForwardCatcherPosition + data.Directionize(note.DeltaTime), next.Position + data.Directionize(catcherWidth / 2.0 + next.DeltaTime));
 

@@ -199,7 +199,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="velocity"></param>
         /// <param name="catcherWidth"></param>
         /// <returns></returns>
-        public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next, double velocity, double catcherWidth)
+        public static double CalculateDirectionChangeWeight(CatchDifficultyHitObject next, CatchDifficultyHitObject note, double velocity, double catcherWidth)
         {
             CatchDifficultyHitObject? nextNext = next.NextNote(0);
 
@@ -215,7 +215,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double normalisedVelocity = Math.Pow(velocity, velocity_power);
 
             return Math.Clamp(
-                Math.Pow(Math.Min(next.DeltaPosition, 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
+                Math.Pow(Math.Min(Math.Abs(next.Position - note.Position), 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
                 0.0, 1.0);
         }
 
