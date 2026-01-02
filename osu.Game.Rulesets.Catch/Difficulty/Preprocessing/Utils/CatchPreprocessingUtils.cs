@@ -125,16 +125,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <returns></returns>
         public static double CalculateSpeed(CatchDifficultyHitObject note) => note.DeltaPosition / note.DeltaTime;
 
-        public static double CalculateSpeedFrom(CatchDifficultyHitObject note, double position, double frameTime) => Math.Abs(note.Position - position) / Math.Max(note.DeltaTime - frameTime, 1);
+        public static double CalculateSpeedFrom(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double position, double frameTime) =>
+            Math.Abs(note.Position - position) / Math.Max((note.StartTime - prev.StartTime) - frameTime, 1);
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, assuming that the catcher is perfectly positioned.
         /// </summary>
         /// <param name="note">The current note.</param>
+        /// <param name="prev"></param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        public static double CalculatePerfectHyperdashSpeed(CatchDifficultyHitObject note, double frameTime) =>
-            note.DeltaPosition / (Math.Max(note.DeltaTime - frameTime, 1));
+        public static double CalculatePerfectHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double frameTime) =>
+            (Math.Abs(note.Position - prev.Position)) / (Math.Max((note.StartTime - prev.StartTime) - frameTime, 1));
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
@@ -145,7 +147,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="frameTime"></param>
         /// <returns></returns>
         public static double CalculateMinimalHyperdashSpeed(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, double catcherWidth, double frameTime) =>
-            CalculateMinimalDistance(note, prev, catcherWidth) / Math.Max(note.DeltaTime - frameTime, 1);
+            CalculateMinimalDistance(note, prev, catcherWidth) / Math.Max((note.StartTime - prev.StartTime) - frameTime, 1);
 
         /// <summary>
         /// Calculates the hyperdash speed between a note and the one before it, based on the expected player position.
@@ -210,10 +212,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         public static double CalculatePotentialStandstillEffectiveTime(CatchDifficultyHitObject note, CatchDifficultyHitObject next, double catcherWidth, double frameTime)
         {
+            double nextDeltaPosition = Math.Abs(next.Position - note.Position);
+
             if (note.DeltaPosition <= catcherWidth / 2.0)
             {
                 double first = (-note.DeltaPosition - catcherWidth / 2.0
-                                + (catcherWidth - 2 * next.DeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next, frameTime)));
+                                + (catcherWidth - 2 * nextDeltaPosition) / (2 * CalculatePerfectHyperdashSpeed(next, note, frameTime)));
 
                 double second = note.StartTime + next.StartTime;
 
@@ -221,7 +225,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
             else
             {
-                double first = (-catcherWidth + (catcherWidth - 2 * next.DeltaPosition) / (2 * CalculateSpeedFrom(next, note.BackwardNoteBorder, frameTime)));
+                double first = (-catcherWidth + (catcherWidth - 2 * nextDeltaPosition) / (2 * CalculateSpeedFrom(next, note, note.BackwardNoteBorder, frameTime)));
 
                 double second = note.StartTime + next.StartTime;
 

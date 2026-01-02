@@ -173,6 +173,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                 }
 
+                // Future precision
+                if (next.MovementData.NotePattern == PatternType.AcceleratingStream)
+                {
+                    double? currentPrecision = data.NotePrecision;
+                }
+
                 // Precision calculation
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
@@ -334,9 +340,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             CatchMovementData prevData = prev.MovementData;
 
             double prevForwardCatcherPosition = note.IsMovingRight ? prevData.RightCatcherPosition : prevData.LeftCatcherPosition;
-            _ = CatchPreprocessingUtils.CalculateMinimalDistance(note, prev, catcherWidth);
             double minimalVelocity = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
             double nextToPrevDeltaTime = next.StartTime - prev.StartTime;
+
+            // To avoid the hard-coded assumption that these values are in relation to the previous note index-wise.
+            double nextDeltaTime = next.StartTime - note.StartTime;
+            double nextDeltaPosition = Math.Abs(next.Position - note.Position);
 
             switch (type)
             {
@@ -347,12 +356,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.JumpAfterHyperjump:
                 {
-                    if (next.DeltaPosition - next.DeltaTime >= catcherWidth / 2.0)
+                    if (nextDeltaPosition - nextDeltaTime >= catcherWidth / 2.0)
                     {
                         return (catcherWidth) / (2.0 * minimalVelocity);
                     }
 
-                    double first = catcherWidth / 2.0 - next.DeltaPosition + nextToPrevDeltaTime;
+                    double first = catcherWidth / 2.0 - nextDeltaPosition + nextToPrevDeltaTime;
                     double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - catcherWidth / 2.0) / minimalVelocity;
                     double third = first - second;
 
@@ -361,7 +370,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Hyperjumps:
                 {
-                    double first = (catcherWidth / 2.0 - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime);
+                    double first = (catcherWidth / 2.0 - nextDeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, note, frameTime);
                     double second = (data.Directionize(note.Position - prevForwardCatcherPosition) - catcherWidth / 2.0) / minimalVelocity;
 
                     return (first - second + nextToPrevDeltaTime) / 2.0;
@@ -369,7 +378,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.HyperjumpAfterJump:
                 {
-                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(next.DeltaTime - frameTime, 1);
+                    double optimalVelocity = Math.Abs(next.Position - (prevForwardCatcherPosition + data.Directionize(note.DeltaTime))) / Math.Max(nextDeltaTime - frameTime, 1);
 
                     if (data.Directionize(note.Position - prevForwardCatcherPosition) <= note.DeltaTime - catcherWidth / 2.0)
                     {
@@ -386,29 +395,29 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.Jumps:
                 {
-                    return (next.DeltaTime + catcherWidth - next.DeltaPosition) / 2.0;
+                    return (nextDeltaTime + catcherWidth - nextDeltaPosition) / 2.0;
                 }
 
                 case PatternType.PotentialStandstill:
                 {
                     if (note.DeltaPosition <= catcherWidth / 2.0)
                     {
-                        double first = (catcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime));
-                        double second = next.DeltaTime + note.DeltaPosition + catcherWidth / 2.0;
+                        double first = (catcherWidth - 2 * nextDeltaPosition) / (2 * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, note, frameTime));
+                        double second = nextDeltaTime + note.DeltaPosition + catcherWidth / 2.0;
                         return (first + second) / 2.0;
                     }
 
-                    double third = (catcherWidth - 2 * next.DeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note.BackwardNoteBorder, frameTime));
-                    double fourth = next.DeltaTime + catcherWidth;
+                    double third = (catcherWidth - 2 * nextDeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note, note.BackwardNoteBorder, frameTime));
+                    double fourth = nextDeltaTime + catcherWidth;
 
                     return (third + fourth) / 2.0;
                 }
 
                 case PatternType.AcceleratingStream:
                 {
-                    if (next.DeltaPosition > next.DeltaTime / 2.0 + catcherWidth / 2.0)
+                    if (nextDeltaPosition > nextDeltaTime / 2.0 + catcherWidth / 2.0)
                     {
-                        return (next.DeltaTime + catcherWidth - next.DeltaPosition) / 2.0;
+                        return (nextDeltaTime + catcherWidth - nextDeltaPosition) / 2.0;
                     }
 
                     break;

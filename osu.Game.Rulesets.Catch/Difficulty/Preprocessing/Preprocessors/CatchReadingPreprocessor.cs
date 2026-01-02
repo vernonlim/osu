@@ -333,7 +333,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             {
                 CatchDifficultyHitObject note = cdhos[i];
                 CatchDifficultyHitObject prev = cdhos[i - 1];
-                double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
+                double speed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, prev, frameTime);
 
                 if (prev.IsHyper && speed > high_velocity_threshold)
                     note.ReadingData.CombinedReadingFactor *= 1.0 - high_velocity_nerf * Math.Min(1.0, Math.Pow((speed - high_velocity_threshold) / (max_velocity_nerf_threshold - high_velocity_threshold), high_velocity_power));

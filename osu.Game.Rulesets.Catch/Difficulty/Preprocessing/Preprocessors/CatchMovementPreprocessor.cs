@@ -82,7 +82,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 // Debug
                 note.DisplayData.PrevToNextDistance = CatchPreprocessingUtils.CalculateHighestDistance(note, prev, next);
                 note.DisplayData.MinimalHyperdashSpeed = CatchPreprocessingUtils.CalculateMinimalHyperdashSpeed(note, prev, catcherWidth, frameTime);
-                note.DisplayData.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, frameTime);
+                note.DisplayData.PerfectHyperdashSpeed = CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(note, prev, frameTime);
                 note.DisplayData.AverageHyperdashSpeed = CatchPreprocessingUtils.CalculateAverageHyperdashSpeed(note, prev, frameTime);
 
                 if (data.OriginalPattern == PatternType.None)
@@ -508,10 +508,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.ActionProbability = 1;
                     data.KeyPress = data.BackwardKeyPress;
                     data.ForwardCatcherPosition =
-                        next.Position + data.Directionize(catcherWidth / 2.0 + next.DeltaTime * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime));
+                        next.Position + data.Directionize(catcherWidth / 2.0 + next.DeltaTime * CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, note, frameTime));
 
                     double first = data.Directionize(note.Position - data.Directionize(catcherWidth / 2.0) - prevForwardCatcherPosition) / minimalSpeed;
-                    double second = (catcherWidth / 2.0 - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime);
+                    double second = (catcherWidth / 2.0 - next.DeltaPosition) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, note, frameTime);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
@@ -537,7 +537,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
 
                     double first = data.Directionize(note.Position - prevForwardCatcherPosition) - catcherWidth / 2.0;
-                    double second = (data.Directionize(next.Position - prevBackwardCatcherPosition) + catcherWidth / 2.0 - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, frameTime);
+                    double second = (data.Directionize(next.Position - prevBackwardCatcherPosition) + catcherWidth / 2.0 - note.DeltaTime) / CatchPreprocessingUtils.CalculatePerfectHyperdashSpeed(next, note, frameTime);
                     double third = prev.StartTime + 2 * note.StartTime + next.StartTime;
 
                     data.EffectiveTime = (first + second + third) / 4.0;
