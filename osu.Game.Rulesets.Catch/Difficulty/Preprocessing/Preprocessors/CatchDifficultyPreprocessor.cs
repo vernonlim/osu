@@ -174,7 +174,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Future precision
-                if (next.MovementData.NotePattern == PatternType.AcceleratingStream && (i + 2) < hitObjects.Count)
+                if ((i + 2) < hitObjects.Count
+                    && (next.MovementData.NotePattern == PatternType.AcceleratingStream
+                        || (next.MovementData.NotePattern == PatternType.ExtendedDirectionChange && !next.IsHyper)))
                 {
                     CatchDifficultyHitObject nextNext = (CatchDifficultyHitObject)hitObjects[i + 2];
 
