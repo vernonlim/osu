@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 CatchMovementData data = note.MovementData;
                 CatchMovementData prevData = prev.MovementData;
 
-                data.NotePrecision = calculatePrecision(note, prev, next, catcherWidth, frameTime);
+                (data.NotePrecision, data.EffectiveTime) = calculatePrecision(note, prev, next, catcherWidth, frameTime);
 
                 if (prevData.ActionProbability == 1)
                 {
@@ -124,7 +124,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestLeft, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    data.NotePrecision = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, data.EffectiveTime) = calculatePrecision(furthestLeft, furPrev, furNext, catcherWidth, frameTime);
 
                                     furthestLeft.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestLeft, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestLeft, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
@@ -160,7 +160,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.ClassifyAsDirectionChange(furthestRight, furPrev);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
 
-                                    data.NotePrecision = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
+                                    (data.NotePrecision, data.EffectiveTime) = calculatePrecision(furthestRight, furPrev, furNext, catcherWidth, frameTime);
 
                                     furthestRight.MovementData.NotePattern = CatchMovementPreprocessor.Classify(furthestRight, furPrev, furNext, catcherWidth, clockRate);
                                     CatchMovementPreprocessor.UpdateData(furthestRight, furPrev, furNext, catcherWidth, clockRate, frameTime, playfieldBorder);
@@ -257,7 +257,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="catcherWidth"></param>
         /// <param name="frameTime"></param>
         /// <returns></returns>
-        private static double? calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double frameTime)
+        private static (double?, double) calculatePrecision(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double frameTime)
         {
             CatchMovementData data = note.MovementData;
 
@@ -272,9 +272,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double standstillTime = CatchPreprocessingUtils.CalculatePotentialStandstillEffectiveTime(note, next, catcherWidth, frameTime);
                     double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (max_precision_correction - 1.0);
-                    data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
+                    double effectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
-                    return precisionCorrection * rawPrecision;
+                    return (precisionCorrection * rawPrecision, effectiveTime);
                 }
 
                 case PatternType.Jumps:
@@ -286,9 +286,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     double standstillTime = (data.Directionize(prev.Position - next.Position) - catcherWidth / 2.0 + 2 * note.StartTime) / 2.0;
                     double scaledMaxCorrection = (precisionCorrection - 1.0) * 1.0 / (max_precision_correction - 1.0);
-                    data.EffectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
+                    double effectiveTime = standstillTime * scaledMaxCorrection + data.EffectiveTime * (1.0 - scaledMaxCorrection);
 
-                    return precisionCorrection * rawPrecision;
+                    return (precisionCorrection * rawPrecision, effectiveTime);
                 }
 
                 case PatternType.PotentialStandstill:
@@ -298,7 +298,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, true);
                     note.DisplayData.PrecisionCorrection = precisionCorrection;
 
-                    return precisionCorrection * rawPrecision;
+                    return (precisionCorrection * rawPrecision, data.EffectiveTime);
                 }
 
                 case PatternType.AcceleratingStream:
@@ -308,12 +308,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     double precisionCorrection = CatchPreprocessingUtils.CalculatePrecisionCorrection(note.DeltaPosition, note.DeltaTime, catcherWidth, max_precision_correction, true);
                     note.DisplayData.PrecisionCorrection = precisionCorrection;
 
-                    return precisionCorrection * rawPrecision;
+                    return (precisionCorrection * rawPrecision, data.EffectiveTime);
                 }
 
                 default:
                 {
-                    return calculateRawPrecision(note, prev, next, data.NotePattern, catcherWidth, frameTime);
+                    return (calculateRawPrecision(note, prev, next, data.NotePattern, catcherWidth, frameTime), data.EffectiveTime);
                 }
             }
         }
