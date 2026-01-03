@@ -428,7 +428,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double longDeltaTime = nextNext.StartTime - note.StartTime;
                 double timeRatio = Math.Pow(longDeltaTime / max_delta_time, time_power);
 
-                double bonus = timeRatio * precisionTerm * next.MovementData.ActionProbability * future_precision_buff;
+                double bonus = timeRatio * precisionTerm * (1.0 - next.MovementData.ActionProbability) * future_precision_buff;
 
                 note.ReadingData.CombinedReadingFactor *= 1.0 + bonus;
             }
