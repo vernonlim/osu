@@ -422,7 +422,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 double futurePrecision = (double)note.MovementData.FuturePrecision; // p'_1, non-weighted
                 double? rawPrecision = note.MovementData.NotePrecision; // p_1
-                double precisionRatio = Math.Max(1.0, rawPrecision / futurePrecision); // p_1 / p'_1 <= 1
+                double precisionRatio = rawPrecision == null ? 1.0 : Math.Max(1.0, (double)rawPrecision / futurePrecision); // p_1 / p'_1 <= 1
                 double precisionTerm = Math.Min(precisionRatio - 1.0, max_precision_ratio) / max_precision_ratio;
 
                 double longDeltaTime = nextNext.StartTime - note.StartTime;
