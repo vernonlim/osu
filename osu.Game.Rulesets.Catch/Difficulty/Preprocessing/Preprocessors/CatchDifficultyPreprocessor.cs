@@ -229,15 +229,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Precision calculation
+                const double raw_weight_hyperjumps = 0.9;
+                const double raw_weight_hyperjump_after_jump = 0.92;
+                const double raw_weight_jump_after_hyperjump = 0.94;
+                const double raw_weight_jumps = 0.96;
+
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
-                    data.PrecisionStrain = (0.9 * data.RawPrecisionStrain + 0.1 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = (raw_weight_hyperjumps * data.RawPrecisionStrain + (1.0 - raw_weight_hyperjumps) * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.HyperjumpAfterJump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.92 * data.RawPrecisionStrain + 0.08 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (raw_weight_hyperjump_after_jump * data.RawPrecisionStrain + (1.0 - raw_weight_hyperjump_after_jump) * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.JumpAfterHyperjump)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.94 * data.RawPrecisionStrain + 0.06 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (raw_weight_jump_after_hyperjump * data.RawPrecisionStrain + (1.0 - raw_weight_jump_after_hyperjump) * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else if (data.NotePattern == PatternType.Jumps)
-                    data.PrecisionStrain = data.PrecisionStrain = (0.96 * data.RawPrecisionStrain + 0.04 * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
+                    data.PrecisionStrain = data.PrecisionStrain = (raw_weight_jumps * data.RawPrecisionStrain + (1.0 - raw_weight_jumps) * prevData.RawPrecisionStrain * prevData.ActionProbability) * data.ActionProbability;
                 else
                     data.PrecisionStrain = data.RawPrecisionStrain * data.ActionProbability;
 
@@ -290,15 +295,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
             const double amplitude = 40.0; //governs how much very low precision values are worth
-            const double limit = 1.0; //precision strain for very high precision values (easy jumps)
             const double shift = -15.0; //shifts the boundary between concave and convex part (shifts the curve)
             const double pace = 25.0; //measures how fast strain decreases between easy and hard jumps
+            const double multiplier = 39.0;
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
-                : limit + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
+                : 1.0 + amplitude / (1 + Math.Exp(((double)note.MovementData.NotePrecision + shift) / pace));
 
-            return precision / 18 * 39;
+            return precision / 18 * multiplier;
         }
 
         private const double max_precision_correction = 1.25;
@@ -544,11 +549,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             const double amplitude = 13.0; // governs how much very low speed values are worth
             const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
             const double pace = 35.0; // normalises shift
-            const double constant = 0.88;
+            const double multiplier = 0.88;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time + shift) / pace));
 
-            return constant * speed / 10000;
+            return multiplier * speed / 10000;
         }
 
         private static double timeToSpeedBurst(double time)
@@ -556,11 +561,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             const double amplitude = 13.0; // governs how much very low speed values are worth
             const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
             const double pace = 35.0; // normalises shift
-            const double constant = 0.99;
+            const double multiplier = 0.99;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
-            return constant * speed / 10000;
+            return multiplier * speed / 10000;
         }
 
         private static double timeToSpeedConsistency(double time)
@@ -568,11 +573,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             const double amplitude = 13.0; // governs how much very low speed values are worth
             const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
             const double pace = 35.0; // normalises shift
-            const double constant = 1.14;
+            const double multiplier = 1.14;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
-            return constant * speed / 10000;
+            return multiplier * speed / 10000;
         }
     }
 }

@@ -241,7 +241,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
             const double default_decay_weight = 0.9;
-            double[] decayWeights = new[] { 0.9, 0.86 };
+            double[] decayWeights = new[] { 0.9, 0.86, 0.81, 0.729, 0.6561 };
 
             const double region = 500.0;
             const int limit = 15;
@@ -359,10 +359,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            return 1.05 * Math.Max(precisionStrain, speedStrain) + 0.85 * Math.Min(precisionStrain, speedStrain) + 0.18 * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
-            //return Math.Pow(Math.Pow(precisionStrain, alpha) + Math.Pow(speedStrain, alpha), 1 / alpha);
-            //return precisionStrain + speedStrain;
-            //return 1.1 * Math.Sqrt(Math.Pow(precisionStrain, 2) + Math.Pow(speedStrain, 2) - 0.2 * precisionStrain * speedStrain);
+            const double max_constant = 1.05;
+            const double min_constant = 0.85;
+            const double correlation_constant = 0.18;
+            return max_constant * Math.Max(precisionStrain, speedStrain) + min_constant * Math.Min(precisionStrain, speedStrain) + correlation_constant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
         }
 
         public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double readingFactor, double highCSFactor)
