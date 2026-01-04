@@ -58,9 +58,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private const double fake_action_buff = 1.0;
 
-        private const double future_precision_buff = 0.1;
+        private const double future_precision_buff = 0.15;
         private const double max_precision_ratio = 0.5;
-        private const double max_delta_time = 256.0;
+        private const double max_delta_time = 300.0;
         private const double time_power = 0.5;
 
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
