@@ -173,6 +173,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     }
                 }
 
+                data.OriginalPrecision = data.NotePrecision;
+
                 // Future precision
                 if ((i + 2) < hitObjects.Count
                     && (next.MovementData.NotePattern == PatternType.AcceleratingStream

@@ -83,7 +83,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             highDistanceBuff(actionNotes, clockRate);
             densityBuff(cdhos);
             fakeActionBuff(actionNotes);
-            futurePrecisionBuff(actionNotes);
+            futurePrecisionBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -407,13 +407,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             }
         }
 
-        private static void futurePrecisionBuff(List<CatchDifficultyHitObject> actionNotes)
+        private static void futurePrecisionBuff(List<CatchDifficultyHitObject> cdhos)
         {
-            for (int i = 1; i < actionNotes.Count - 2; i++)
+            for (int i = 1; i < cdhos.Count - 2; i++)
             {
-                CatchDifficultyHitObject note = actionNotes[i];
-                CatchDifficultyHitObject next = actionNotes[i + 1];
-                CatchDifficultyHitObject nextNext = actionNotes[i + 2];
+                CatchDifficultyHitObject note = cdhos[i];
+                CatchDifficultyHitObject next = cdhos[i + 1];
+                CatchDifficultyHitObject nextNext = cdhos[i + 2];
 
                 if (!note.MovementData.FuturePrecisionUtilized) continue;
 
@@ -421,7 +421,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 Debug.Assert(note.MovementData.FuturePrecision != null);
 
                 double futurePrecision = (double)note.MovementData.FuturePrecision; // p'_1, non-weighted
-                double? rawPrecision = note.MovementData.NotePrecision; // p_1
+                double? rawPrecision = note.MovementData.OriginalPrecision; // p_1, original precision
                 double precisionRatio = rawPrecision == null ? 1.0 : Math.Max(1.0, (double)rawPrecision / futurePrecision); // p_1 / p'_1 <= 1
                 double precisionTerm = Math.Min(precisionRatio - 1.0, max_precision_ratio) / max_precision_ratio;
 

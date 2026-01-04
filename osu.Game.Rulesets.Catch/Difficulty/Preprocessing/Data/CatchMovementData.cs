@@ -187,6 +187,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         /// </remarks>
         public double? NotePrecision;
 
+        public double? OriginalPrecision;
+
         /// <summary>
         /// Precision Strain of the note
         /// </summary>
@@ -249,6 +251,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             ActionProbability = 1;
             IsRealAction = true;
             NotePrecision = null;
+            OriginalPrecision = null;
             RawPrecisionStrain = 0;
             PrecisionStrain = 0;
             FuturePrecisionUtilized = false;
