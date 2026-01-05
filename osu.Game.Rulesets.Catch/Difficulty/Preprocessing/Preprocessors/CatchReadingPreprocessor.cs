@@ -54,7 +54,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        private const double density_buff = 1.02;
+        private const double density_buff = 1.0;
 
         private const double fake_action_buff = 1.0;
 

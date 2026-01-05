@@ -100,7 +100,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double lengthBonusPP = value * (lengthBonus - 1.0);
 
-            value *= 1.09;
+            const double value_multiplier = 1.07;
+
+            value *= value_multiplier;
 
             return new CatchPerformanceAttributes
             {
@@ -123,7 +125,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CorrectedClockRate(double clockRate) => 1.0 + (clockRate - 1.0) * 0.8; // AR9+DT is approximately AR10.15 after correction
 
-        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0049) - 4.0, 2.0) / 100000.0;
+        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0047) - 4.0, 2.0) / 100000.0;
 
         private double accuracy() => totalHits() == 0 ? 0 : Math.Clamp((double)totalSuccessfulHits() / totalHits(), 0, 1);
         private int totalHits() => num50 + num100 + num300 + numMiss + numKatu;

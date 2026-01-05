@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 0.015;
+        private const double difficulty_multiplier = 0.0147;
 
         private float catcherWidth;
         private float circleSize;
@@ -187,7 +187,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private double calculateSr(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
             double sr = calculateDifficultyValue(notes, sorted, missCount);
-            // sr = 3.52 * Math.Pow(sr, 0.8);
 
             sr *= difficulty_multiplier;
 
@@ -359,9 +358,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            const double max_constant = 1.05;
-            const double min_constant = 0.85;
-            const double correlation_constant = 0.18;
+            const double max_constant = 1.0;
+            const double min_constant = 0.8;
+            const double correlation_constant = 0.15;
             return max_constant * Math.Max(precisionStrain, speedStrain) + min_constant * Math.Min(precisionStrain, speedStrain) + correlation_constant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
         }
 

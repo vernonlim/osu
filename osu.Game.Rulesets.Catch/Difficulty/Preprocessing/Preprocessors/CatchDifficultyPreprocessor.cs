@@ -231,10 +231,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Precision calculation
-                const double raw_weight_hyperjumps = 0.9;
-                const double raw_weight_hyperjump_after_jump = 0.92;
-                const double raw_weight_jump_after_hyperjump = 0.94;
-                const double raw_weight_jumps = 0.96;
+                const double raw_weight_hyperjumps = 0.93;
+                const double raw_weight_hyperjump_after_jump = 0.98;
+                const double raw_weight_jump_after_hyperjump = 0.98;
+                const double raw_weight_jumps = 1.0;
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
@@ -249,7 +249,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.PrecisionStrain = data.RawPrecisionStrain * data.ActionProbability;
 
                 // Delayed precision
-                const double delayed_precision_weight = 0.92;
+                const double delayed_precision_weight = 0.85;
 
                 CatchDifficultyHitObject? prevAction = guaranteedActions.LastOrDefault() ?? ambiguousActions.LastOrDefault();
 
@@ -308,7 +308,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             return precision / 18 * multiplier;
         }
 
-        private const double max_precision_correction = 1.25;
+        private const double max_precision_correction = 1.3;
 
         /// <summary>
         /// Calculates the precision value for a given note, and adjusts its effective time if needed.
