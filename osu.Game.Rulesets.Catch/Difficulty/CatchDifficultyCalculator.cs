@@ -24,6 +24,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
         private const double difficulty_multiplier = 0.0147;
+        private const double large_droplet_buff = 1.01;
+        private const double large_droplet_buff_hidden = 1.02;
 
         private float catcherWidth;
         private float circleSize;
@@ -51,7 +53,21 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             List<double> actionProbabilities = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).MovementData.ActionProbability).ToList();
             List<double> precisionStrains = skills.OfType<Precision>().Single().GetObjectStrains().ToList();
             List<double> speedStrains = skills.OfType<Speed>().Single().GetObjectStrains().ToList();
-            List<double> readingFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor).ToList();
+
+            List<double> readingFactors = DifficultyHitObjects.Select(n =>
+            {
+                CatchDifficultyHitObject note = ((CatchDifficultyHitObject)n);
+
+                if (note.BaseObject is Droplet)
+                {
+                    note.ReadingData.CombinedReadingFactor *= mods.Any(m => m is ModHidden)
+                        ? large_droplet_buff_hidden
+                        : large_droplet_buff;
+                }
+
+                return ((CatchDifficultyHitObject)n).ReadingData.CombinedReadingFactor;
+            }).ToList();
+
             List<double> highCSFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.HighCSFactor).ToList();
 
             List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
