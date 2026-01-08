@@ -110,19 +110,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
             double hiddenFactor = 1.0;
-            const double hidden_full_bonus_sr = 4.5;
+            const double hidden_full_bonus_sr = 5.0; // Easier maps have lower AR by default; HD doesn't change much there
+            const double min_hidden_bonus = 0.01;
+            const double threshold_linear = 8.0; // AR threshold between linear decrease and smooth (and less steep) curve
+            const double hidden_growth = 0.235; // Value determining AR bonus at threshold_linear (and pace of growth of the function for higher AR values)
+            const double hidden_power = 1.65;
 
             if (mods.Any(m => m is ModHidden))
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
-                if (adjustedApproachRate <= 9.0)
-                    hiddenFactor = Math.Sqrt(1.08 + 0.1 * (9.5 - adjustedApproachRate)); // 10% for each AR below 9.5
-                else if (adjustedApproachRate <= 10.0)
-                    hiddenFactor = Math.Sqrt(1.04 + 0.08 * (10.0 - adjustedApproachRate)); // 4% for AR10, 8% for AR9.5
-                else if (adjustedApproachRate > 10.0)
-                    hiddenFactor = Math.Sqrt(1.0 + 0.04 * (11.0 - Math.Min(11.0, adjustedApproachRate))); // 4% at AR 10, 0% at AR 11
+                if (adjustedApproachRate >= 11.0)
+                    hiddenFactor = 1.0 + min_hidden_bonus;
+                if (adjustedApproachRate >= threshold_linear && adjustedApproachRate < 11.0)
+                    hiddenFactor = 1.0 + min_hidden_bonus + hidden_growth * Math.Pow(((11.0 - adjustedApproachRate) / (11.0 - threshold_linear)), hidden_power);
+                if (adjustedApproachRate < threshold_linear)
+                    hiddenFactor = 1.0 + min_hidden_bonus + hidden_growth * (1.0 - hidden_power * (adjustedApproachRate - threshold_linear) / (11.0 - threshold_linear)); //tangent line to the function above at point threshold_linear
 
-                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr; // Easier maps have lower AR by default; HD doesn't change much there
+                hiddenFactor = Math.Sqrt(hiddenFactor); // SR-pp scaling
+                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr;
             }
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
