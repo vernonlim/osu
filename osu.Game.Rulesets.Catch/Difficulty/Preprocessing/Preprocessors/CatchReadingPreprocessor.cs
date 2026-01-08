@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
+using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
@@ -63,6 +64,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double max_delta_time = 300.0;
         private const double time_power = 0.5;
 
+        private const double large_droplet_buff = 1.01;
+
         public static void Process(List<DifficultyHitObject> hitObjects, double circleSize, double clockRate, double frameTime)
         {
             List<CatchDifficultyHitObject> cdhos = hitObjects.Select(n => (CatchDifficultyHitObject)n).ToList();
@@ -84,6 +87,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             densityBuff(cdhos);
             fakeActionBuff(actionNotes);
             futurePrecisionBuff(cdhos);
+            largeDropletBuff(cdhos);
         }
 
         private static void localRhythmPenalty(List<CatchDifficultyHitObject> cdhos)
@@ -431,6 +435,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 double bonus = timeRatio * precisionTerm * (1.0 - next.MovementData.ActionProbability) * future_precision_buff;
 
                 note.ReadingData.CombinedReadingFactor *= 1.0 + bonus;
+            }
+        }
+
+        private static void largeDropletBuff(List<CatchDifficultyHitObject> cdhos)
+        {
+            for (int i = 0; i < cdhos.Count; i++)
+            {
+                CatchDifficultyHitObject note = cdhos[i];
+
+                if (note.BaseObject is Droplet)
+                    note.ReadingData.CombinedReadingFactor *= large_droplet_buff;
             }
         }
     }
