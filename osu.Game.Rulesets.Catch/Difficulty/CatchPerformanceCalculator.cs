@@ -36,36 +36,17 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             numKatu = score.GetCountKatu() ?? 0; // HitResult.SmallTickMiss
             numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
 
-            double adjustedStarRating = numMiss switch
-            {
-                0 => catchAttributes.SRBeginningNerfed,
-                1 => catchAttributes.SROneMiss,
-                2 => catchAttributes.SRTwoMiss,
-                var x when x < 4 => double.Lerp(catchAttributes.SRTwoMiss, catchAttributes.SRFourMiss, (x - 2.0) / (4.0 - 2.0)),
-                var x when x < 7 => double.Lerp(catchAttributes.SRFourMiss, catchAttributes.SRSevenMiss, (x - 4.0) / (7.0 - 4.0)),
-                var x => double.Lerp(catchAttributes.SRSevenMiss, catchAttributes.SRTwelveMiss, (x - 7.0) / (12.0 - 7.0)),
-            };
+            double value = calculateValue(catchAttributes.SRBeginningNerfed);
 
-            // Misscount-adjusted pathway - low combo scaling and misscount penalty but the SR of the map is lowered
-            double withMiss = calculateValue(adjustedStarRating);
+            // First miss penalty
+            value = numMiss == 0 ? value : 0.95 * value;
 
-            withMiss *= Math.Pow(0.985, Math.Max(0, numMiss - 1));
+            // Represents a crossover with a static 0.97 penalty at 5 misses
+            value *= Math.Pow(0.975, Math.Max(0, numMiss - 1));
 
+            // Combo scaling power is adjusted from 0.35 to 0.32 to compensate for the harsher misscount penalty up to 5
             if (catchAttributes.MaxCombo > 0)
-                withMiss *= Math.Min(0.8 + (score.MaxCombo / (double)catchAttributes.MaxCombo) * 0.2, 1.0);
-
-            // Original pathway - moderate combo scaling and higher misscount penalty, no SR adjustment
-            double original = calculateValue(catchAttributes.SRBeginningNerfed);
-
-            original *= Math.Pow(0.97, Math.Max(0, numMiss - 1));
-
-            if (catchAttributes.MaxCombo > 0)
-                original *= Math.Min(Math.Pow(score.MaxCombo, 0.35) / Math.Pow(catchAttributes.MaxCombo, 0.35), 1.0);
-
-            // We take the maximum of either pathway to ensure that ending chokes are not overly penalized from the misscount pathway
-            // Afterwards, we apply a universal 0.925 non-FC penalty (first miss penalty)
-            double value = Math.Max(original, withMiss);
-            value = numMiss == 0 ? value : 0.925 * value;
+                value *= Math.Min(Math.Pow(score.MaxCombo, 0.32) / Math.Pow(catchAttributes.MaxCombo, 0.32), 1.0);
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 

@@ -70,7 +70,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             List<double> highCSFactors = DifficultyHitObjects.Select(n => ((CatchDifficultyHitObject)n).ReadingData.HighCSFactor).ToList();
 
-            List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
+            // List<double> zeroes = Enumerable.Repeat(0.0, precisionStrains.Count).ToList();
 
             List<double> combinedStrains = combineStrains(actionProbabilities, precisionStrains, speedStrains, readingFactors, highCSFactors);
 
@@ -98,10 +98,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double sr = calculateSr(startTimes, combinedStrains);
             double srBeginningNerfed = calculateSr(notes, sorted);
-            List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
+            // List<double> srWithMisses = new[] { 1, 2, 4, 7, 12 }.Select(m => calculateSr(notes, sorted, m)).ToList();
 
-            double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, readingFactors, highCSFactors));
-            double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, readingFactors, highCSFactors));
+            // double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, readingFactors, highCSFactors));
+            // double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, readingFactors, highCSFactors));
 
             double adjustedApproachRate = CatchPerformanceCalculator.CalculateApproachRate(mods, approachRate, CatchPerformanceCalculator.CorrectedClockRate(clockRate));
 
@@ -154,10 +154,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 TotalActions = totalActions,
                 ApproachRateFactor = approachRateFactor,
                 HiddenFactor = hiddenFactor,
-                PrecisionSR = precision,
-                SpeedSR = speed,
+                // PrecisionSR = precision,
+                // SpeedSR = speed,
                 SRBeginningNerfed = srBeginningNerfed * approachRateFactor * hiddenFactor,
-                StarRatingWithMisses = srWithMisses.Select(s => s * approachRateFactor * hiddenFactor).ToList(),
             };
 
             return attributes;

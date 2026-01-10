@@ -22,37 +22,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         [JsonProperty("hidden_factor")]
         public double HiddenFactor { get; set; }
 
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("precision_sr")]
-        public double PrecisionSR { get; set; }
-
-        /// <summary>
-        /// Temporary debug property.
-        /// </summary>
-        [JsonProperty("speed_sr")]
-        public double SpeedSR { get; set; }
+        // /// <summary>
+        // /// Temporary debug property.
+        // /// </summary>
+        // [JsonProperty("precision_sr")]
+        // public double PrecisionSR { get; set; }
+        //
+        // /// <summary>
+        // /// Temporary debug property.
+        // /// </summary>
+        // [JsonProperty("speed_sr")]
+        // public double SpeedSR { get; set; }
 
         [JsonProperty("sr_beginning_nerfed")]
         public double SRBeginningNerfed { get; set; }
-
-        public IReadOnlyList<double> StarRatingWithMisses { get; set; } = new List<double> { 0, 0, 0, 0, 0 };
-
-        [JsonProperty("1_miss_sr")]
-        public double SROneMiss => StarRatingWithMisses[0];
-
-        [JsonProperty("2_miss_sr")]
-        public double SRTwoMiss => StarRatingWithMisses[1];
-
-        [JsonProperty("4_miss_sr")]
-        public double SRFourMiss => StarRatingWithMisses[2];
-
-        [JsonProperty("7_miss_sr")]
-        public double SRSevenMiss => StarRatingWithMisses[3];
-
-        [JsonProperty("12_miss_sr")]
-        public double SRTwelveMiss => StarRatingWithMisses[4];
 
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
