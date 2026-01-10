@@ -38,15 +38,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double value = calculateValue(catchAttributes.SRBeginningNerfed);
 
-            // First miss penalty
-            value = numMiss == 0 ? value : 0.95 * value;
+            const double base_penalty = 0.965;
 
-            // Represents a crossover with a static 0.97 penalty at 5 misses
-            value *= Math.Pow(0.975, Math.Max(0, numMiss - 1));
+            double penalty = numMiss switch
+            {
+                0 => 1.0,
+                1 => 0.95,
+                2 => 0.93,
+                3 => 0.90,
+                var x => Math.Pow(base_penalty, 4) * Math.Pow(base_penalty - 0.001 * (x - 4), (x - 4))
+            };
 
-            // Combo scaling power is adjusted from 0.35 to 0.32 to compensate for the harsher misscount penalty up to 5
+            value *= penalty;
+
+            // Combo scaling power is adjusted from 0.35 to 0.30 to compensate for the harsher misscount penalties
+            const double scaling_power = 0.30;
+
             if (catchAttributes.MaxCombo > 0)
-                value *= Math.Min(Math.Pow(score.MaxCombo, 0.32) / Math.Pow(catchAttributes.MaxCombo, 0.32), 1.0);
+                value *= Math.Min(Math.Pow(score.MaxCombo, scaling_power) / Math.Pow(catchAttributes.MaxCombo, scaling_power), 1.0);
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 
