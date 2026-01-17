@@ -463,7 +463,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         return (first + second) / 2.0;
                     }
 
-                    double third = (catcherWidth - 2 * nextDeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note, note.BackwardNoteBorder, frameTime));
+                    double third = (catcherWidth - 2 * nextDeltaPosition) / (2 * CatchPreprocessingUtils.CalculateSpeedFrom(next, note, note.Borders.Backward, frameTime));
                     double fourth = nextDeltaTime + catcherWidth;
 
                     return (third + fourth) / 2.0;

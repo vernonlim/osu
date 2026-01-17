@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
@@ -36,25 +37,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// </summary>
         public double DeltaPosition;
 
-        /// <summary>
-        /// The left border of the note.
-        /// </summary>
-        public double LeftNoteBorder;
-
-        /// <summary>
-        /// The right border of the note.
-        /// </summary>
-        public double RightNoteBorder;
-
-        /// <summary>
-        /// The note border closest to the previous note.
-        /// </summary>
-        public double BackwardNoteBorder => IsMovingRight ? LeftNoteBorder : RightNoteBorder;
-
-        /// <summary>
-        /// The note border closest to the next note.
-        /// </summary>
-        public double ForwardNoteBorder => IsMovingRight ? RightNoteBorder : LeftNoteBorder;
+        public PositionPair Borders;
 
         /// <summary>
         /// Whether this note is to the right of the previous note.
@@ -101,8 +84,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             Position = BaseObject.EffectiveX / clockRate;
-            LeftNoteBorder = Position - normalizedCatcherWidth / 2.0;
-            RightNoteBorder = Position + normalizedCatcherWidth / 2.0;
+            Borders = new PositionPair(Position - normalizedCatcherWidth / 2.0, Position + normalizedCatcherWidth / 2.0, IsMovingRight);
 
             // Temporary hack to ensure DeltaPosition > 0
             if (noteObjects.Count >= 2)

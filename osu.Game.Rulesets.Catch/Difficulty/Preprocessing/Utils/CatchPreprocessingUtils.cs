@@ -97,7 +97,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="next"></param>
         /// <returns></returns>
         public static double CalculateHighestDistance(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next) =>
-            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.ForwardNoteBorder) - next.Position);
+            Math.Abs(note.MovementData.FurthestBackward(prev.MovementData.ForwardCatcherPosition + note.MovementData.Directionize(note.DeltaTime), note.Borders.Forward) - next.Position);
 
         /// <summary>
         /// Calculates the minimal distance a catcher could travel between two notes.
@@ -184,8 +184,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             _ = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
 
-            double left = Math.Max(prevData.LeftCatcherPosition, prev.LeftNoteBorder);
-            double right = Math.Min(prevData.RightCatcherPosition, prev.RightNoteBorder);
+            double left = Math.Max(prevData.LeftCatcherPosition, prev.Borders.Left);
+            double right = Math.Min(prevData.RightCatcherPosition, prev.Borders.Right);
             double average = (left + right) / 2.0;
 
             double distance = Math.Abs(note.Position - average);
@@ -246,7 +246,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
             else
             {
-                double first = (-catcherWidth + (catcherWidth - 2 * nextDeltaPosition) / (2 * CalculateSpeedFrom(next, note, note.BackwardNoteBorder, frameTime)));
+                double first = (-catcherWidth + (catcherWidth - 2 * nextDeltaPosition) / (2 * CalculateSpeedFrom(next, note, note.Borders.Backward, frameTime)));
 
                 double second = note.StartTime + next.StartTime;
 
@@ -394,15 +394,15 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                     double prevBeltForward = GetPrevForwardCatcherPosition(belt, beltPrev);
                     double prevBeltBackward = GetPrevBackwardCatcherPosition(belt, beltPrev);
 
-                    double val1 = beltData.Directionize(position - (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(catcherWidth / 2.0)))
+                    double val1 = beltData.Directionize(position - (beltData.FurthestBackward(prevBeltForward, belt.Borders.Forward) + beltData.Directionize(catcherWidth / 2.0)))
                                   + belt.StartTime;
                     double val2 = beltData.Directionize(
-                                      position - (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(catcherWidth / 2.0)))
+                                      position - (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.Borders.Backward) - beltData.Directionize(catcherWidth / 2.0)))
                                   + belt.StartTime;
-                    double val3 = beltData.Directionize(2.0 * position - 2.0 * (beltData.FurthestBackward(prevBeltForward, belt.ForwardNoteBorder) + beltData.Directionize(catcherWidth / 2.0)))
+                    double val3 = beltData.Directionize(2.0 * position - 2.0 * (beltData.FurthestBackward(prevBeltForward, belt.Borders.Forward) + beltData.Directionize(catcherWidth / 2.0)))
                                   + belt.StartTime;
                     double val4 = beltData.Directionize(
-                                      2.0 * position - 2.0 * (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.BackwardNoteBorder) - beltData.Directionize(catcherWidth / 2.0)))
+                                      2.0 * position - 2.0 * (beltData.FurthestForward(prevBeltBackward + beltData.Directionize(belt.DeltaTime), belt.Borders.Backward) - beltData.Directionize(catcherWidth / 2.0)))
                                   + belt.StartTime;
 
                     double lower1 = Math.Min(val1, val2);
