@@ -126,6 +126,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
             double hiddenFactor = 1.0;
+
+            // While for DT (clockRate > 1) we want to measure reaction time, for HTHD (clockRate < 1) we measure difference between moments of note disappearing and being caught
+            // That's why we take original AR (instead of adjusted one that is higher) for calculating AR bonus
+            double minApproachRate = Math.Min(approachRate, adjustedApproachRate);
             const double hidden_full_bonus_sr = 5.0; // Easier maps have lower AR by default; HD doesn't change much there
             const double min_hidden_bonus = 0.01;
             const double threshold_linear = 8.0; // AR threshold between linear decrease and smooth (and less steep) curve
@@ -135,11 +139,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (mods.Any(m => m is ModHidden))
             {
                 // Hidden gives almost nothing on max approach rate, and more the lower it is
-                if (adjustedApproachRate >= 11.0)
+                if (minApproachRate >= 11.0)
                     hiddenFactor = 1.0 + min_hidden_bonus;
-                if (adjustedApproachRate >= threshold_linear && adjustedApproachRate < 11.0)
+                if (minApproachRate >= threshold_linear && adjustedApproachRate < 11.0)
                     hiddenFactor = 1.0 + min_hidden_bonus + hidden_growth * Math.Pow(((11.0 - adjustedApproachRate) / (11.0 - threshold_linear)), hidden_power);
-                if (adjustedApproachRate < threshold_linear)
+                if (minApproachRate < threshold_linear)
                     hiddenFactor = 1.0 + min_hidden_bonus + hidden_growth * (1.0 - hidden_power * (adjustedApproachRate - threshold_linear) / (11.0 - threshold_linear)); //tangent line to the function above at point threshold_linear
 
                 hiddenFactor = Math.Sqrt(hiddenFactor); // SR-pp scaling

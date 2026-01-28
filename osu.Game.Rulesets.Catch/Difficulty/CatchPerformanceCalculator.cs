@@ -52,7 +52,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             value *= penalty;
 
             // Combo scaling power is adjusted from 0.35 to 0.30 to compensate for the harsher misscount penalties
-            const double scaling_power = 0.30;
+            const double scaling_power = 0.32;
 
             if (catchAttributes.MaxCombo > 0)
                 value *= Math.Min(Math.Pow(score.MaxCombo, scaling_power) / Math.Pow(catchAttributes.MaxCombo, scaling_power), 1.0);
