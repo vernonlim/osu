@@ -125,12 +125,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             approachRateFactor = Math.Sqrt(approachRateFactor);
 
-            double hiddenFactor = 1.0;
 
-            // While for DT (clockRate > 1) we want to measure reaction time, for HTHD (clockRate < 1) we measure difference between moments of note disappearing and being caught
-            // That's why we take original AR (instead of adjusted one that is higher) for calculating AR bonus
+            // While for DT (clockRate > 1) we want to measure reaction time, for HT (clockRate < 1) we measure difference between moments of note disappearing and being caught
+            // That's why we take original AR (instead of adjusted one that is higher) for calculating low AR bonus
             double minApproachRate = Math.Min(approachRate, adjustedApproachRate);
-            const double hidden_full_bonus_sr = 5.0; // Easier maps have lower AR by default; HD doesn't change much there
+            const double low_ar_bonus = 0.015;
+            const double min_ar_threshold = 7.0; // Threshold is chosen so that low AR doesn't affect range common for EZDT mod combination
+            const double low_ar_full_bonus_sr = 5.0; // Easier maps have lower AR by default; low AR doesn't change difficulty much
+
+            if (minApproachRate <= min_ar_threshold && !mods.Any(m => m is ModHidden) && !mods.Any(m => m is ModFlashlight)) // visual mods are affected by their respective bonuses
+                approachRateFactor = Math.Sqrt(1.0 + low_ar_bonus * (min_ar_threshold - minApproachRate));
+            approachRateFactor *= Math.Min(low_ar_full_bonus_sr, sr) / low_ar_full_bonus_sr;
+
+            double hiddenFactor = 1.0;
             const double min_hidden_bonus = 0.01;
             const double threshold_linear = 8.0; // AR threshold between linear decrease and smooth (and less steep) curve
             const double hidden_growth = 0.235; // Value determining AR bonus at threshold_linear (and pace of growth of the function for higher AR values)
@@ -147,7 +154,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                     hiddenFactor = 1.0 + min_hidden_bonus + hidden_growth * (1.0 - hidden_power * (adjustedApproachRate - threshold_linear) / (11.0 - threshold_linear)); //tangent line to the function above at point threshold_linear
 
                 hiddenFactor = Math.Sqrt(hiddenFactor); // SR-pp scaling
-                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(hidden_full_bonus_sr, sr) / hidden_full_bonus_sr;
+                hiddenFactor = 1.0 + (hiddenFactor - 1.0) * Math.Min(low_ar_full_bonus_sr, sr) / low_ar_full_bonus_sr;
             }
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
