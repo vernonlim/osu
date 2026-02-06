@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // We add some undetected actions approximated with 20% of the maximum combo
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.2 * catchAttributes.MaxCombo;
 
-            const double linear_pace = 0.34;
+            const double linear_pace = 0.32;
             const int cutoff = 1700;
             const double logarithmic_pace = 0.25;
 
@@ -90,7 +90,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double lengthBonusPP = value * (lengthBonus - 1.0);
 
-            const double value_multiplier = 1.07;
+            const double value_multiplier = 1.03;
 
             value *= value_multiplier;
 
