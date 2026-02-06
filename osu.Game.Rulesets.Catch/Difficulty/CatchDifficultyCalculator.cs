@@ -182,7 +182,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             const double time_penalty_cutoff = 60000; // No notes above the cutoff are affected
             const double time_penalty_power = 0.3;
-            const double full_penalty = 0.5; // Penalty for the first note
+            const double full_penalty = 0.6; // Penalty for the first note
 
             double firstNoteStartTime = notes[0].Item1;
 

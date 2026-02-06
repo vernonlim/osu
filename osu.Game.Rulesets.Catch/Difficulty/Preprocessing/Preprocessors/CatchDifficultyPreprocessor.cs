@@ -231,10 +231,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Precision calculation
-                const double raw_weight_hyperjumps = 0.93;
-                const double raw_weight_hyperjump_after_jump = 0.98;
-                const double raw_weight_jump_after_hyperjump = 0.98;
-                const double raw_weight_jumps = 1.0;
+                const double raw_weight_hyperjumps = 0.89;
+                const double raw_weight_hyperjump_after_jump = 0.95;
+                const double raw_weight_jump_after_hyperjump = 0.96;
+                const double raw_weight_jumps = 0.98;
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
@@ -296,10 +296,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double calculatePrecisionStrain(CatchDifficultyHitObject note)
         {
-            const double amplitude = 40.0; //governs how much very low precision values are worth
-            const double shift = -15.0; //shifts the boundary between concave and convex part (shifts the curve)
-            const double pace = 25.0; //measures how fast strain decreases between easy and hard jumps
-            const double multiplier = 39.0;
+            const double amplitude = 44.5; //governs how much very low precision values are worth
+            const double shift = -8.0; //shifts the boundary between concave and convex part (shifts the curve)
+            const double pace = 33.0; //measures how fast strain decreases between easy and hard jumps
+            const double multiplier = 41.0;
 
             double precision = note.MovementData.NotePrecision is null
                 ? 0
@@ -548,9 +548,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         // Functions below are identical, but splitting them may be useful in the future.
         private static double timeToSpeedSnap(double time)
         {
-            const double amplitude = 13.0; // governs how much very low speed values are worth
-            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 35.0; // normalises shift
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 50.0; // normalises shift
             const double multiplier = 0.88;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time + shift) / pace));
@@ -560,10 +560,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedBurst(double time)
         {
-            const double amplitude = 13.0; // governs how much very low speed values are worth
-            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 35.0; // normalises shift
-            const double multiplier = 0.99;
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 50.0; // normalises shift
+            const double multiplier = 1.01;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time / 2 + shift) / pace));
 
@@ -572,10 +572,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static double timeToSpeedConsistency(double time)
         {
-            const double amplitude = 13.0; // governs how much very low speed values are worth
-            const double shift = -50.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
-            const double pace = 35.0; // normalises shift
-            const double multiplier = 1.14;
+            const double amplitude = 19.1; // governs how much very low speed values are worth
+            const double shift = -10.0; // measures how fast strain decreases between slow and fast jumps (shifts the curve)
+            const double pace = 52.0; // normalises shift
+            const double multiplier = 1.1;
 
             double speed = 1.0 + amplitude / (1 + Math.Exp((time / 4 + shift) / pace));
 
