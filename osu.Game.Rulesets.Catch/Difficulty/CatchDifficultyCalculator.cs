@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchDifficultyCalculator : DifficultyCalculator
     {
-        private const double difficulty_multiplier = 0.0147;
+        private const double difficulty_multiplier = 0.015;
         private const double large_droplet_buff = 1.01;
         private const double large_droplet_buff_hidden = 1.02;
 
@@ -182,7 +182,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             const double time_penalty_cutoff = 60000; // No notes above the cutoff are affected
             const double time_penalty_power = 0.3;
-            const double full_penalty = 0.6; // Penalty for the first note
+            const double full_penalty = 0.5; // Penalty for the first note
 
             double firstNoteStartTime = notes[0].Item1;
 
@@ -353,7 +353,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double calculateWeight() => counter < decayWeights.Length
                 ? decayWeights[counter]
-                : Math.Pow(default_decay_weight, counter);
+                : Math.Pow(default_decay_weight, counter + 1);
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
@@ -389,9 +389,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
-            const double max_constant = 1.0;
-            const double min_constant = 0.8;
-            const double correlation_constant = 0.15;
+            const double max_constant = 1.05;
+            const double min_constant = 0.85;
+            const double correlation_constant = 0.18;
             return max_constant * Math.Max(precisionStrain, speedStrain) + min_constant * Math.Min(precisionStrain, speedStrain) + correlation_constant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
         }
 
@@ -400,7 +400,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double plsr = CalculatePartialLocalStarRating(precisionStrain, speedStrain);
 
             return plsr * readingFactor * highCSFactor;
-            //return Math.Sqrt(Math.Pow(plsr, 2) + Math.Pow(1 - actionProbability, 2) * Math.Pow(aimStrain, 2)) * readingFactor;
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)

@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             value *= penalty;
 
-            // Combo scaling power is adjusted from 0.35 to 0.30 to compensate for the harsher misscount penalties
+            // Combo scaling power is adjusted from 0.35 to 0.32 to compensate for the harsher misscount penalties
             const double scaling_power = 0.32;
 
             if (catchAttributes.MaxCombo > 0)
@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // We add some undetected actions approximated with 20% of the maximum combo
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + 0.2 * catchAttributes.MaxCombo;
 
-            const double linear_pace = 0.32;
+            const double linear_pace = 0.31;
             const int cutoff = 1700;
             const double logarithmic_pace = 0.25;
 
@@ -90,7 +90,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double lengthBonusPP = value * (lengthBonus - 1.0);
 
-            const double value_multiplier = 1.03;
+            const double value_multiplier = 1.05;
 
             value *= value_multiplier;
 
@@ -115,7 +115,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CorrectedClockRate(double clockRate) => 1.0 + (clockRate - 1.0) * 0.8; // AR9+DT is approximately AR10.15 after correction
 
-        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0047) - 4.0, 2.0) / 100000.0;
+        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0049) - 4.0, 2.0) / 100000.0;
 
         private double accuracy() => totalHits() == 0 ? 0 : Math.Clamp((double)totalSuccessfulHits() / totalHits(), 0, 1);
         private int totalHits() => num50 + num100 + num300 + numMiss + numKatu;

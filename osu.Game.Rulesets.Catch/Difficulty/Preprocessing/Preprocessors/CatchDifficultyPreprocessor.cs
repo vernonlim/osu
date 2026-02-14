@@ -231,10 +231,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 }
 
                 // Precision calculation
-                const double raw_weight_hyperjumps = 0.89;
-                const double raw_weight_hyperjump_after_jump = 0.95;
-                const double raw_weight_jump_after_hyperjump = 0.96;
-                const double raw_weight_jumps = 0.98;
+                const double raw_weight_hyperjumps = 0.86;
+                const double raw_weight_hyperjump_after_jump = 0.9;
+                const double raw_weight_jump_after_hyperjump = 0.93;
+                const double raw_weight_jumps = 0.95;
 
                 data.RawPrecisionStrain = calculatePrecisionStrain(note);
                 if (data.NotePattern == PatternType.Hyperjumps)
@@ -249,7 +249,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.PrecisionStrain = data.RawPrecisionStrain * data.ActionProbability;
 
                 // Delayed precision
-                const double delayed_precision_weight = 0.85;
+                const double delayed_precision_weight = 1.0;
 
                 CatchDifficultyHitObject? prevAction = guaranteedActions.LastOrDefault() ?? ambiguousActions.LastOrDefault();
 

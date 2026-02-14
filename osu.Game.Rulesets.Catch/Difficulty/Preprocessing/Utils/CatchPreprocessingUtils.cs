@@ -47,7 +47,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             const double standing_bound = 0.6;
 
             const double linear_decrease = -0.0054;
-            const double additive_constant = 1.25;
+            const double additive_constant = 1.24;
 
             const int series_start_count = 4;
             const double series_decay = 0.05;
@@ -256,9 +256,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
         public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection, bool isStandstill)
         {
-            const double distance_exponent = 0.75; // The lower exponent is, the higher precision correction for medium values is
-            const double time_exponent = 1.5; // The higher exponent is, the higher precision correction for medium values is
-            const double distance_weight = 0.5;
+            const double distance_exponent = 0.6; // The lower exponent is, the higher precision correction for medium values is
+            const double time_exponent = 1.25; // The higher exponent is, the higher precision correction for medium values is
+            const double distance_weight = 0.3;
 
             double standingTime = Math.Max(0.0, deltaTime - deltaPosition);
 

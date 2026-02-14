@@ -13,8 +13,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
     public static class CatchReadingPreprocessor
     {
         private const double high_cs_threshold = 3.5;
-        private const double high_cs_power = 1.6;
-        private const double high_cs_rate = 0.39;
+        private const double high_cs_power = 1.7;
+        private const double high_cs_rate = 0.41;
         private const double high_cs_penalty_hypers = 0.75;
 
         private const double local_rhythm_penalty = 0.95;
@@ -29,7 +29,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const double similar_distance_penalty = 0.85;
+        private const double similar_distance_penalty = 0.84;
         private const uint similar_distance_note_count = 3;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
@@ -45,20 +45,18 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double non_hyperchain_penalty = 0.96;
         private const uint non_hyperchain_note_count = 4;
 
-        private const double high_velocity_nerf = 0.13;
+        private const double high_velocity_nerf = 0.1;
         private const double high_velocity_threshold = 4.5;
         private const double max_velocity_nerf_threshold = 7.0;
         private const double high_velocity_power = 0.75;
 
-        private const double high_distance_buff = 0.15;
+        private const double high_distance_buff = 0.18;
         private const double high_distance_threshold = 256.0;
         private const double high_distance_power = 1.4;
 
-        private const double density_buff = 1.0;
+        private const double fake_action_buff = 1.07;
 
-        private const double fake_action_buff = 1.0;
-
-        private const double future_precision_buff = 0.15;
+        private const double future_precision_buff = 0.19;
         private const double max_precision_ratio = 0.5;
         private const double max_delta_time = 300.0;
         private const double time_power = 0.5;
@@ -81,7 +79,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
             nonHyperchainPenalty(actionNotes);
             highVelocityNerf(cdhos, frameTime);
             highDistanceBuff(actionNotes, clockRate);
-            densityBuff(cdhos);
             fakeActionBuff(actionNotes);
             futurePrecisionBuff(cdhos);
         }
@@ -380,19 +377,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     note.ReadingData.HighCSFactor *= 1.0 + circleSizeBonusHypers;
                 else
                     note.ReadingData.HighCSFactor *= 1.0 + circleSizeBonus;
-            }
-        }
-
-        // Especially on rain/overdose level, it is harder to read direction changes when there's at least one note between them
-        private static void densityBuff(List<CatchDifficultyHitObject> cdhos)
-        {
-            for (int i = 1; i < cdhos.Count; i++)
-            {
-                CatchDifficultyHitObject note = cdhos[i];
-                CatchDifficultyHitObject prev = cdhos[i - 1];
-
-                if (prev.MovementData.ActionProbability == 0)
-                    note.ReadingData.CombinedReadingFactor *= density_buff;
             }
         }
 
