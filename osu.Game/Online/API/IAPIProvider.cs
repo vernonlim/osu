@@ -19,14 +19,17 @@ namespace osu.Game.Online.API
         IBindable<APIUser> LocalUser { get; }
 
         /// <summary>
-        /// The user's friends.
+        /// The local user's current state.
+        /// Contains auxiliary information such as the user's friends, blocks, and favourites,
+        /// as well as methods to manage those in a way that keeps this state consistent throughout the game.
         /// </summary>
-        IBindableList<APIRelation> Friends { get; }
+        ILocalUserState LocalUserState { get; }
 
         /// <summary>
-        /// The users blocked by the local user.
+        /// When there's ongoing SR/PP reprocessing, this will be non-empty and contain a URL leading to the news post
+        /// giving user facing details about the ongoing deployment process.
         /// </summary>
-        IBindableList<APIRelation> Blocks { get; }
+        string ScoreProcessingNoticeUrl { get; }
 
         /// <summary>
         /// The language supplied by this provider to API requests.
@@ -77,6 +80,11 @@ namespace osu.Game.Online.API
         IBindable<APIState> State { get; }
 
         /// <summary>
+        /// When servers are on fire, this will contain a message which can be displayed to an end user.
+        /// </summary>
+        IBindable<string?> UserFacingOutageMessage { get; }
+
+        /// <summary>
         /// Queue a new request.
         /// </summary>
         /// <param name="request">The request to perform.</param>
@@ -122,16 +130,6 @@ namespace osu.Game.Online.API
         /// Log out the current user.
         /// </summary>
         void Logout();
-
-        /// <summary>
-        /// Update the friends status of the current user.
-        /// </summary>
-        void UpdateLocalFriends();
-
-        /// <summary>
-        /// Update the list of users blocked by the current user.
-        /// </summary>
-        void UpdateLocalBlocks();
 
         /// <summary>
         /// Schedule a callback to run on the update thread.

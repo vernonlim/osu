@@ -6,6 +6,7 @@ using System.Linq;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Scoring;
 using osu.Game.Scoring.Legacy;
@@ -34,7 +35,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             num100 = score.GetCount100() ?? 0; // HitResult.LargeTickHit
             num50 = score.GetCount50() ?? 0; // HitResult.SmallTickHit
             numKatu = score.GetCountKatu() ?? 0; // HitResult.SmallTickMiss
-            numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
+            numMiss = Math.Max(0, score.GetCountMiss() ?? 0); // HitResult.Miss PLUS HitResult.LargeTickMiss
+
+            double scoreMaxCombo = Math.Clamp(score.MaxCombo, 0, catchAttributes.MaxCombo);
 
             double value = calculateValue(catchAttributes.StarRating);
 
@@ -51,7 +54,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 1 => 0.95,
                 2 => 0.93,
                 3 => 0.90,
-                var x => Math.Pow(base_penalty, 4) * Math.Pow(Math.Max(0, base_penalty - 0.001 * (x - 4)), (x - 4))
+                var x => DiffUtils.Pow(base_penalty, 4) * DiffUtils.Pow(Math.Max(0, base_penalty - 0.001 * (x - 4)), (x - 4))
             };
 
             value *= penalty;
@@ -59,7 +62,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // Combo scaling power is adjusted from 0.35 to 0.32 to compensate for the harsher misscount penalties.
             const double scaling_power = 0.32;
             if (catchAttributes.MaxCombo > 0)
-                value *= Math.Min(Math.Pow(score.MaxCombo, scaling_power) / Math.Pow(catchAttributes.MaxCombo, scaling_power), 1.0);
+                value *= Math.Min(DiffUtils.Pow(scoreMaxCombo, scaling_power) / DiffUtils.Pow(catchAttributes.MaxCombo, scaling_power), 1.0);
 
             var difficulty = score.BeatmapInfo!.Difficulty.Clone();
 
@@ -88,20 +91,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             // Length bonus should depend on approachRate: if it's high enough, it's either draining or it requires memorisation.
             if (score.Mods.Any(m => m is ModFlashlight))
-                lengthBonus = Math.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 8.0) / 2.0);
+                lengthBonus = DiffUtils.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 8.0) / 2.0);
             else
-                lengthBonus = Math.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 10.3) / 2.0);
+                lengthBonus = DiffUtils.Pow(lengthBonus, 1.0 + Math.Max(0, approachRate - 10.3) / 2.0);
 
             // Additional length bonus for FL and HDFL (this part is not dependent on the AR).
             if (score.Mods.Any(m => m is ModFlashlight))
             {
                 if (score.Mods.Any(m => m is ModHidden))
-                    lengthBonus = Math.Pow(lengthBonus, 2.4);
+                    lengthBonus = DiffUtils.Pow(lengthBonus, 2.4);
                 else
-                    lengthBonus = Math.Pow(lengthBonus, 2.0);
+                    lengthBonus = DiffUtils.Pow(lengthBonus, 2.0);
             }
 
-            value *= Math.Pow(accuracy(), 5.5);
+            value *= DiffUtils.Pow(accuracy(), 5.5);
 
             if (score.Mods.Any(m => m is ModNoFail))
                 value *= Math.Max(0.90, 1.0 - 0.02 * numMiss);
@@ -129,7 +132,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
         public static double CorrectedClockRate(double clockRate) => 1.0 + (clockRate - 1.0) * 0.8; // AR9+DT approximately equals AR10.15 after correction
 
-        private double calculateValue(double sr) => Math.Pow(5.0 * Math.Max(1.0, sr / 0.0049) - 4.0, 2.0) / 100000.0;
+        private double calculateValue(double sr) => DiffUtils.Pow(5.0 * Math.Max(1.0, sr / 0.0049) - 4.0, 2.0) / 100000.0;
 
         private double accuracy() => totalHits() == 0 ? 0 : Math.Clamp((double)totalSuccessfulHits() / totalHits(), 0, 1);
         private int totalHits() => num50 + num100 + num300 + numMiss + numKatu;

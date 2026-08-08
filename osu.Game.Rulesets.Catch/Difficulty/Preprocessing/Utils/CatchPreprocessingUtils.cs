@@ -73,7 +73,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
         /// <param name="mean"></param>
         /// <param name="std"></param>
         /// <returns></returns>
-        public static double Cdf(double x, double mean, double std) => 0.5 * DifficultyCalculationUtils.Erfc((mean - x) / (std * Math.Sqrt(2)));
+        public static double Cdf(double x, double mean, double std) => 0.5 * DiffUtils.Erfc((mean - x) / (std * Math.Sqrt(2)));
 
         /// <summary>
         /// Gets the catcher position of the last note closest to the current one.
@@ -223,10 +223,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 
             const double power = 0.6; // Increase results in lower weight
             const double velocity_power = 1.1; // Increase results in higher weight for hyperdashes
-            double normalisedVelocity = Math.Pow(velocity, velocity_power);
+            double normalisedVelocity = DiffUtils.Pow(velocity, velocity_power);
 
             return Math.Clamp(
-                Math.Pow(Math.Min(deltaPosition, 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
+                DiffUtils.Pow(Math.Min(deltaPosition, 3.0 / 5.0 * catcherWidth) / (3.0 / 5.0 * catcherWidth), (power / normalisedVelocity)),
                 0.0, 1.0);
         }
 
@@ -264,8 +264,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             double distanceRatio = isStandstill ? 0.0 : Math.Min(1.0, deltaPosition / catcherWidth);
             double timeRatio = Math.Min(1.0, standingTime / catcherWidth);
 
-            double timeEffect = Math.Pow(timeRatio, time_exponent);
-            double distanceEffect = Math.Pow(1.0 - distanceRatio, distance_exponent);
+            double timeEffect = DiffUtils.Pow(timeRatio, time_exponent);
+            double distanceEffect = DiffUtils.Pow(1.0 - distanceRatio, distance_exponent);
 
             double value = distance_weight * distanceEffect + (1.0 - distance_weight) * timeEffect; // No scaling yet, in [0,1] range
             return Math.Clamp(value * (maxPrecisionCorrection - 1.0) + 1.0, 1.0, maxPrecisionCorrection);

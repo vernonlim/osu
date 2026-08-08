@@ -15,6 +15,11 @@ namespace osu.Game.Localisation
         public static LocalisableString InputSectionHeader => new TranslatableString(getKey(@"input_section_header"), @"Input");
 
         /// <summary>
+        /// "Device: {0}"
+        /// </summary>
+        public static LocalisableString Device(LocalisableString text) => new TranslatableString(getKey(@"device"), @"Device: {0}", text);
+
+        /// <summary>
         /// "Global"
         /// </summary>
         public static LocalisableString GlobalKeyBindingHeader => new TranslatableString(getKey(@"global_key_binding_header"), @"Global");
@@ -72,7 +77,8 @@ namespace osu.Game.Localisation
         /// <summary>
         /// "The binding you&#39;ve selected conflicts with another existing binding."
         /// </summary>
-        public static LocalisableString KeyBindingConflictDetected => new TranslatableString(getKey(@"key_binding_conflict_detected"), @"The binding you've selected conflicts with another existing binding.");
+        public static LocalisableString KeyBindingConflictDetected =>
+            new TranslatableString(getKey(@"key_binding_conflict_detected"), @"The binding you've selected conflicts with another existing binding.");
 
         /// <summary>
         /// "Keep existing"
@@ -88,6 +94,16 @@ namespace osu.Game.Localisation
         /// "(none)"
         /// </summary>
         public static LocalisableString ActionHasNoKeyBinding => new TranslatableString(getKey(@"action_has_no_key_binding"), @"(none)");
+
+        /// <summary>
+        /// "Press a key combination to set a new binding..."
+        /// </summary>
+        public static LocalisableString PendingBinding => new TranslatableString(getKey(@"press_akey_combination_to"), @"Press a key combination to set a new binding...");
+
+        /// <summary>
+        /// "Clear binding"
+        /// </summary>
+        public static LocalisableString ClearBindingButton => new TranslatableString(getKey(@"clear_binding_button"), @"Clear binding");
 
         private static string getKey(string key) => $"{prefix}:{key}";
     }

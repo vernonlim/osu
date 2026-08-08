@@ -17,7 +17,9 @@ using osu.Game.Rulesets.Catch.UI;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Catch.Difficulty
 {
@@ -29,17 +31,19 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private float catcherWidth;
         private float circleSize;
 
-        public override int Version => 20250306;
+        public override int Version => 20260706;
 
         public CatchDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
             : base(ruleset, beatmap)
         {
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
+
+            double clockRate = ModUtils.CalculateRateWithMods(mods);
 
             double totalMovements = DifficultyHitObjects
                                     .Select(n => (CatchDifficultyHitObject)n)
@@ -114,9 +118,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double approachRateFactor = 1.0;
             if (adjustedApproachRate >= 9.0 && adjustedApproachRate < 10.15)
-                approachRateFactor = 1.0 + Math.Pow((adjustedApproachRate - 9.0) / 1.15, first_power) * first_constant;
+                approachRateFactor = 1.0 + DiffUtils.Pow((adjustedApproachRate - 9.0) / 1.15, first_power) * first_constant;
             if (adjustedApproachRate >= 10.15)
-                approachRateFactor = 1.0 + first_constant + Math.Pow((adjustedApproachRate - 10.15) / 0.85, second_power) * second_constant;
+                approachRateFactor = 1.0 + first_constant + DiffUtils.Pow((adjustedApproachRate - 10.15) / 0.85, second_power) * second_constant;
             if (adjustedApproachRate > 11.0)
                 approachRateFactor = 1.0 + first_constant + second_constant; // max bonus at AR11 (for extended Lazer's scale/for FL to avoid breaking further calculations)
             approachRateFactor = Math.Sqrt(approachRateFactor);
@@ -152,7 +156,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 if (minApproachRate >= 11.0)
                     hiddenFactor = 1.01;
                 if (minApproachRate >= 8.0 && minApproachRate < 11.0)
-                    hiddenFactor = 1.01 + hidden_growth * Math.Pow(((11.0 - minApproachRate) / 3.0), hidden_power);
+                    hiddenFactor = 1.01 + hidden_growth * DiffUtils.Pow(((11.0 - minApproachRate) / 3.0), hidden_power);
                 if (minApproachRate < 8.0 && minApproachRate >= 5.0)
                     hiddenFactor = 1.01 + hidden_growth * (1.0 + hidden_power * (8.0 - minApproachRate) / 3.0); //tangent line to the function above at point threshold_linear
                 if (minApproachRate < 5.0) // Pace of time->AR function is slower below AR5
@@ -248,7 +252,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double strain = notes[i].Item2;
 
                 if (time < time_penalty_cutoff)
-                    strain *= full_penalty + (1.0 - full_penalty) * Math.Pow(time / time_penalty_cutoff, time_penalty_power);
+                    strain *= full_penalty + (1.0 - full_penalty) * DiffUtils.Pow(time / time_penalty_cutoff, time_penalty_power);
 
                 notes[i] = (time, strain);
             }
@@ -425,7 +429,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             double calculateWeight() => counter < decayWeights.Length
                 ? decayWeights[counter]
-                : Math.Pow(default_decay_weight, counter + 1);
+                : DiffUtils.Pow(default_decay_weight, counter + 1);
         }
 
         private bool isTimeInSets(List<(double, double)> sets, double time)
@@ -473,11 +477,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // "Low diffs +HR nerf": the purpose is to nerf precise notes supposing the pattern is sufficiently slow
             // Example of the affected map: 2696377 +HR
             if (speedStrain < low_speed_threshold)
-                precisionStrain = precisionStrain * (unaffected_percentage_precision + (1.0 - unaffected_percentage_precision) * Math.Pow(speedStrain / low_speed_threshold, low_speed_power));
+                precisionStrain = precisionStrain * (unaffected_percentage_precision + (1.0 - unaffected_percentage_precision) * DiffUtils.Pow(speedStrain / low_speed_threshold, low_speed_power));
 
             return max_constant * Math.Max(precisionStrain, speedStrain)
                    + min_constant * Math.Min(precisionStrain, speedStrain)
-                   + correlation_constant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
+                   + correlation_constant * DiffUtils.Pow(precisionStrain, 0.25) * DiffUtils.Pow(speedStrain, 0.5);
         }
 
         public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double distanceBonus, double readingFactor, double highCSFactor)
@@ -490,8 +494,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return plsr * readingFactor * highCSFactor;
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
         {
+            double clockRate = ModUtils.CalculateRateWithMods(mods);
             const double simultaneous_time = 0.5;
             double normalizedCatcherWidth = catcherWidth / clockRate;
 
@@ -564,7 +569,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return objects;
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
             catcherWidth = Catcher.CalculateCatchWidth(beatmap.Difficulty);
 

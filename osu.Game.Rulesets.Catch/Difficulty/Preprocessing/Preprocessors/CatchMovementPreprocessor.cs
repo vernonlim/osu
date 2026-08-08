@@ -7,6 +7,7 @@ using System.Diagnostics;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
@@ -406,7 +407,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / catcherWidth * Math.Pow(scale, 2.0) >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
+                    if (next.DeltaPosition / catcherWidth * DiffUtils.Pow(scale, 2.0) >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
                     {
                         // wiggle
                         data.StackWiggleCount += 1;

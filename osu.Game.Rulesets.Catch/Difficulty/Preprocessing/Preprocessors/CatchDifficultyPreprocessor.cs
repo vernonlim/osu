@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 {
@@ -324,7 +325,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
             // // Bonus for very precise notes (pixel jump buff)
             if (precision_value < high_precision_threshold)
-                precision_strain += 10.0 * Math.Pow((high_precision_threshold - precision_value) / high_precision_pace, high_precision_power);
+                precision_strain += 10.0 * DiffUtils.Pow((high_precision_threshold - precision_value) / high_precision_pace, high_precision_power);
 
             return precision_strain / 18;
         }

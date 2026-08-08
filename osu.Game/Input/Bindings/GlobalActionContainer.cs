@@ -105,6 +105,8 @@ namespace osu.Game.Input.Bindings
             new KeyBinding(new[] { InputKey.Control, InputKey.Alt, InputKey.R }, GlobalAction.ResetInputSettings),
 
             new KeyBinding(new[] { InputKey.Control, InputKey.Shift, InputKey.R }, GlobalAction.RandomSkin),
+            new KeyBinding(new[] { InputKey.Control, InputKey.Shift, InputKey.E }, GlobalAction.PreviousSkin),
+            new KeyBinding(new[] { InputKey.Control, InputKey.Shift, InputKey.T }, GlobalAction.NextSkin),
 
             new KeyBinding(InputKey.F10, GlobalAction.ToggleGameplayMouseButtons),
             new KeyBinding(InputKey.F12, GlobalAction.TakeScreenshot),
@@ -153,6 +155,8 @@ namespace osu.Game.Input.Bindings
             new KeyBinding(new[] { InputKey.Alt, InputKey.Left }, GlobalAction.EditorSeekToPreviousBookmark),
             new KeyBinding(new[] { InputKey.Alt, InputKey.Right }, GlobalAction.EditorSeekToNextBookmark),
             new KeyBinding(new[] { InputKey.Control, InputKey.L }, GlobalAction.EditorDiscardUnsavedChanges),
+            new KeyBinding(new[] { InputKey.Control, InputKey.Shift, InputKey.U }, GlobalAction.EditorSubmitBeatmap),
+            new KeyBinding(new[] { InputKey.Control, InputKey.Shift, InputKey.O }, GlobalAction.EditorEditExternally),
         };
 
         private static IEnumerable<KeyBinding> editorTestPlayKeyBindings => new[]
@@ -187,6 +191,7 @@ namespace osu.Game.Input.Bindings
         {
             new KeyBinding(InputKey.Space, GlobalAction.TogglePauseReplay),
             new KeyBinding(InputKey.MouseMiddle, GlobalAction.TogglePauseReplay),
+            new KeyBinding(InputKey.Shift, GlobalAction.FastForwardReplay),
             new KeyBinding(InputKey.Left, GlobalAction.SeekReplayBackward),
             new KeyBinding(InputKey.Right, GlobalAction.SeekReplayForward),
             new KeyBinding(InputKey.Comma, GlobalAction.StepReplayBackward),
@@ -520,6 +525,21 @@ namespace osu.Game.Input.Bindings
 
         [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.ToggleCurrentGroup))]
         ToggleCurrentGroup,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.PreviousSkin))]
+        PreviousSkin,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.NextSkin))]
+        NextSkin,
+
+        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.SubmitBeatmap))]
+        EditorSubmitBeatmap,
+
+        [LocalisableDescription(typeof(EditorStrings), nameof(EditorStrings.EditExternally))]
+        EditorEditExternally,
+
+        [LocalisableDescription(typeof(GlobalActionKeyBindingStrings), nameof(GlobalActionKeyBindingStrings.FastForwardReplay))]
+        FastForwardReplay
     }
 
     public enum GlobalActionCategory
