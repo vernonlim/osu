@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using osu.Game.Rulesets.Catch.Difficulty;
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -12,7 +13,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
 {
     public static class CatchPreprocessingUtils
     {
-        public static void PopulateDifficultyData(List<CatchDifficultyHitObject> cdhos, double catcherWidth, double clockRate)
+        public static void PopulateDifficultyData(List<CatchDifficultyHitObject> cdhos, double catcherWidth, double clockRate, CatchDifficultyConstants tuning)
         {
             cdhos[0].DisplayData.NoteCombo = 1;
             cdhos[^1].DisplayData.NoteCombo = cdhos.Count;
@@ -26,6 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 double actionProbability = cdho.MovementData.ActionProbability;
                 double speedStrain = SpeedEvaluator.EvaluateDifficultyOf(cdho);
                 double precisionStrain = PrecisionEvaluator.EvaluateDifficultyOf(cdho);
+                double distanceBonus = cdho.MovementData.DistanceBonus;
                 double readingFactor = cdho.ReadingData.CombinedReadingFactor;
                 double highCSFactor = cdho.ReadingData.HighCSFactor;
 
@@ -34,27 +36,25 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
                 cdho.DisplayData.CatcherWidth = catcherWidth;
                 cdho.DisplayData.SpeedType = speedType;
                 cdho.DisplayData.NoteSpeed = speedStrain;
-                cdho.DisplayData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain);
-                cdho.DisplayData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, readingFactor, highCSFactor);
-                cdho.DisplayData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount, clockRate);
+                cdho.DisplayData.PartialLocalStarRating = CatchDifficultyCalculator.CalculatePartialLocalStarRating(precisionStrain, speedStrain, tuning);
+                cdho.DisplayData.LocalStarRating = CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, distanceBonus, readingFactor, highCSFactor, tuning);
+                cdho.DisplayData.CatcherStandingWidth = MillisecondsToCatcherStandingWidth(next.DeltaTime, prev.MovementData.StackWiggleCount, clockRate, tuning);
                 cdho.DisplayData.SignificantMovementDirection = cdho.SignificantMovementDirection(catcherWidth, clockRate);
                 cdho.DisplayData.NoteCombo = i + 1;
             }
         }
 
-        public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount, double clockRate)
+        public static double MillisecondsToCatcherStandingWidth(double ms, int wiggleCount, double clockRate, CatchDifficultyConstants tuning)
         {
             const double standing_bound = 0.6;
 
-            const double linear_decrease = -0.0054;
-            const double additive_constant = 1.24;
-
-            const int series_start_count = 4;
-            const double series_decay = 0.05;
+            const double linear_decrease = -0.0045;
+            double additive_constant = tuning.StandingWidthAdditiveConstant;
+            const double series_decay = 0.025;
 
             double adjustedDelta = ms * clockRate;
 
-            return Math.Min(1.0, Math.Max(standing_bound, linear_decrease * adjustedDelta + additive_constant)) * (1 + Math.Max(0, wiggleCount - series_start_count) * series_decay);
+            return Math.Min(1.0, Math.Max(standing_bound, linear_decrease * adjustedDelta + additive_constant)) * (1 + Math.Max(0, wiggleCount) * series_decay);
         }
 
         /// <summary>
@@ -254,11 +254,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils
             }
         }
 
-        public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection, bool isStandstill)
+        public static double CalculatePrecisionCorrection(double deltaPosition, double deltaTime, double catcherWidth, double maxPrecisionCorrection, bool isStandstill,
+                                                          CatchDifficultyConstants tuning)
         {
-            const double distance_exponent = 0.6; // The lower exponent is, the higher precision correction for medium values is
-            const double time_exponent = 1.25; // The higher exponent is, the higher precision correction for medium values is
-            const double distance_weight = 0.3;
+            double distance_exponent = tuning.PrecisionCorrectionDistanceExponent; // The lower exponent is, the higher precision correction for medium values is
+            double time_exponent = tuning.PrecisionCorrectionTimeExponent; // The higher exponent is, the higher precision correction for medium values is
+            double distance_weight = tuning.PrecisionCorrectionDistanceWeight;
 
             double standingTime = Math.Max(0.0, deltaTime - deltaPosition);
 

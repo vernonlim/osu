@@ -3,6 +3,7 @@
 
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Catch.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
@@ -16,20 +17,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainDecayBase => 0.05;
 
-        public LocalStarRating(Mod[] mods)
+        private readonly CatchDifficultyConstants tuning;
+
+        public LocalStarRating(Mod[] mods, CatchDifficultyConstants tuning)
             : base(mods)
         {
+            this.tuning = tuning;
         }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
             double precision = PrecisionEvaluator.EvaluateDifficultyOf(current);
             double speed = SpeedEvaluator.EvaluateDifficultyOf(current);
+            double distanceBonus = ((CatchDifficultyHitObject)current).MovementData.DistanceBonus;
             double actionProbability = ((CatchDifficultyHitObject)current).MovementData.ActionProbability;
             double readingFactor = ((CatchDifficultyHitObject)current).ReadingData.CombinedReadingFactor;
             double highCSFactor = ((CatchDifficultyHitObject)current).ReadingData.HighCSFactor;
 
-            return CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precision, speed, readingFactor, highCSFactor) / 3.0;
+            return CatchDifficultyCalculator.CalculateLocalStarRating(actionProbability, precision, speed, distanceBonus, readingFactor, highCSFactor, tuning) / 3.0;
         }
     }
 }

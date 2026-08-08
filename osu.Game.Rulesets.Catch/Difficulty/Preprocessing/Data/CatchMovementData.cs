@@ -225,6 +225,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
         public double? FuturePrecision;
 
         /// <summary>
+        /// A static bonus based on distance to prevent patterns from being 0*.
+        /// </summary>
+        public double DistanceBonus;
+
+        /// <summary>
         /// Populates the class with default values which may be overwritten.
         /// </summary>
         /// <param name="note"></param>
@@ -256,6 +261,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
             PrecisionStrain = 0;
             FuturePrecisionUtilized = false;
             FuturePrecision = null;
+            DistanceBonus = 0;
         }
 
         /// <summary>

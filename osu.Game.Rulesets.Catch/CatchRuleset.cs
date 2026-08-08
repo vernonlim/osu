@@ -43,6 +43,18 @@ namespace osu.Game.Rulesets.Catch
 {
     public class CatchRuleset : Ruleset, ILegacyRuleset
     {
+        private readonly CatchDifficultyConstants tuning;
+
+        public CatchRuleset()
+            : this(null)
+        {
+        }
+
+        public CatchRuleset(CatchDifficultyConstants? tuning = null)
+        {
+            this.tuning = tuning ?? CatchDifficultyConstants.Default;
+        }
+
         public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod>? mods = null) => new DrawableCatchRuleset(this, beatmap, mods);
 
         public override ScoreProcessor CreateScoreProcessor() => new CatchScoreProcessor();
@@ -205,7 +217,7 @@ namespace osu.Game.Rulesets.Catch
             return base.GetDisplayNameForHitResult(result);
         }
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new CatchDifficultyCalculator(RulesetInfo, beatmap);
+        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new CatchDifficultyCalculator(RulesetInfo, beatmap, tuning);
 
         public override ISkin? CreateSkinTransformer(ISkin skin, IBeatmap beatmap)
         {
@@ -221,7 +233,7 @@ namespace osu.Game.Rulesets.Catch
             return null;
         }
 
-        public override PerformanceCalculator CreatePerformanceCalculator() => new CatchPerformanceCalculator();
+        public override PerformanceCalculator CreatePerformanceCalculator() => new CatchPerformanceCalculator(tuning);
 
         public int LegacyID => 2;
 

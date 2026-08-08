@@ -7,11 +7,13 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data
     {
         public double CombinedReadingFactor;
         public double HighCSFactor;
+        public double HighDistanceFactor;
 
         public CatchReadingData()
         {
             CombinedReadingFactor = 1.0;
             HighCSFactor = 1.0;
+            HighDistanceFactor = 1.0;
         }
     }
 }

@@ -33,6 +33,8 @@ namespace osu.Game.Rulesets.Difficulty
         /// </summary>
         protected readonly IWorkingBeatmap WorkingBeatmap;
 
+        protected static readonly Dictionary<(int, string, string), IBeatmap> BEATMAP_CACHE = new Dictionary<(int, string, string), IBeatmap>();
+
         /// <summary>
         /// The list of <see cref="DifficultyHitObject"/>s belonging to the beatmap for which difficulty will be calculated.
         /// </summary>
@@ -149,6 +151,8 @@ namespace osu.Game.Rulesets.Difficulty
                     currentIndex++;
                 }
 
+                DifficultyHitObjects = difficultyObjects[..currentIndex];
+
                 attribs.Add(new TimedDifficultyAttributes(obj.GetEndTime(), CreateDifficultyAttributes(progressiveBeatmap, playableMods, skills, clockRate)));
             }
 
@@ -191,7 +195,22 @@ namespace osu.Game.Rulesets.Difficulty
         private void preProcess([NotNull] IEnumerable<Mod> mods, CancellationToken cancellationToken)
         {
             playableMods = mods.Select(m => m.DeepClone()).ToArray();
+
+            // string[] modReps = mods.Select(m => m.Name).Order().ToArray();
+            // string modRep = string.Join("", modReps);
+
+            // Console.WriteLine($"{WorkingBeatmap.BeatmapInfo.OnlineID}, {ruleset.Name}, {modRep}");
+
+            // if (BEATMAP_CACHE.TryGetValue((WorkingBeatmap.BeatmapInfo.OnlineID, ruleset.Name, modRep), out var value))
+            // {
+            //     Beatmap = value;
+            //     // Console.WriteLine($"{Beatmap.BeatmapInfo.DifficultyName}: {modRep}");
+            // }
+            // else
+            // {
             Beatmap = WorkingBeatmap.GetPlayableBeatmap(ruleset, playableMods, cancellationToken);
+            // BEATMAP_CACHE.Add((WorkingBeatmap.BeatmapInfo.OnlineID, ruleset.Name, modRep), Beatmap.Clone());
+            // }
 
             clockRate = ModUtils.CalculateRateWithMods(playableMods);
         }
