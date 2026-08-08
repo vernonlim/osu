@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
-using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Objects;
 using System.Linq;
@@ -22,8 +21,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         private double skillMultiplier => 1.03;
 
-        private readonly OsuDifficultyConstants tuning;
-
         private readonly List<double> sliderStrains = new List<double>();
 
         private double currentDifficulty;
@@ -33,10 +30,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double HarmonicScale => 20;
         protected override double DecayExponent => 0.85;
 
-        public Speed(Mod[] mods, OsuDifficultyConstants tuning)
+        public Speed(Mod[] mods)
             : base(mods)
         {
-            this.tuning = tuning;
         }
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
@@ -46,9 +42,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
 
             currentDifficulty *= decay;
-            currentDifficulty += SpeedEvaluator.EvaluateDifficultyOf(current, tuning) * (1 - decay) * skillMultiplier * tuning.SpeedSkillStrainScale;
+            currentDifficulty += SpeedEvaluator.EvaluateDifficultyOf(current) * (1 - decay) * skillMultiplier;
 
-            double currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current, tuning);
+            double currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current);
 
             double totalDifficulty = currentDifficulty * currentRhythm;
 

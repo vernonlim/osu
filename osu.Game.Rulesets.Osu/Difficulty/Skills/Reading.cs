@@ -11,7 +11,6 @@ using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
-using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Mods;
 
@@ -23,15 +22,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private readonly double clockRate;
         private readonly bool hasHiddenMod;
-        private readonly OsuDifficultyConstants tuning;
 
-        public Reading(IBeatmap beatmap, Mod[] mods, double clockRate, OsuDifficultyConstants tuning)
+        public Reading(IBeatmap beatmap, Mod[] mods, double clockRate)
             : base(mods)
         {
             this.clockRate = clockRate;
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
             objectList = beatmap.HitObjects;
-            this.tuning = tuning;
         }
 
         private double currentDifficulty;
@@ -45,13 +42,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             currentDifficulty *= strainDecay(current.DeltaTime);
 
-            currentDifficulty += ReadingEvaluator.EvaluateDifficultyOf(current, hasHiddenMod, tuning) * skillMultiplier * tuning.ReadingSkillStrainScale;
+            currentDifficulty += ReadingEvaluator.EvaluateDifficultyOf(current, hasHiddenMod) * skillMultiplier;
 
             return currentDifficulty;
         }
 
         protected override void ApplyDifficultyTransformation(double[] difficulties)
         {
+            const double reduced_difficulty_base_line = 0.0; // Assume the first seconds are completely memorised
+
             if (difficulties.Length == 0)
                 return;
 
@@ -60,19 +59,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             for (int i = 0; i < Math.Min(difficulties.Length, reducedNoteCount); i++)
             {
                 double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((double)i / reducedNoteCount, 0, 1)));
-                difficulties[i] *= Interpolation.Lerp(tuning.ReadingReducedDifficultyBaseLine, 1.0, scale);
+                difficulties[i] *= Interpolation.Lerp(reduced_difficulty_base_line, 1.0, scale);
             }
         }
 
         private int calculateReducedNoteCount()
         {
+            const double reduced_difficulty_duration = 60 * 1000;
+
             if (objectList.Count < 2)
                 return 0;
 
             // We take the 2nd note to match `CreateDifficultyHitObjects`
             HitObject firstDifficultyObject = objectList[1];
 
-            double reducedDuration = (firstDifficultyObject.StartTime / clockRate) + tuning.ReadingReducedDifficultyDuration;
+            double reducedDuration = (firstDifficultyObject.StartTime / clockRate) + reduced_difficulty_duration;
 
             int reducedNoteCount = 0;
 

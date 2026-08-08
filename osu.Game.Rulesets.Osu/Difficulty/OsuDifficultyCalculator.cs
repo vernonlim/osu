@@ -22,14 +22,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 {
     public class OsuDifficultyCalculator : DifficultyCalculator
     {
-        private readonly OsuDifficultyConstants tuning;
-
         public override int Version => 20250306;
 
-        public OsuDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap, OsuDifficultyConstants? tuning = null)
+        public OsuDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
             : base(ruleset, beatmap)
         {
-            this.tuning = tuning ?? OsuDifficultyConstants.Default;
         }
 
         public static double CalculateRateAdjustedApproachRate(double approachRate, double clockRate)
@@ -51,7 +48,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
         {
             if (beatmap.HitObjects.Count == 0)
-                return new OsuDifficultyAttributes { Mods = mods, Tuning = tuning };
+                return new OsuDifficultyAttributes { Mods = mods };
 
             var aim = skills.OfType<Aim>().Single(a => a.IncludeSliders);
             var aimWithoutSliders = skills.OfType<Aim>().Single(a => !a.IncludeSliders);
@@ -141,8 +138,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 SpinnerCount = spinnerCount,
                 NestedScorePerObject = sliderNestedScorePerObject,
                 LegacyScoreBaseMultiplier = legacyScoreBaseMultiplier,
-                MaximumLegacyComboScore = scoreAttributes.ComboScore,
-                Tuning = tuning
+                MaximumLegacyComboScore = scoreAttributes.ComboScore
             };
 
             return attributes;
@@ -171,14 +167,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             var skills = new List<Skill>
             {
-                new Aim(mods, tuning, true),
-                new Aim(mods, tuning, false),
-                new Speed(mods, tuning),
-                new Reading(beatmap, mods, clockRate, tuning)
+                new Aim(mods, true),
+                new Aim(mods, false),
+                new Speed(mods),
+                new Reading(beatmap, mods, clockRate)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))
-                skills.Add(new Flashlight(mods, tuning));
+                skills.Add(new Flashlight(mods));
 
             return skills.ToArray();
         }

@@ -7,7 +7,6 @@ using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
-using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Utils;
@@ -23,8 +22,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         public readonly bool IncludeSliders;
 
-        public Aim(Mod[] mods, OsuDifficultyConstants tuning, bool includeSliders)
-            : base(mods, tuning)
+        public Aim(Mod[] mods, bool includeSliders)
+            : base(mods)
         {
             IncludeSliders = includeSliders;
         }
@@ -52,17 +51,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double decayAim = strainDecayAim(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
             double decaySpeed = strainDecaySpeed(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
 
-            double aimDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Tuning);
-            double speedDifficulty = SpeedAimEvaluator.EvaluateDifficultyOf(current, Tuning);
+            double aimDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders);
+            double speedDifficulty = SpeedAimEvaluator.EvaluateDifficultyOf(current);
 
             if (Mods.Any(m => m is OsuModTouchDevice))
             {
                 aimDifficulty = Math.Pow(aimDifficulty, 0.8);
                 speedDifficulty = Math.Pow(speedDifficulty, 0.95);
             }
-
-            aimDifficulty *= Tuning.AimSkillStrainScale;
-            speedDifficulty *= Tuning.AimSkillStrainScale;
 
             currentAimStrain *= decayAim;
             currentAimStrain += aimDifficulty * (1 - decayAim) * skillMultiplierAim;

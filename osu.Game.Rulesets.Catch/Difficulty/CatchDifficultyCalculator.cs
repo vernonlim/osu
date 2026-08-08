@@ -26,23 +26,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         private const double large_droplet_buff = 1.0;
         private const double large_droplet_buff_hidden = 1.0;
 
-        private readonly CatchDifficultyConstants tuning;
-
         private float catcherWidth;
         private float circleSize;
 
         public override int Version => 20250306;
 
-        public CatchDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap, CatchDifficultyConstants? tuning = null)
+        public CatchDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
             : base(ruleset, beatmap)
         {
-            this.tuning = tuning ?? CatchDifficultyConstants.Default;
         }
 
         protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
         {
             if (beatmap.HitObjects.Count == 0)
-                return new CatchDifficultyAttributes { Mods = mods, Tuning = tuning };
+                return new CatchDifficultyAttributes { Mods = mods };
 
             double totalMovements = DifficultyHitObjects
                                     .Select(n => (CatchDifficultyHitObject)n)
@@ -103,7 +100,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             // double precision = calculateSr(startTimes, combineStrains(actionProbabilities, precisionStrains, zeroes, readingFactors, highCSFactors));
             // double speed = calculateSr(startTimes, combineStrains(actionProbabilities, speedStrains, zeroes, readingFactors, highCSFactors));
 
-
             // AR calculations
             // AR bonus and HD bonus contribute to the star rating; squared bonuses contribute to the pp value
             // adjustedApproachRate takes mods into account (DT, HT, FL), more on that in PerformanceCalculator
@@ -114,7 +110,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             const double first_power = 1.7;
             const double second_power = 1.15;
             const double first_constant = 0.11;
-            double second_constant = tuning.ApproachRateSecondConstant;
+            const double second_constant = 0.37;
 
             double approachRateFactor = 1.0;
             if (adjustedApproachRate >= 9.0 && adjustedApproachRate < 10.15)
@@ -124,7 +120,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (adjustedApproachRate > 11.0)
                 approachRateFactor = 1.0 + first_constant + second_constant; // max bonus at AR11 (for extended Lazer's scale/for FL to avoid breaking further calculations)
             approachRateFactor = Math.Sqrt(approachRateFactor);
-
 
             // Low AR bonus: while for DT (clockRate > 1) we want to measure reaction time,
                 // for HT (clockRate < 1) we measure difference between moments of note disappearing and being caught.
@@ -144,7 +139,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                         approachRateFactor = Math.Sqrt(1.024 + low_ar_bonus * 1.25 * (5.0 - minApproachRate)); //9.9% for AR0
                 }
             }
-
 
             // HD bonus: hidden gives almost nothing on max approach rate, and more the lower it is.
                 // HD bonus for low AR (below min_ar_threshold) is always greater than low AR bonus for NM. Note that HD has been excluded from low AR bonus.
@@ -167,14 +161,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 hiddenFactor = Math.Sqrt(hiddenFactor); // SR-pp scaling
             }
 
-
             // double lowARFullBonusSRRatio = Math.Min(low_ar_full_bonus_sr, sr) / low_ar_full_bonus_sr;
             // if (minApproachRate <= min_ar_threshold)
             //     approachRateFactor = 1.0 + (approachRateFactor - 1.0) * lowARFullBonusSRRatio;
             // hiddenFactor = 1.0 + (hiddenFactor - 1.0) * lowARFullBonusSRRatio;
 
             double maxLowARFactor = 1.0 + (Math.Sqrt(1.0 + low_ar_bonus * min_ar_threshold) - 1.0); // Max at AR0
-
 
             // FL (AR) bonus: the higher AR is, the harder flashlight is.
                 // Length-based bonuses for FL can be found in PerformanceCalculator.
@@ -196,7 +188,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 approachRateFactor = Math.Max(flashlightApproachRateFactor, maxLowARFactor);
             }
 
-
             // HDFL bonus: when AR is low, the main struggle is HD, so we take hiddenFactor (note that it's calculated using original approachRate!).
                 // When AR is high, the main struggle is FL, so we take approachRateFactor, which is the max of original approachRateFactor and flashlightApproachRateFactor.
                 // On top of that, we are adding an additional bonus common for all HDFL scores. It's included in SR.
@@ -209,11 +200,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 hiddenFactor = 1.0; // We have moved both bonuses into approachRateFactor so we set hiddenFactor to 1 to avoid double-counting
             }
 
-            double combinedMultiplier = approachRateFactor * hiddenFactor * Math.Sqrt(tuning.FinalPPMultiplier) * Math.Sqrt(tuning.PerformanceValueMultiplier);
+            const double difficulty_multiplier = 1.48 * 1.05;
+            const double double_time_nerf = 0.03;
+
+            double combinedMultiplier = approachRateFactor * hiddenFactor * Math.Sqrt(difficulty_multiplier);
             if (clockRate >= 1.0)
-                combinedMultiplier *= 1.0 - 2.0 * tuning.DoubleTimeNerf * (clockRate - 1.0);
+                combinedMultiplier *= 1.0 - 2.0 * double_time_nerf * (clockRate - 1.0);
             else if (clockRate > 0.0)
-                combinedMultiplier *= 1.0 + 2.0 * tuning.DoubleTimeNerf * (1.0 / clockRate - 1.0);
+                combinedMultiplier *= 1.0 + 2.0 * double_time_nerf * (1.0 / clockRate - 1.0);
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
@@ -225,7 +219,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 HiddenFactor = hiddenFactor,
                 // PrecisionSR = precision,
                 // SpeedSR = speed,
-                Tuning = tuning,
             };
 
             return attributes;
@@ -239,8 +232,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             }
 
             const double time_penalty_cutoff = 60000; // No notes above the cutoff are affected
-            double time_penalty_power = tuning.BeginningTimePenaltyPower;
-            double full_penalty = tuning.BeginningFullPenalty; // Penalty for the first note
+            const double time_penalty_power = 0.45;
+            const double full_penalty = 0.6; // Penalty for the first note
 
             double firstNoteStartTime = notes[0].Item1;
 
@@ -290,7 +283,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             sr = srScaler(sr);
 
-            sr *= tuning.SrPostMultiplier;
+            sr *= 0.87;
 
             return sr;
         }
@@ -327,7 +320,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             const double x9 = 10.0;
             const double y9 = 10.6;
 
-
             if (sr <= x0) return CatchPreprocessingUtils.Lerp(sr, 0.0, 0.0, x0, y0);
             if (sr <= x1) return CatchPreprocessingUtils.Lerp(sr, x0, y0, x1, y1);
             if (sr <= x2) return CatchPreprocessingUtils.Lerp(sr, x1, y1, x2, y2);
@@ -341,7 +333,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return CatchPreprocessingUtils.Lerp(sr, x8, y8, x9, y9);
         }
 
-
         /// <summary>
         /// Replicates StrainSkill behaviour with Strain Peaks.
         /// </summary>
@@ -351,8 +342,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         /// <returns></returns>
         private double calculateDifficultyValue(List<(double, double)> notes, List<(double, double)> sorted, int missCount = 0)
         {
-            double default_decay_weight = tuning.DefaultDecayWeight;
-            double[] decayWeights = tuning.DecayWeights ?? Array.Empty<double>();
+            const double default_decay_weight = 0.902;
+            double[] decayWeights = new[] { 0.88, 0.83, 0.78, 0.71, 0.65 };
 
             const double region = 500.0;
             const int limit = 15;
@@ -463,30 +454,35 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double readingFactor = readingFactors[i];
                 double highCSFactor = highCSFactors[i];
 
-                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, distanceBonus, readingFactor, highCSFactor, tuning));
+                combinedStrains.Add(CalculateLocalStarRating(actionProbability, precisionStrain, speedStrain, distanceBonus, readingFactor, highCSFactor));
             }
 
             return combinedStrains;
         }
 
-        public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain, CatchDifficultyConstants tuning)
+        public static double CalculatePartialLocalStarRating(double precisionStrain, double speedStrain)
         {
             const double low_speed_power = 0.8;
+            const double low_speed_threshold = 7.0;
+            const double unaffected_percentage_precision = 0.55;
+
+            const double max_constant = 1.06;
+            const double min_constant = 0.85;
+            const double correlation_constant = 0.18;
 
             // "Low diffs +HR nerf": the purpose is to nerf precise notes supposing the pattern is sufficiently slow
             // Example of the affected map: 2696377 +HR
-            if (speedStrain < tuning.LowSpeedThresholdLSR)
-                precisionStrain = precisionStrain * (tuning.UnaffectedPercantagePrecisionLSR + (1.0 - tuning.UnaffectedPercantagePrecisionLSR) * Math.Pow(speedStrain / tuning.LowSpeedThresholdLSR, low_speed_power));
+            if (speedStrain < low_speed_threshold)
+                precisionStrain = precisionStrain * (unaffected_percentage_precision + (1.0 - unaffected_percentage_precision) * Math.Pow(speedStrain / low_speed_threshold, low_speed_power));
 
-            return tuning.LocalStarRatingMaxConstant * Math.Max(precisionStrain, speedStrain)
-                   + tuning.LocalStarRatingMinConstant * Math.Min(precisionStrain, speedStrain)
-                   + tuning.LocalStarRatingCorrelationConstant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
+            return max_constant * Math.Max(precisionStrain, speedStrain)
+                   + min_constant * Math.Min(precisionStrain, speedStrain)
+                   + correlation_constant * Math.Pow(precisionStrain, 0.25) * Math.Pow(speedStrain, 0.5);
         }
 
-        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double distanceBonus, double readingFactor, double highCSFactor,
-                                                      CatchDifficultyConstants tuning)
+        public static double CalculateLocalStarRating(double actionProbability, double precisionStrain, double speedStrain, double distanceBonus, double readingFactor, double highCSFactor)
         {
-            double plsr = CalculatePartialLocalStarRating(precisionStrain, speedStrain, tuning);
+            double plsr = CalculatePartialLocalStarRating(precisionStrain, speedStrain);
 
             // Distance-based term for very easy notes that raises star rating for "0* maps"
             plsr = Math.Max(plsr, 2.0 * distanceBonus);
@@ -558,10 +554,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty
                 double frameTime = 1000.0 / 60.0 / clockRate;
                 double playfieldBorder = 512.0 / clockRate;
 
-                CatchMovementPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder, tuning);
-                CatchDifficultyPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder, tuning);
-                CatchReadingPreprocessor.Process(objects, circleSize, clockRate, frameTime, tuning);
-                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, normalizedCatcherWidth, clockRate, tuning);
+                CatchMovementPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchDifficultyPreprocessor.Process(objects, normalizedCatcherWidth, clockRate, frameTime, playfieldBorder);
+                CatchReadingPreprocessor.Process(objects, circleSize, clockRate, frameTime);
+                CatchPreprocessingUtils.PopulateDifficultyData(noteObjects, normalizedCatcherWidth, clockRate);
                 // CatchPreprocessorTest.Process(objects, beatmap);
             }
 
@@ -581,8 +577,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             {
                 new Precision(mods),
                 new Speed(mods),
-                new PartialLocalStarRating(mods, tuning),
-                new LocalStarRating(mods, tuning),
+                new PartialLocalStarRating(mods),
+                new LocalStarRating(mods),
             };
         }
 

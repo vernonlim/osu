@@ -4,7 +4,6 @@
 using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
 
@@ -12,6 +11,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class SpeedEvaluator
     {
+        private const double min_speed_bonus = 200; // 200 BPM 1/4th
+        private const double speed_balancing_factor = 40;
+
         /// <summary>
         /// Evaluates the difficulty of tapping the current object, based on:
         /// <list type="bullet">
@@ -19,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and how easily they can be cheesed.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, OsuDifficultyConstants tuning)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
             if (current.BaseObject is Spinner)
                 return 0;
@@ -37,18 +39,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double speedBonus = 0.0;
 
             // Add additional scaling bonus for streams/bursts higher than 200bpm
-            if (DifficultyCalculationUtils.MillisecondsToBPM(strainTime) > tuning.SpeedMinBonusBpm)
-                speedBonus = 0.75 * Math.Pow((DifficultyCalculationUtils.BPMToMilliseconds(tuning.SpeedMinBonusBpm) - strainTime) / tuning.SpeedBalancingFactor, 2);
+            if (DifficultyCalculationUtils.MillisecondsToBPM(strainTime) > min_speed_bonus)
+                speedBonus = 0.75 * Math.Pow((DifficultyCalculationUtils.BPMToMilliseconds(min_speed_bonus) - strainTime) / speed_balancing_factor, 2);
 
             // Base difficulty with all bonuses
             double difficulty = (1 + speedBonus) * 1000 / strainTime;
 
-            difficulty *= highBpmBonus(osuCurrObj.AdjustedDeltaTime, tuning);
+            difficulty *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
 
             // Apply penalty if there's doubletappable doubles
             return difficulty * doubletapness;
         }
 
-        private static double highBpmBonus(double ms, OsuDifficultyConstants tuning) => 1 / (1 - Math.Pow(tuning.SpeedHighBpmBonusBase, ms / 1000));
+        private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.3, ms / 1000));
     }
 }

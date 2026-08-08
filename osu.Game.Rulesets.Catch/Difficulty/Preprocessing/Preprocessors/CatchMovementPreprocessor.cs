@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using osu.Game.Rulesets.Catch.Difficulty;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Data;
 using osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -28,8 +27,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="clockRate"></param>
         /// <param name="frameTime"></param>
         /// <param name="playfieldBorder"></param>
-        public static void Process(List<DifficultyHitObject> hitObjects, double catcherWidth, double clockRate, double frameTime, double playfieldBorder,
-                                   CatchDifficultyConstants tuning)
+        public static void Process(List<DifficultyHitObject> hitObjects, double catcherWidth, double clockRate, double frameTime, double playfieldBorder)
         {
             // TODO: Special handling for the first and last objects of the map, as they lack a previous or future object
             CatchDifficultyHitObject first = (CatchDifficultyHitObject)hitObjects[0];
@@ -60,10 +58,10 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate);
 
-                UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                 // Handling curved stack
-                handleCurvedStack(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                handleCurvedStack(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                 PatternType type = Classify(note, prev, next, catcherWidth, clockRate);
 
@@ -326,7 +324,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         /// <param name="frameTime"></param>
         /// <param name="playfieldBorder"></param>
         public static void UpdateData(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double clockRate, double frameTime,
-                                      double playfieldBorder, CatchDifficultyConstants tuning)
+                                      double playfieldBorder)
         {
             CatchMovementData data = note.MovementData;
             CatchMovementData prevData = prev.MovementData;
@@ -366,7 +364,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate, true);
                     }
 
-                    UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                    UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                     break;
                 }
@@ -376,7 +374,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     if (next.DeltaPosition <= standing_bound * catcherWidth)
                     {
                         data.NotePattern = PatternType.NarrowStack;
-                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
                         break;
                     }
 
@@ -387,7 +385,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         data.IsStack = false;
 
                         data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate, true);
-                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
                         break;
                     }
 
@@ -408,12 +406,12 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         }
                     }
 
-                    if (next.DeltaPosition / catcherWidth * Math.Pow(scale, 2.0) >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate, tuning) && !note.IsHyper)
+                    if (next.DeltaPosition / catcherWidth * Math.Pow(scale, 2.0) >= CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate) && !note.IsHyper)
                     {
                         // wiggle
                         data.StackWiggleCount += 1;
                         data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate, true);
-                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
                     }
                     else
                     {
@@ -431,7 +429,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                 case PatternType.StackContinuation:
                 {
-                    double rawCatcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate, tuning);
+                    double rawCatcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, 0, clockRate);
                     bool isWigglingRawBetter = next.DeltaPosition / catcherWidth >= rawCatcherStandingWidthBoundary;
 
                     if (isWigglingRawBetter)
@@ -439,14 +437,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                         data.StackWiggleCount = prevData.StackWiggleCount + 1;
                     }
 
-                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount, clockRate, tuning);
+                    double catcherStandingWidthBoundary = CatchPreprocessingUtils.MillisecondsToCatcherStandingWidth(next.DeltaTime, prevData.StackWiggleCount, clockRate);
                     bool isWigglingBetter = next.DeltaPosition / catcherWidth >= catcherStandingWidthBoundary;
 
                     if (isWigglingBetter && !note.IsHyper)
                     {
                         data.KeyPress = next.Position > note.Position ? MovementKey.Right : MovementKey.Left;
                         data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate, true);
-                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                        UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
                     }
                     else
                     {
@@ -482,7 +480,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
                     // We need to re-classify the note as not a stack, then run this method again
                     data.NotePattern = Classify(note, prev, next, catcherWidth, clockRate, true);
-                    UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                    UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
 
                     break;
                 }
@@ -495,24 +493,24 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                     data.KeyPress = data.BackwardKeyPress;
                     data.ForwardCatcherPosition = next.Position + data.Directionize(catcherWidth / 2.0 + next.DeltaTime);
 
-                double catcherCenter = (prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0;
+                    double catcherCenter = (prevData.LeftCatcherPosition + prevData.RightCatcherPosition) / 2.0;
 
-                double movement = data.Directionize(next.Position - note.Position);
+                    double movement = data.Directionize(next.Position - note.Position);
 
-                if (movement <= -(catcherWidth / 2.0 + next.DeltaTime))
-                {
-                    double noteOffset = note.Position - catcherCenter;
-                    double nextOffset = next.Position - catcherCenter;
+                    if (movement <= -(catcherWidth / 2.0 + next.DeltaTime))
+                    {
+                        double noteOffset = note.Position - catcherCenter;
+                        double nextOffset = next.Position - catcherCenter;
 
-                    noteOffset = data.Directionize(noteOffset);
-                    nextOffset = data.Directionize(nextOffset);
+                        noteOffset = data.Directionize(noteOffset);
+                        nextOffset = data.Directionize(nextOffset);
 
-                    double first = (noteOffset + nextOffset + next.DeltaTime) / minimalSpeed;
-                    double second = 2 * prev.StartTime + 2 * note.StartTime;
-                    data.EffectiveTime = (first + second) / 4.0;
+                        double first = (noteOffset + nextOffset + next.DeltaTime) / minimalSpeed;
+                        double second = 2 * prev.StartTime + 2 * note.StartTime;
+                        data.EffectiveTime = (first + second) / 4.0;
 
-                    break;
-                }
+                        break;
+                    }
 
                     double third = data.Directionize(note.Position - data.Directionize(catcherWidth / 2.0) - prevForwardCatcherPosition) / minimalSpeed;
                     double fourth = catcherWidth / 2.0 - next.DeltaPosition + prev.StartTime + 2 * note.StartTime + next.StartTime;
@@ -681,7 +679,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         }
 
         private static void handleCurvedStack(CatchDifficultyHitObject note, CatchDifficultyHitObject prev, CatchDifficultyHitObject next, double catcherWidth, double clockRate, double frameTime,
-                                              double playfieldBorder, CatchDifficultyConstants tuning)
+                                              double playfieldBorder)
         {
             CatchMovementData data = note.MovementData;
 
@@ -719,7 +717,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
                 note.IsMovingRight = note.Position >= prev.Position;
                 data.IsDirectionChange = note.IsMovingRight ? next.Position < note.Position : next.Position > note.Position;
                 note.MovementData.NotePattern = Classify(note, prev, next, catcherWidth, clockRate);
-                UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder, tuning);
+                UpdateData(note, prev, next, catcherWidth, clockRate, frameTime, playfieldBorder);
             }
             else if (!inExistingBelt && isPotentialBeltBeginning && inBelt)
             {

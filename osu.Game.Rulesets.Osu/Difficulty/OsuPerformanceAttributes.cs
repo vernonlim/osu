@@ -42,9 +42,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         [JsonProperty("speed_estimated_slider_breaks")]
         public double SpeedEstimatedSliderBreaks { get; set; }
 
-        [JsonIgnore]
-        public OsuDifficultyConstants Tuning { get; init; } = OsuDifficultyConstants.Default;
-
         public override IEnumerable<PerformanceDisplayAttribute> GetAttributesForDisplay()
         {
             foreach (var attribute in base.GetAttributesForDisplay())

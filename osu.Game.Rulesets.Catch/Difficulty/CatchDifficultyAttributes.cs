@@ -34,9 +34,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         // [JsonProperty("speed_sr")]
         // public double SpeedSR { get; set; }
 
-        [JsonIgnore]
-        public CatchDifficultyConstants Tuning { get; init; } = CatchDifficultyConstants.Default;
-
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())

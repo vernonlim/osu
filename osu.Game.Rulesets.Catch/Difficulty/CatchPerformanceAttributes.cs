@@ -10,8 +10,5 @@ namespace osu.Game.Rulesets.Catch.Difficulty
     {
         [JsonProperty("length_bonus")]
         public double LengthBonus { get; set; }
-
-        [JsonIgnore]
-        public CatchDifficultyConstants Tuning { get; init; } = CatchDifficultyConstants.Default;
     }
 }

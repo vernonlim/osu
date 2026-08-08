@@ -2,8 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
-using osu.Game.Rulesets.Catch.Difficulty;
-using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
@@ -17,12 +15,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override double StrainDecayBase => 0.05;
 
-        private readonly CatchDifficultyConstants tuning;
-
-        public PartialLocalStarRating(Mod[] mods, CatchDifficultyConstants tuning)
+        public PartialLocalStarRating(Mod[] mods)
             : base(mods)
         {
-            this.tuning = tuning;
         }
 
         protected override double StrainValueOf(DifficultyHitObject current)
@@ -30,7 +25,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
             double precision = PrecisionEvaluator.EvaluateDifficultyOf(current);
             double speed = SpeedEvaluator.EvaluateDifficultyOf(current);
 
-            return CatchDifficultyCalculator.CalculatePartialLocalStarRating(precision, speed, tuning) / 3.0;
+            return CatchDifficultyCalculator.CalculatePartialLocalStarRating(precision, speed) / 3.0;
         }
     }
 }

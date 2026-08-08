@@ -15,23 +15,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 {
     public class CatchPerformanceCalculator : PerformanceCalculator
     {
-        private readonly CatchDifficultyConstants fallbackTuning;
         private int num300;
         private int num100;
         private int num50;
         private int numKatu;
         private int numMiss;
 
-        public CatchPerformanceCalculator(CatchDifficultyConstants? tuning = null)
-            : base(new CatchRuleset(tuning))
+        public CatchPerformanceCalculator()
+            : base(new CatchRuleset())
         {
-            fallbackTuning = tuning ?? CatchDifficultyConstants.Default;
         }
 
         protected override PerformanceAttributes CreatePerformanceAttributes(ScoreInfo score, DifficultyAttributes attributes)
         {
             var catchAttributes = (CatchDifficultyAttributes)attributes;
-            var tuning = catchAttributes.Tuning ?? fallbackTuning;
 
             num300 = score.GetCount300() ?? 0; // HitResult.Great
             num100 = score.GetCount100() ?? 0; // HitResult.LargeTickHit
@@ -40,7 +37,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             numMiss = score.GetCountMiss() ?? 0; // HitResult.Miss PLUS HitResult.LargeTickMiss
 
             double value = calculateValue(catchAttributes.StarRating);
-
 
             // Miss penalty: as our system is highly sensitive towards "difficulty spikes" (which allows us to reward more variety of skillsets),
                 // it is important to make sure that scores with high misscount don't give too much pp.
@@ -81,9 +77,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             double maxCombo = catchAttributes.MaxCombo;
             double totalActions = ((CatchDifficultyAttributes)attributes).TotalActions + combo_percentage * maxCombo;
 
-            double linear_pace = tuning.PerformanceLengthLinearPace;
-            double cutoff = tuning.PerformanceLengthCutoff;
-            double logarithmic_pace = tuning.PerformanceLengthLogarithmicPace;
+            const double linear_pace = 0.26;
+            const double cutoff = 1700.0;
+            const double logarithmic_pace = 0.26;
 
             // Pace is linear at first, then it's logarithmic (growth is slower).
             double lengthBonus =
@@ -110,13 +106,14 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             if (score.Mods.Any(m => m is ModNoFail))
                 value *= Math.Max(0.90, 1.0 - 0.02 * numMiss);
 
-            double lengthBonusPP = value / (tuning.PerformanceValueMultiplier) * (lengthBonus - 1.0);
+            const double performance_multiplier = 1.05;
+
+            double lengthBonusPP = value / performance_multiplier * (lengthBonus - 1.0);
 
             return new CatchPerformanceAttributes
             {
                 LengthBonus = lengthBonusPP,
                 Total = (value + lengthBonusPP),
-                Tuning = tuning,
             };
         }
 
