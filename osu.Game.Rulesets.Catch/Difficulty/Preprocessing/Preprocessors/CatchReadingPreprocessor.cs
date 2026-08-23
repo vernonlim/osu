@@ -1,4 +1,4 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
@@ -32,12 +32,20 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double implicit_rhythm_penalty = 0.98;
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const int similar_distance_note_count = 3;
+        // Was 3. These counters previously relied on uint underflow: subtracting from 0
+        // wrapped to uint.MaxValue instead of clamping, so a run of two or more dissimilar
+        // distances left the counter just below the cap and the next similar pair jumped
+        // straight to the threshold, firing the penalty immediately. A run of exactly one
+        // wrapped back to 0 and behaved as intended. 2 is an approximation of the values
+        // that produced, chosen over the nominally correct 3 because 3 nerfs repetitive
+        // same-spacing patterns noticeably less than the balancing assumed.
+        private const int similar_distance_note_count = 2;
         private const double similar_distance_penalty = 0.84;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
 
-        private const int alternating_distance_note_count = 3;
+        // See similar_distance_note_count above; same underflow, same approximation.
+        private const int alternating_distance_note_count = 2;
         private const double alternating_distance_penalty = 0.97;
         private const double alternating_distance_leniency = 0.1;
         private const double alternating_distance_sensitivity = 1.5;
