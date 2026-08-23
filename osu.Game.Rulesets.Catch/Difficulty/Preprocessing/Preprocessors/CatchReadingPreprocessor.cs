@@ -1,4 +1,4 @@
-// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
@@ -24,28 +24,36 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
         private const double local_rhythm_penalty = 0.95;
         private const double local_rhythm_sensitivity = 2.0;
 
-        private const uint explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
+        private const int explicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double explicit_rhythm_penalty = 0.94;
         private const double explicit_rhythm_leniency = 0.1;
 
-        private const uint implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
+        private const int implicit_rhythm_note_count = 4; // number of actions in a row before full penalty
         private const double implicit_rhythm_penalty = 0.98;
         private const double implicit_rhythm_leniency = 0.05;
 
-        private const uint similar_distance_note_count = 3;
+        // Was 3. These counters previously relied on uint underflow: subtracting from 0
+        // wrapped to uint.MaxValue instead of clamping, so a run of two or more dissimilar
+        // distances left the counter just below the cap and the next similar pair jumped
+        // straight to the threshold, firing the penalty immediately. A run of exactly one
+        // wrapped back to 0 and behaved as intended. 2 is an approximation of the values
+        // that produced, chosen over the nominally correct 3 because 3 nerfs repetitive
+        // same-spacing patterns noticeably less than the balancing assumed.
+        private const int similar_distance_note_count = 2;
         private const double similar_distance_penalty = 0.84;
         private const double similar_distance_leniency = 0.1;
         private const double similar_distance_sensitivity = 1.5;
 
-        private const uint alternating_distance_note_count = 3;
+        // See similar_distance_note_count above; same underflow, same approximation.
+        private const int alternating_distance_note_count = 2;
         private const double alternating_distance_penalty = 0.97;
         private const double alternating_distance_leniency = 0.1;
         private const double alternating_distance_sensitivity = 1.5;
 
-        private const uint hyperchain_note_count = 6;
+        private const int hyperchain_note_count = 6;
         private const double hyperchain_penalty = 0.95;
 
-        private const uint non_hyperchain_note_count = 4;
+        private const int non_hyperchain_note_count = 4;
         private const double non_hyperchain_penalty = 0.96;
 
         private const double high_velocity_threshold = 4.5;
@@ -165,7 +173,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static void similarDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
-            uint counter = 0;
+            int counter = 0;
             double distanceToRemember = 0.0;
 
             // Don't count first note
@@ -216,7 +224,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing.Preprocessors
 
         private static void alternatingDistancePenalty(List<CatchDifficultyHitObject> actionNotes, double clockRate)
         {
-            uint counter = 0;
+            int counter = 0;
 
             double rememberedDistanceOdd = 0.0;
             double rememberedDistanceEven = 0.0;
